@@ -1,26 +1,244 @@
 @import "tailwindcss";
 
+/* ============================================
+   Sistema de Diseño - comoelmusguito
+   Paleta: "Bosque Húmedo"
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colores Principales */
+  --musgo: #2D5016;
+  --musgo-light: #3D6B22;
+  --musgo-dark: #1F3910;
+  
+  --tierra: #8B6F47;
+  --tierra-light: #A68A63;
+  --tierra-dark: #6D5636;
+  
+  --vida: #6B9362;
+  --vida-light: #85AB7D;
+  --vida-dark: #557548;
+  
+  --ambar: #D4A574;
+  --ambar-light: #E0B98F;
+  --ambar-dark: #B98F5E;
+  
+  /* Neutros */
+  --cream: #FDFAF6;
+  --forest: #1A1F16;
+  --gray: #6B7566;
+  --white: #FFFFFF;
+  
+  /* Espaciado (Base-8) */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-24: 6rem;     /* 96px */
+  
+  /* Radios */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.5rem;  /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem;    /* 16px */
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 3px rgba(45, 80, 22, 0.08);
+  --shadow-md: 0 4px 12px rgba(45, 80, 22, 0.12);
+  --shadow-lg: 0 8px 24px rgba(45, 80, 22, 0.16);
+  --shadow-xl: 0 12px 40px rgba(45, 80, 22, 0.20);
+  
+  /* Transiciones */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  
+  /* Tipografía */
+  --font-display: 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Colores */
+  --color-musgo: var(--musgo);
+  --color-musgo-light: var(--musgo-light);
+  --color-musgo-dark: var(--musgo-dark);
+  
+  --color-tierra: var(--tierra);
+  --color-tierra-light: var(--tierra-light);
+  --color-tierra-dark: var(--tierra-dark);
+  
+  --color-vida: var(--vida);
+  --color-vida-light: var(--vida-light);
+  --color-vida-dark: var(--vida-dark);
+  
+  --color-ambar: var(--ambar);
+  --color-ambar-light: var(--ambar-light);
+  --color-ambar-dark: var(--ambar-dark);
+  
+  --color-cream: var(--cream);
+  --color-forest: var(--forest);
+  --color-gray: var(--gray);
+  --color-white: var(--white);
+  
+  /* Fuentes */
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  
+  /* Espaciado */
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+  --spacing-12: var(--space-12);
+  --spacing-16: var(--space-16);
+  --spacing-24: var(--space-24);
+  
+  /* Radios */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================
+   Estilos Base
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--cream);
+  color: var(--forest);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Títulos con Playfair Display */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--forest);
+}
+
+/* ============================================
+   Animaciones y Transiciones
+   ============================================ */
+
+/* Respeta preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Animación de fade in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de float (decorativa) */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ============================================
+   Utilidades Personalizadas
+   ============================================ */
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-inline: var(--space-8);
+  }
+}
+
+/* Sombras naturales */
+.shadow-natural-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.shadow-natural-md {
+  box-shadow: var(--shadow-md);
+}
+
+.shadow-natural-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Glassmorphism sutil */
+.glass {
+  background: rgba(253, 250, 246, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(45, 80, 22, 0.1);
+}
+
+/* ============================================
+   Scrollbar personalizado
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vida);
+  border-radius: var(--radius-lg);
+  border: 3px solid var(--cream);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--musgo);
+}
+
+/* ============================================
+   Selection
+   ============================================ */
+
+::selection {
+  background: var(--vida);
+  color: var(--white);
 }
