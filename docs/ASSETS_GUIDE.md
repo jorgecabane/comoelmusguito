@@ -184,7 +184,7 @@ proceso-04-vida.jpg
 
 1. **Portrait principal**
 ```
-tomas-portrait.jpg
+tomas-portrait.png
 - Tamaño: 1200x1600 (3:4 vertical)
 - Peso: <300KB
 - Uso: Sección "Hola, soy Tomás"
@@ -323,7 +323,7 @@ fallbackImage="/images/hero/hero-fallback.jpg"
 ### Artist Section (Tomás)
 ```typescript
 // components/sections/home/ArtistSection.tsx
-src="/images/about/tomas-portrait.jpg"
+src="/images/about/tomas-portrait.png"
 ```
 
 ### Process Section
@@ -363,7 +363,7 @@ thumbnail: "/images/cursos/terrarios-desde-cero-thumbnail.jpg"
 
 **Imágenes:**
 - [ ] `images/hero/hero-fallback.jpg` - Fallback mobile
-- [ ] `images/about/tomas-portrait.jpg` - Foto de Tomás
+- [ ] `images/about/tomas-portrait.png` - Foto de Tomás
 - [ ] `images/process/proceso-01-recoleccion.jpg`
 - [ ] `images/process/proceso-02-cultivo.jpg`
 - [ ] `images/process/proceso-03-diseño.jpg`
@@ -462,7 +462,7 @@ images: ['/images/terrarios/terrario-bosque-nublado-01.jpg']
 
 ```
 ✅ terrario-bosque-nublado-01.jpg
-✅ tomas-portrait-taller.jpg
+✅ tomas-portrait-taller.png
 ✅ proceso-recoleccion-musgo.jpg
 ✅ curso-desde-cero-thumbnail.jpg
 ✅ og-home-main.jpg

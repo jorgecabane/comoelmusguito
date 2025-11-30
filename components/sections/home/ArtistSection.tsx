@@ -20,7 +20,7 @@ export function ArtistSection() {
 
       <div className="container relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Imagen con parallax - Desktop */}
+          {/* Imagen con parallax - Desktop (JPG) */}
           <ParallaxSection speed={-0.3} className="hidden lg:block">
             <FadeIn direction="left" duration={0.8}>
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-natural-lg">
@@ -39,9 +39,9 @@ export function ArtistSection() {
           {/* Contenido */}
           <div className="space-y-8 relative">
             {/* Imagen de fondo solo en mobile - alineada con "No vendo terrarios" */}
-            <div className="lg:hidden absolute top-64 right-0 w-40 h-56 opacity-25 rounded-2xl overflow-hidden pointer-events-none">
+            <div className="lg:hidden absolute top-0 right-0 w-40 h-56 opacity-75 rounded-2xl overflow-hidden pointer-events-none">
               <Image
-                src="/images/about/tomas-portrait.jpg"
+                src="/images/about/tomas-portrait.png"
                 alt="Tomás Barrera"
                 fill
                 className="object-cover"

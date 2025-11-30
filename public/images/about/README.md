@@ -3,7 +3,7 @@
 ## Archivos Necesarios
 
 ### 1. Portrait Principal
-**Nombre:** `tomas-portrait.jpg`
+**Nombre:** `tomas-portrait.png`
 - Tamaño: 1200x1600 (3:4 vertical)
 - Peso: <300KB
 - Uso: Sección "Hola, soy Tomás Barrera"

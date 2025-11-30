@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { VideoBackground, FadeIn } from '@/components/animations';
 import { Button } from '@/components/ui';
 import { ChevronDown } from 'lucide-react';
+import Image from 'next/image';
 
 export function HeroImmersive() {
   return (
@@ -21,8 +22,27 @@ export function HeroImmersive() {
       />
 
       {/* Contenido */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-4">
-        <div className="max-w-5xl mx-auto text-center space-y-8">
+      <div className="relative z-10 h-full flex flex-col items-center justify-between text-white px-4 py-12 md:py-20">
+        {/* Logo arriba */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3 }}
+          className="flex items-center justify-center"
+        >
+          <div className="relative w-24 h-24 md:w-32 md:h-32">
+            <Image
+              src="/logo/logo-icon.svg"
+              alt="comoelmusguito logo"
+              fill
+              className="object-contain drop-shadow-lg"
+              priority
+            />
+          </div>
+        </motion.div>
+
+        {/* Contenido central */}
+        <div className="max-w-5xl mx-auto text-center space-y-8 flex-shrink-0">
           {/* Fade in secuencial */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -53,8 +73,6 @@ export function HeroImmersive() {
             className="text-xl md:text-2xl text-white/80 max-w-2xl mx-auto"
           >
             Cada terrario es un ecosistema vivo que late, crece y respira.
-            <br />
-            Bienvenido al mundo de <span className="text-vida font-semibold">comoelmusguito</span>
           </motion.p>
 
           <motion.div
@@ -77,9 +95,21 @@ export function HeroImmersive() {
             </Button>
           </motion.div>
         </div>
+
+        {/* Texto "comoelmusguito" abajo */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.8 }}
+          className="flex items-center justify-center"
+        >
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-wider drop-shadow-lg">
+            comoelmusguito
+          </h2>
+        </motion.div>
       </div>
 
-      {/* Scroll indicator - Flechita simple (fuera del contenedor centrado) */}
+      {/* Scroll indicator - Flechita simple */}
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ 
@@ -96,7 +126,7 @@ export function HeroImmersive() {
             nextSection.scrollIntoView({ behavior: 'smooth' });
           }
         }}
-        className="absolute bottom-50 left-1/2 -translate-x-1/2 z-20 cursor-pointer focus:outline-none"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 cursor-pointer focus:outline-none"
         aria-label="Scroll hacia abajo"
       >
         <ChevronDown 

@@ -128,7 +128,7 @@ public/
 ├── videos/hero/hero-main.mp4
 ├── images/
 │   ├── hero/hero-fallback.jpg
-│   ├── about/tomas-portrait.jpg
+│   ├── about/tomas-portrait.png
 │   ├── process/proceso-01-recoleccion.jpg
 │   ├── process/proceso-02-cultivo.jpg
 │   ├── process/proceso-03-diseño.jpg
