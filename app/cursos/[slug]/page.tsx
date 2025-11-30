@@ -5,11 +5,12 @@
 
 import { getCourseBySlug, getAllCourses } from '@/lib/sanity/fetch';
 import { getImageUrl, formatPriceWithSale, levelLabels } from '@/lib/sanity/utils';
-import { Badge, Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
 import { Play, Clock, BookOpen, Award, CheckCircle2, Download } from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { CourseDetail } from '@/components/product/CourseDetail';
 
 export const revalidate = 60;
 
@@ -110,37 +111,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
               )}
             </div>
 
-            {/* Price & CTA */}
-            <div className="border-t border-b border-gray/20 py-6">
-              <div className="space-y-2 mb-6">
-                <div className="text-4xl font-display font-bold text-forest">
-                  {pricing.current}
-                </div>
-                {pricing.hasDiscount && pricing.original && (
-                  <div className="flex items-center gap-3">
-                    <div className="text-xl text-gray line-through">
-                      {pricing.original}
-                    </div>
-                    <Badge variant="error">
-                      {Math.round(((course.price - (course.salePrice || course.price)) / course.price) * 100)}% OFF
-                    </Badge>
-                  </div>
-                )}
-              </div>
-
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full"
-                icon={<Play size={20} />}
-              >
-                Comenzar mi Viaje
-              </Button>
-
-              <p className="text-sm text-gray text-center mt-4">
-                ✓ Acceso de por vida • ✓ Material descargable • ✓ Aprende a tu ritmo
-              </p>
-            </div>
+            {/* Price & CTA (Cliente Component) */}
+            <CourseDetail course={course} />
           </div>
 
           {/* Thumbnail / Video Preview */}

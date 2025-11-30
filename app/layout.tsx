@@ -83,6 +83,7 @@ export const viewport = {
 };
 
 import { Header, Footer } from "@/components/shared";
+import { AddToCartModal } from "@/components/cart/AddToCartModal";
 
 export default function RootLayout({
   children,
@@ -100,6 +101,9 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        
+        {/* Modal global del carrito */}
+        <AddToCartModal />
       </body>
     </html>
   );

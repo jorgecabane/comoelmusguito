@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { Logo } from './Logo';
+import { useCartStore } from '@/lib/store/useCartStore';
 
 const navigation = [
   { name: 'Inicio', href: '/' },
@@ -25,7 +26,9 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [visible, setVisible] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const cartItemCount = 0; // TODO: Conectar con estado real del carrito
+  
+  // Obtener cantidad de items del carrito
+  const cartItemCount = useCartStore((state) => state.itemCount);
 
   // Scroll inteligente: visible al inicio (blanco), luego transparente al scroll
   useEffect(() => {
@@ -93,14 +96,18 @@ export function Header() {
           {/* Cart & Mobile Menu Button */}
           <div className="flex items-center gap-4">
             {/* Cart Button - Como jardín */}
-            <button className="relative p-2 text-forest hover:text-musgo transition-all hover:scale-110 group">
+            <Link 
+              href="/carrito" 
+              className="relative p-2 text-forest hover:text-musgo transition-all hover:scale-110 group"
+              aria-label={`Carrito de compras (${cartItemCount} items)`}
+            >
               <span className="text-2xl group-hover:animate-bounce">🌱</span>
               {cartItemCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-musgo text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                   {cartItemCount}
                 </span>
               )}
-            </button>
+            </Link>
 
             {/* Mobile Menu Button */}
             <button

@@ -4,12 +4,13 @@
  */
 
 import { getTerrariumBySlug, getAllTerrariums } from '@/lib/sanity/fetch';
-import { getImageUrl, formatPrice, sizeLabels, categoryLabels, extractPlainText } from '@/lib/sanity/utils';
-import { Badge, Button } from '@/components/ui';
-import { ShoppingCart, Leaf, Package, Droplets, Heart } from 'lucide-react';
+import { getImageUrl, formatPrice, sizeLabels, categoryLabels } from '@/lib/sanity/utils';
+import { Badge } from '@/components/ui';
+import { Leaf, Package, Droplets } from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { TerrariumDetail } from '@/components/product/TerrariumDetail';
 
 export const revalidate = 60;
 
@@ -127,36 +128,8 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
               </p>
             </div>
 
-            {/* Price & CTA */}
-            <div className="border-t border-b border-gray/20 py-6">
-              <div className="text-4xl font-display font-bold text-forest mb-6">
-                {formatPrice(terrarium.price, terrarium.currency)}
-              </div>
-
-              <div className="flex gap-4">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="flex-1"
-                  icon={<ShoppingCart size={20} />}
-                  disabled={!terrarium.inStock}
-                >
-                  {terrarium.inStock ? 'Adoptar Terrario' : 'Agotado'}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  icon={<Heart size={20} />}
-                  aria-label="Guardar favorito"
-                />
-              </div>
-
-              {!terrarium.shippingAvailable && (
-                <p className="text-sm text-gray mt-4">
-                  📍 Solo retiro en persona (Santiago, Chile)
-                </p>
-              )}
-            </div>
+            {/* Price & CTA (Cliente Component) */}
+            <TerrariumDetail terrarium={terrarium} />
 
             {/* Specs */}
             <div className="space-y-4">
