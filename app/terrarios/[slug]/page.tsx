@@ -5,7 +5,7 @@
 
 import { getTerrariumBySlug, getAllTerrariums } from '@/lib/sanity/fetch';
 import { getImageUrl, formatPrice, sizeLabels, categoryLabels } from '@/lib/sanity/utils';
-import { Badge } from '@/components/ui';
+import { Badge, Button } from '@/components/ui';
 import { Leaf, Package, Droplets } from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';

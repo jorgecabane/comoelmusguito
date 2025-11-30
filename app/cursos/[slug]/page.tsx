@@ -5,7 +5,7 @@
 
 import { getCourseBySlug, getAllCourses } from '@/lib/sanity/fetch';
 import { getImageUrl, formatPriceWithSale, levelLabels } from '@/lib/sanity/utils';
-import { Badge } from '@/components/ui';
+import { Badge, Button } from '@/components/ui';
 import { Play, Clock, BookOpen, Award, CheckCircle2, Download } from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';

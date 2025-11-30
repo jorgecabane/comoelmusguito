@@ -5,7 +5,7 @@
 
 import { getWorkshopBySlug, getAllWorkshops } from '@/lib/sanity/fetch';
 import { getImageUrl, levelLabels, getFirstImage } from '@/lib/sanity/utils';
-import { Badge } from '@/components/ui';
+import { Badge, Button } from '@/components/ui';
 import { MapPin, Clock, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -81,9 +81,6 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Badge variant="info">{levelLabel}</Badge>
-                {!hayCuposDisponibles && (
-                  <Badge variant="error">Fechas Agotadas</Badge>
-                )}
               </div>
               <h1 className="font-display text-4xl md:text-5xl font-bold text-forest mb-4">
                 {taller.name}

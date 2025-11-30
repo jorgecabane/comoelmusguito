@@ -96,7 +96,7 @@ export function HeroImmersive() {
             nextSection.scrollIntoView({ behavior: 'smooth' });
           }
         }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 cursor-pointer focus:outline-none"
+        className="absolute bottom-50 left-1/2 -translate-x-1/2 z-20 cursor-pointer focus:outline-none"
         aria-label="Scroll hacia abajo"
       >
         <ChevronDown 
