@@ -39,13 +39,13 @@ export function VideoBackground({
   const overlayClasses = {
     none: '',
     light: 'bg-white/30',
-    dark: 'bg-forest/50',
+    dark: 'bg-forest/60', // Incrementado para mejor contraste
   };
 
   // En mobile, mostrar solo imagen
   if (isMobile) {
     return (
-      <div className={`relative w-full h-full ${className}`}>
+      <div className={`absolute inset-0 w-full h-full ${className}`}>
         <Image
           src={fallbackImage}
           alt="Background"
@@ -62,7 +62,7 @@ export function VideoBackground({
   }
 
   return (
-    <div className={`relative w-full h-full ${className}`}>
+    <div className={`absolute inset-0 w-full h-full ${className}`}>
       {/* Fallback image mientras carga video */}
       {!videoLoaded && (
         <Image

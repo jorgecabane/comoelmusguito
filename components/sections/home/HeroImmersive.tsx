@@ -6,8 +6,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { VideoBackground, FadeIn } from '@/components/animations';
-import { Button } from '@/components/ui';
+import { VideoBackground } from '@/components/animations';
 import { ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 
@@ -21,91 +20,33 @@ export function HeroImmersive() {
         overlay="dark"
       />
 
-      {/* Contenido */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-between text-white px-4 py-12 md:py-20">
-        {/* Logo arriba */}
+      {/* Contenido - Solo logo y texto */}
+      <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-4 gap-12 md:gap-16">
+        {/* Logo arriba - Con círculo de fondo glassmorphism */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.3 }}
+          transition={{ duration: 1, delay: 0.5 }}
           className="flex items-center justify-center"
         >
-          <div className="relative w-24 h-24 md:w-32 md:h-32">
-            <Image
-              src="/logo/logo-icon.svg"
-              alt="comoelmusguito logo"
-              fill
-              className="object-contain drop-shadow-lg"
-              priority
-            />
+          {/* Círculo de fondo con glassmorphism */}
+          <div className="relative">
+            {/* Glow effect verde */}
+            <div className="absolute inset-0 bg-vida/40 blur-3xl rounded-full scale-125" />
+            
+            {/* Círculo glassmorphism */}
+            <div className="relative bg-white/5 backdrop-blur-md rounded-full p-8 md:p-10 lg:p-12 border-2 border-white/30 shadow-2xl">
+              <div className="relative w-26 h-26 md:w-32 md:h-32 lg:w-40 lg:h-40">
+                <Image
+                  src="/logo/logo-white.svg"
+                  alt="comoelmusguito logo"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </div>
           </div>
-        </motion.div>
-
-        {/* Contenido central */}
-        <div className="max-w-5xl mx-auto text-center space-y-8 flex-shrink-0">
-          {/* Fade in secuencial */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="space-y-6"
-          >
-            <p className="text-xl md:text-2xl text-white/90 font-light tracking-wide">
-              En un frasco de vidrio...
-            </p>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 1.2 }}
-            className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-tight"
-          >
-            Cabe un Universo
-            <br />
-            <span className="text-vida">Entero</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 2 }}
-            className="text-xl md:text-2xl text-white/80 max-w-2xl mx-auto"
-          >
-            Cada terrario es un ecosistema vivo que late, crece y respira.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 2.5 }}
-          >
-            <Button
-              variant="primary"
-              size="lg"
-              className="bg-vida hover:bg-vida-dark text-white"
-              onClick={() => {
-                window.scrollTo({ 
-                  top: window.innerHeight, 
-                  behavior: 'smooth' 
-                });
-              }}
-            >
-              Comenzar el Viaje
-            </Button>
-          </motion.div>
-        </div>
-
-        {/* Texto "comoelmusguito" abajo */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.8 }}
-          className="flex items-center justify-center"
-        >
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-wider drop-shadow-lg">
-            comoelmusguito
-          </h2>
         </motion.div>
       </div>
 

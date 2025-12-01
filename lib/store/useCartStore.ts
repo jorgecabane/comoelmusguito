@@ -13,14 +13,9 @@ export const useCartStore = create<CartState>()(
       items: [],
       isOpen: false,
       
-      // Computed values
-      get itemCount() {
-        return get().items.reduce((total, item) => total + item.quantity, 0);
-      },
-      
-      get subtotal() {
-        return get().items.reduce((total, item) => total + (item.price * item.quantity), 0);
-      },
+      // Computed values (como propiedades normales que se actualizan)
+      itemCount: 0,
+      subtotal: 0,
       
       // Actions
       addItem: (item: CartItem) => {
@@ -29,39 +24,53 @@ export const useCartStore = create<CartState>()(
           (i) => i.id === item.id && i.type === item.type
         );
         
+        let newItems = items;
+        
         if (existingItem) {
           // Si ya existe, incrementar cantidad (respetando stock)
           const newQuantity = existingItem.quantity + item.quantity;
           const maxQuantity = item.maxQuantity || 999;
           
           if (newQuantity <= maxQuantity) {
-            set({
-              items: items.map((i) =>
-                i.id === item.id && i.type === item.type
-                  ? { ...i, quantity: newQuantity }
-                  : i
-              ),
-              isOpen: true, // Abrir modal de confirmación
-            });
+            newItems = items.map((i) =>
+              i.id === item.id && i.type === item.type
+                ? { ...i, quantity: newQuantity }
+                : i
+            );
           } else {
             // Stock insuficiente
             console.warn('Stock insuficiente');
-            // Aquí podrías mostrar un toast o mensaje
+            return;
           }
         } else {
           // Agregar nuevo item
-          set({
-            items: [...items, item],
-            isOpen: true, // Abrir modal de confirmación
-          });
+          newItems = [...items, item];
         }
+        
+        // Recalcular valores computados
+        const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
+        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+        
+        set({
+          items: newItems,
+          itemCount,
+          subtotal,
+          isOpen: true,
+        });
       },
       
       removeItem: (id: string, type: CartItemType) => {
+        const newItems = get().items.filter(
+          (item) => !(item.id === id && item.type === type)
+        );
+        
+        const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
+        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+        
         set({
-          items: get().items.filter(
-            (item) => !(item.id === id && item.type === type)
-          ),
+          items: newItems,
+          itemCount,
+          subtotal,
         });
       },
       
@@ -72,20 +81,32 @@ export const useCartStore = create<CartState>()(
           return;
         }
         
+        const newItems = get().items.map((item) => {
+          if (item.id === id && item.type === type) {
+            const maxQuantity = item.maxQuantity || 999;
+            const newQuantity = Math.min(quantity, maxQuantity);
+            return { ...item, quantity: newQuantity };
+          }
+          return item;
+        });
+        
+        const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
+        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+        
         set({
-          items: get().items.map((item) => {
-            if (item.id === id && item.type === type) {
-              const maxQuantity = item.maxQuantity || 999;
-              const newQuantity = Math.min(quantity, maxQuantity);
-              return { ...item, quantity: newQuantity };
-            }
-            return item;
-          }),
+          items: newItems,
+          itemCount,
+          subtotal,
         });
       },
       
       clearCart: () => {
-        set({ items: [], isOpen: false });
+        set({ 
+          items: [], 
+          itemCount: 0,
+          subtotal: 0,
+          isOpen: false 
+        });
       },
       
       openCart: () => {
@@ -110,6 +131,14 @@ export const useCartStore = create<CartState>()(
       storage: createJSONStorage(() => localStorage),
       // Solo persistir items, no el estado isOpen
       partialize: (state) => ({ items: state.items }),
+      // Recalcular valores computados al hidratar
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const items = state.items;
+          state.itemCount = items.reduce((total, item) => total + item.quantity, 0);
+          state.subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
+        }
+      },
     }
   )
 );
