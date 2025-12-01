@@ -5,9 +5,8 @@
 
 import { getTerrariumBySlug, getAllTerrariums } from '@/lib/sanity/fetch';
 import { getImageUrl, formatPrice, sizeLabels, categoryLabels } from '@/lib/sanity/utils';
-import { Badge, Button } from '@/components/ui';
+import { Badge, Button, ImageGallery } from '@/components/ui';
 import { Leaf, Package, Droplets } from 'lucide-react';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { TerrariumDetail } from '@/components/product/TerrariumDetail';
@@ -77,39 +76,14 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
       <section className="container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Image Gallery */}
-          <div className="space-y-4">
-            {/* Main Image */}
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-cream">
-              <Image
-                src={getImageUrl(terrarium.images?.[0], { width: 800, height: 800 })}
-                alt={terrarium.images?.[0]?.alt || terrarium.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
-            </div>
-
-            {/* Thumbnails */}
-            {terrarium.images && terrarium.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-4">
-                {terrarium.images.slice(1, 5).map((image, index) => (
-                  <div
-                    key={index}
-                    className="relative aspect-square rounded-lg overflow-hidden bg-cream cursor-pointer hover:opacity-75 transition-opacity"
-                  >
-                    <Image
-                      src={getImageUrl(image, { width: 200, height: 200 })}
-                      alt={image.alt || `${terrarium.name} ${index + 2}`}
-                      fill
-                      className="object-cover"
-                      sizes="200px"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {terrarium.images && terrarium.images.length > 0 && (
+            <ImageGallery
+              images={terrarium.images.map((img) =>
+                getImageUrl(img, { width: 1200, height: 1200 })
+              )}
+              alt={terrarium.images[0]?.alt || terrarium.name}
+            />
+          )}
 
           {/* Info */}
           <div className="space-y-6">

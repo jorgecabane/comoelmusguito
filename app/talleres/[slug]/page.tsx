@@ -4,10 +4,9 @@
  */
 
 import { getWorkshopBySlug, getAllWorkshops } from '@/lib/sanity/fetch';
-import { getImageUrl, levelLabels, getFirstImage } from '@/lib/sanity/utils';
-import { Badge, Button } from '@/components/ui';
+import { getImageUrl, levelLabels } from '@/lib/sanity/utils';
+import { Badge, Button, ImageGallery } from '@/components/ui';
 import { MapPin, Clock, CheckCircle2 } from 'lucide-react';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { WorkshopDetail } from '@/components/product/WorkshopDetail';
@@ -90,17 +89,16 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
               </p>
             </div>
 
-            {/* Image */}
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream">
-              <Image
-                src={getFirstImage(taller.images, { width: 1200, height: 675 })}
-                alt={taller.images?.[0]?.alt || taller.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 66vw"
-                priority
+            {/* Image Gallery */}
+            {taller.images && taller.images.length > 0 && (
+              <ImageGallery
+                images={taller.images.map((img) =>
+                  getImageUrl(img, { width: 1200, height: 675 })
+                )}
+                alt={taller.images[0]?.alt || taller.name}
+                className="aspect-[3/2]"
               />
-            </div>
+            )}
 
             {/* Qué Aprenderás */}
             {taller.learningOutcomes && taller.learningOutcomes.length > 0 && (

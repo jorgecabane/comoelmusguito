@@ -10,7 +10,7 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { Badge } from '@/components/ui';
 import type { Workshop } from '@/types/sanity';
 import type { CartItem } from '@/types/cart';
-import { getImageUrl, formatPrice, formatDateShort } from '@/lib/sanity/utils';
+import { getImageUrl, formatPrice, formatWorkshopDateTime } from '@/lib/sanity/utils';
 import { Calendar } from 'lucide-react';
 
 interface WorkshopDetailProps {
@@ -86,18 +86,19 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
                   <div className="flex items-center gap-2 text-left">
                     <Calendar size={16} className="text-musgo" />
                     <div>
-                      <div className="font-semibold text-forest text-sm">
-                        {new Date(fecha.date).toLocaleDateString('es-CL', {
-                          day: 'numeric',
-                          month: 'short',
-                        })}
-                      </div>
-                      <div className="text-xs text-gray">
-                        {new Date(fecha.date).toLocaleTimeString('es-CL', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </div>
+                      {(() => {
+                        const { date, time } = formatWorkshopDateTime(fecha.date);
+                        return (
+                          <>
+                            <div className="font-semibold text-forest text-sm">
+                              {date}
+                            </div>
+                            <div className="text-xs text-gray">
+                              {time}
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                   <Badge

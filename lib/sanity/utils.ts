@@ -111,6 +111,36 @@ export function formatDateShort(dateString: string): string {
   });
 }
 
+/**
+ * Formatear hora de forma consistente (evita errores de hidratación)
+ */
+export function formatTime(dateString: string): string {
+  const date = new Date(dateString);
+  // Usar formato manual para evitar diferencias servidor/cliente
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'p. m.' : 'a. m.';
+  const hours12 = hours % 12 || 12;
+  const minutesStr = minutes.toString().padStart(2, '0');
+  return `${hours12}:${minutesStr} ${ampm}`;
+}
+
+/**
+ * Formatear fecha y hora para talleres
+ */
+export function formatWorkshopDateTime(dateString: string): {
+  date: string;
+  time: string;
+} {
+  const date = new Date(dateString);
+  const dateStr = date.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'short',
+  });
+  const timeStr = formatTime(dateString);
+  return { date: dateStr, time: timeStr };
+}
+
 // ============ SLUG ============
 
 /**

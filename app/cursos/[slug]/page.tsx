@@ -5,7 +5,7 @@
 
 import { getCourseBySlug, getAllCourses } from '@/lib/sanity/fetch';
 import { getImageUrl, formatPriceWithSale, levelLabels } from '@/lib/sanity/utils';
-import { Badge, Button } from '@/components/ui';
+import { Badge, Button, VideoPlayer } from '@/components/ui';
 import { Play, Clock, BookOpen, Award, CheckCircle2, Download } from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -115,24 +115,27 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <CourseDetail course={course} />
           </div>
 
-          {/* Thumbnail / Video Preview */}
-          <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream shadow-natural-xl">
-            <Image
-              src={getImageUrl(course.thumbnail, { width: 1200, height: 675 })}
-              alt={course.thumbnail?.alt || course.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
+          {/* Video Player o Thumbnail */}
+          {course.promoVideo?.url ? (
+            <VideoPlayer
+              src={course.promoVideo.url}
+              poster={getImageUrl(course.thumbnail, { width: 1200, height: 675 })}
+              className="aspect-video"
+              autoplay={false}
+              controls={true}
             />
-            {course.promoVideo && (
-              <div className="absolute inset-0 bg-forest/40 flex items-center justify-center cursor-pointer hover:bg-forest/50 transition-colors">
-                <div className="w-20 h-20 rounded-full bg-white/95 flex items-center justify-center">
-                  <Play className="text-musgo ml-1" size={36} fill="currentColor" />
-                </div>
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream shadow-natural-xl">
+              <Image
+                src={getImageUrl(course.thumbnail, { width: 1200, height: 675 })}
+                alt={course.thumbnail?.alt || course.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
+            </div>
+          )}
         </div>
       </section>
 

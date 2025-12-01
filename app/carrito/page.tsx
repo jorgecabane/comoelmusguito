@@ -11,6 +11,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { formatWorkshopDateTime } from '@/lib/sanity/utils';
 
 export default function CarritoPage() {
   const { items, itemCount, subtotal, updateQuantity, removeItem, clearCart } = useCartStore();
@@ -294,13 +295,15 @@ function CartItemCard({
           {/* Fecha seleccionada (talleres) */}
           {item.selectedDate && (
             <p className="text-sm text-gray mb-3">
-              📅 {new Date(item.selectedDate.date).toLocaleDateString('es-CL', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              📅 {(() => {
+                const { date, time } = formatWorkshopDateTime(item.selectedDate.date);
+                const fullDate = new Date(item.selectedDate.date).toLocaleDateString('es-CL', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                });
+                return `${fullDate} a las ${time}`;
+              })()}
             </p>
           )}
 
