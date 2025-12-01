@@ -235,7 +235,7 @@ export function ArticleSchema({
     author: {
       '@type': 'Person',
       name: authorName,
-      url: `${SITE_CONFIG.url}/sobre-el-musguito`,
+      url: `${SITE_CONFIG.url}/sobre`,
     },
     publisher: {
       '@type': 'Organization',

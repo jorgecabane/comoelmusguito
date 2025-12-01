@@ -22,8 +22,8 @@ const footerLinks = {
     { name: 'Guías Gratuitas', href: '/recursos' },
   ],
   about: [
-    { name: 'Sobre el Musguito', href: '/sobre-el-musguito' },
-    { name: 'Nuestra Historia', href: '/sobre-el-musguito#historia' },
+    { name: 'Sobre el Musguito', href: '/sobre' },
+    { name: 'Nuestra Historia', href: '/sobre#historia' },
     { name: 'Sustentabilidad', href: '/sustentabilidad' },
     { name: 'Contacto', href: '/contacto' },
   ],

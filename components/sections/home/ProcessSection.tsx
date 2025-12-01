@@ -33,9 +33,9 @@ const processSteps = [
     title: 'Diseño',
     description: 'Compongo cada terrario como una obra de arte, creando capas y profundidad.',
     icon: Palette,
-    image: '/images/process/proceso-03-diseño.jpg', // TODO: Reemplazar con foto real
+    image: '/images/process/proceso-03-diseño.png',
     imagePlaceholder: 'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=800&q=80',
-    story: 'Esta piedra la encontré en un río. Cada elemento cuenta una historia.',
+    story: 'Esta madera la encontré en un río. Cada elemento cuenta una historia.',
   },
   {
     step: '04',
@@ -88,7 +88,7 @@ export function ProcessSection() {
                 >
                   <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-natural-lg group">
                     <Image
-                      src={step.imagePlaceholder} // Usando placeholder por ahora
+                      src={step.image}
                       alt={step.title}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"

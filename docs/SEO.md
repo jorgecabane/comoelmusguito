@@ -64,7 +64,7 @@ https://comoelmusguito.com/blog/como-cuidar-musgo-terrario
 https://comoelmusguito.com/blog/plantas-nativas-terrarios-chile
 
 Sobre:
-https://comoelmusguito.com/sobre-el-musguito
+https://comoelmusguito.com/sobre
 https://comoelmusguito.com/contacto
 
 ❌ URLs a Evitar:
@@ -294,7 +294,7 @@ export default async function sitemap() {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/sobre-el-musguito`,
+      url: `${baseUrl}/sobre`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.7,
@@ -529,7 +529,7 @@ export function ArticleSchema({ post }: { post: BlogPost }) {
     author: {
       '@type': 'Person',
       name: post.author.name,
-      url: `https://comoelmusguito.com/sobre-el-musguito`,
+      url: `https://comoelmusguito.com/sobre`,
     },
     publisher: {
       '@type': 'Organization',

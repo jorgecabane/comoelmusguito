@@ -18,7 +18,7 @@ const navigation = [
   { name: 'Terrarios', href: '/terrarios' },
   { name: 'Cursos Online', href: '/cursos' },
   { name: 'Talleres', href: '/talleres' },
-  { name: 'Sobre el Musguito', href: '/sobre-el-musguito' },
+  { name: 'Sobre el Musguito', href: '/sobre' },
 ];
 
 export function Header() {

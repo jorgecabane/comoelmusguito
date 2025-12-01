@@ -37,7 +37,7 @@ comoelmusguito/
 │   │   │       └── page.tsx      # Detalle curso
 │   │   ├── talleres/             # Cursos presenciales
 │   │   │   └── page.tsx
-│   │   ├── sobre-el-musguito/    # Sobre Tomás
+│   │   ├── sobre/    # Sobre Tomás
 │   │   │   └── page.tsx
 │   │   └── contacto/
 │   │       └── page.tsx
