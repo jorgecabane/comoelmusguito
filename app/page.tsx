@@ -16,6 +16,8 @@ import { getUserCurrency } from '@/lib/utils/geolocation';
 
 // Revalidar cada 60 segundos
 export const revalidate = 60;
+// Forzar renderizado dinámico porque usamos geolocalización
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   // Fetch datos destacados de Sanity y detectar moneda del usuario

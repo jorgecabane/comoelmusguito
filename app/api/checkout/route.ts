@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentOrder } from '@/lib/flow/client';
-import { getUserCurrency } from '@/lib/utils/geolocation';
+import { getUserCurrency, getUserCountry } from '@/lib/utils/geolocation';
 import { convertUSDToCLP } from '@/lib/utils/currency';
 import type { CartItem } from '@/types/cart';
 
@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Detectar moneda del usuario
+    // Detectar país y moneda del usuario
+    const userCountry = await getUserCountry();
     const userCurrency = await getUserCurrency();
     
     // Calcular totales por moneda
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
     let finalAmount = 0;
     let finalCurrency: 'CLP' | 'USD' = 'CLP';
 
-    if (userCurrency === 'CL') {
+    if (userCountry === 'CL') {
       // Usuario en Chile: todo en CLP
       finalAmount = totalsByCurrency['CLP'] || 0;
       if (totalsByCurrency['USD']) {

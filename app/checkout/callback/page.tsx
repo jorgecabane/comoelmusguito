@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react';
@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 
 type PaymentStatus = 'loading' | 'success' | 'error' | 'pending';
 
-export default function CheckoutCallbackPage() {
+function CheckoutCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<PaymentStatus>('loading');
@@ -193,6 +193,25 @@ export default function CheckoutCallbackPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+        <div className="container max-w-2xl">
+          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
+            <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={64} />
+            <h1 className="font-display text-3xl font-bold text-forest mb-4">
+              Cargando...
+            </h1>
+          </div>
+        </div>
+      </div>
+    }>
+      <CheckoutCallbackContent />
+    </Suspense>
   );
 }
 

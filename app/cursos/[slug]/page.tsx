@@ -14,6 +14,8 @@ import Link from 'next/link';
 import { CourseDetail } from '@/components/product/CourseDetail';
 
 export const revalidate = 60;
+// Forzar renderizado dinámico porque usamos geolocalización
+export const dynamic = 'force-dynamic';
 
 interface CoursePageProps {
   params: Promise<{

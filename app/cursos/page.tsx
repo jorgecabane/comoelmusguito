@@ -11,6 +11,8 @@ import { getUserCurrency } from '@/lib/utils/geolocation';
 import Link from 'next/link';
 
 export const revalidate = 60;
+// Forzar renderizado dinámico porque usamos geolocalización
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Cursos Online de Terrarios',
