@@ -181,7 +181,7 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
 
-    // Pricing
+    // Pricing (solo CLP - talleres presenciales solo en Chile)
     defineField({
       name: 'price',
       title: 'Precio por Persona',
@@ -194,8 +194,12 @@ export default defineType({
       type: 'string',
       initialValue: 'CLP',
       options: {
-        list: [{ title: 'Peso Chileno (CLP)', value: 'CLP' }],
+        list: [
+          { title: 'Peso Chileno (CLP)', value: 'CLP' },
+        ],
       },
+      readOnly: true,
+      description: 'Los talleres solo se venden en CLP (presenciales en Chile)',
     }),
 
     // Detalles del Taller

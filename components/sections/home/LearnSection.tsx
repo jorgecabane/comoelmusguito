@@ -10,13 +10,15 @@ import { Card, Badge, Button } from '@/components/ui';
 import { Play, Clock, BookOpen, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import type { Course } from '@/types/sanity';
-import { getImageUrl, formatPriceWithSale, getSlugString, levelLabels } from '@/lib/sanity/utils';
+import { getImageUrl, formatPriceWithSale, getSlugString, levelLabels, getCoursePrice } from '@/lib/sanity/utils';
+import { useMemo } from 'react';
 
 interface LearnSectionProps {
   courses: Course[];
+  userCurrency: 'CLP' | 'USD';
 }
 
-export function LearnSection({ courses }: LearnSectionProps) {
+export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
   if (!courses || courses.length === 0) {
     return null;
   }
@@ -91,7 +93,12 @@ export function LearnSection({ courses }: LearnSectionProps) {
               const slug = getSlugString(course.slug);
               const imageUrl = getImageUrl(course.thumbnail, { width: 1200, height: 675 });
               const levelLabel = course.level ? levelLabels[course.level] : 'Todos';
-              const pricing = formatPriceWithSale(course.price, course.salePrice, course.currency);
+              const coursePricing = getCoursePrice(course, userCurrency);
+              const pricing = formatPriceWithSale(
+                coursePricing.price,
+                coursePricing.salePrice,
+                coursePricing.currency
+              );
               
               return (
                 <StaggerItem key={course._id}>

@@ -4,7 +4,8 @@
  */
 
 import { getCourseBySlug, getAllCourses } from '@/lib/sanity/fetch';
-import { getImageUrl, formatPriceWithSale, levelLabels } from '@/lib/sanity/utils';
+import { getImageUrl, formatPriceWithSale, levelLabels, getCoursePrice } from '@/lib/sanity/utils';
+import { getUserCurrency } from '@/lib/utils/geolocation';
 import { Badge, Button, VideoPlayer } from '@/components/ui';
 import { Play, Clock, BookOpen, Award, CheckCircle2, Download } from 'lucide-react';
 import Image from 'next/image';
@@ -53,8 +54,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
     notFound();
   }
 
+  // Detectar moneda del usuario
+  const userCurrency = await getUserCurrency();
+  const coursePricing = getCoursePrice(course, userCurrency);
+  const pricing = formatPriceWithSale(
+    coursePricing.price,
+    coursePricing.salePrice,
+    coursePricing.currency
+  );
+
   const levelLabel = course.level ? levelLabels[course.level] : 'Todos';
-  const pricing = formatPriceWithSale(course.price, course.salePrice, course.currency);
 
   return (
     <div className="pt-32 pb-16">
@@ -112,7 +121,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
 
             {/* Price & CTA (Cliente Component) */}
-            <CourseDetail course={course} />
+            <CourseDetail course={course} userCurrency={userCurrency} />
           </div>
 
           {/* Video Player o Thumbnail */}

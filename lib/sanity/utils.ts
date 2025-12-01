@@ -56,13 +56,13 @@ export function getFirstImage(
  */
 export function formatPrice(price: number, currency: 'CLP' | 'USD' = 'CLP'): string {
   if (currency === 'USD') {
-    return `$${price.toLocaleString('en-US')} USD`;
+    return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
   }
   return `$${price.toLocaleString('es-CL')} CLP`;
 }
 
 /**
- * Formatear precio con descuento
+ * Formatear precio con descuento (versión simple)
  */
 export function formatPriceWithSale(
   price: number,
@@ -79,6 +79,90 @@ export function formatPriceWithSale(
     current: formatPrice(hasDiscount ? salePrice : price, currency),
     original: hasDiscount ? formatPrice(price, currency) : undefined,
     hasDiscount: !!hasDiscount,
+  };
+}
+
+/**
+ * Obtener precio de curso según moneda del usuario
+ * Sin conversión - solo muestra el precio que existe para esa moneda
+ */
+export function getCoursePrice(
+  course: {
+    priceCLP?: number;
+    priceUSD?: number;
+    salePriceCLP?: number;
+    salePriceUSD?: number;
+    price?: number; // Compatibilidad
+    salePrice?: number; // Compatibilidad
+    currency?: 'CLP' | 'USD';
+  },
+  userCurrency: 'CLP' | 'USD'
+): {
+  price: number;
+  salePrice?: number;
+  currency: 'CLP' | 'USD';
+} {
+  // Si el usuario está en Chile, priorizar CLP
+  if (userCurrency === 'CLP') {
+    // Si existe precioCLP, usarlo
+    if (course.priceCLP) {
+      return {
+        price: course.priceCLP,
+        salePrice: course.salePriceCLP,
+        currency: 'CLP',
+      };
+    }
+    // Si no existe precioCLP pero existe price (compatibilidad), usarlo
+    if (course.price) {
+      return {
+        price: course.price,
+        salePrice: course.salePrice,
+        currency: course.currency || 'CLP',
+      };
+    }
+    // Si no hay precio en CLP, usar USD (sin conversión)
+    if (course.priceUSD) {
+      return {
+        price: course.priceUSD,
+        salePrice: course.salePriceUSD,
+        currency: 'USD',
+      };
+    }
+  }
+
+  // Si el usuario está fuera de Chile, priorizar USD
+  if (userCurrency === 'USD') {
+    // Si existe priceUSD, usarlo
+    if (course.priceUSD) {
+      return {
+        price: course.priceUSD,
+        salePrice: course.salePriceUSD,
+        currency: 'USD',
+      };
+    }
+    // Si no existe priceUSD pero existe price (compatibilidad), usarlo
+    if (course.price) {
+      return {
+        price: course.price,
+        salePrice: course.salePrice,
+        currency: course.currency || 'CLP',
+      };
+    }
+    // Si no hay precio en USD, usar CLP (sin conversión)
+    if (course.priceCLP) {
+      return {
+        price: course.priceCLP,
+        salePrice: course.salePriceCLP,
+        currency: 'CLP',
+      };
+    }
+  }
+
+  // Fallback: usar precio disponible
+  return {
+    price: course.priceCLP ?? course.priceUSD ?? course.price ?? 0,
+    salePrice: course.salePriceCLP ?? course.salePriceUSD ?? course.salePrice,
+    currency: course.currency || 'CLP',
   };
 }
 

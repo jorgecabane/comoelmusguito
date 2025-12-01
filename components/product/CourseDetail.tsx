@@ -9,15 +9,27 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { Badge } from '@/components/ui';
 import type { Course } from '@/types/sanity';
 import type { CartItem } from '@/types/cart';
-import { getImageUrl, formatPriceWithSale } from '@/lib/sanity/utils';
+import { getImageUrl, formatPriceWithSale, getCoursePrice } from '@/lib/sanity/utils';
 import { Play } from 'lucide-react';
+import { useMemo } from 'react';
 
 interface CourseDetailProps {
   course: Course;
+  userCurrency: 'CLP' | 'USD';
 }
 
-export function CourseDetail({ course }: CourseDetailProps) {
-  const pricing = formatPriceWithSale(course.price, course.salePrice, course.currency);
+export function CourseDetail({ course, userCurrency }: CourseDetailProps) {
+  // Obtener precio según moneda del usuario (sin conversión)
+  const coursePricing = useMemo(
+    () => getCoursePrice(course, userCurrency),
+    [course, userCurrency]
+  );
+
+  const pricing = formatPriceWithSale(
+    coursePricing.price,
+    coursePricing.salePrice,
+    coursePricing.currency
+  );
 
   // Preparar item para el carrito
   const cartItem: CartItem = {
@@ -26,12 +38,12 @@ export function CourseDetail({ course }: CourseDetailProps) {
     name: course.name,
     slug: course.slug.current,
     image: getImageUrl(course.thumbnail, { width: 200, height: 200 }),
-    price: course.salePrice || course.price,
-    currency: course.currency,
+    price: coursePricing.salePrice || coursePricing.price,
+    currency: coursePricing.currency,
     quantity: 1,
     duration: course.duration,
     maxQuantity: 1, // Un curso solo se compra una vez
-    inStock: course.published || false,
+    inStock: course.published !== false, // Habilitado por defecto, solo deshabilitado si explícitamente published: false
   };
 
   return (
@@ -46,7 +58,7 @@ export function CourseDetail({ course }: CourseDetailProps) {
               {pricing.original}
             </div>
             <Badge variant="error">
-              {Math.round(((course.price - (course.salePrice || course.price)) / course.price) * 100)}% OFF
+              {Math.round(((coursePricing.price - (coursePricing.salePrice || coursePricing.price)) / coursePricing.price) * 100)}% OFF
             </Badge>
           </div>
         )}

@@ -31,8 +31,8 @@ export interface Terrarium {
   description: string;
   longDescription?: any[]; // Rich text blocks
   images: SanityImage[];
-  price: number;
-  currency: 'CLP' | 'USD';
+  price: number; // Solo CLP (productos físicos solo para Chile)
+  currency: 'CLP';
   inStock: boolean;
   stock: number;
   size: 'mini' | 'small' | 'medium' | 'large';
@@ -85,8 +85,14 @@ export interface Course {
     url: string;
     provider: 'vimeo' | 'youtube' | 'bunny';
   };
-  price: number;
-  currency: 'CLP' | 'USD';
+  // Precios multi-moneda
+  priceCLP?: number;
+  priceUSD?: number;
+  salePriceCLP?: number;
+  salePriceUSD?: number;
+  currency: 'CLP' | 'USD'; // Moneda principal (para compatibilidad)
+  // Compatibilidad: mantener price y salePrice para migración gradual
+  price?: number;
   salePrice?: number;
   level: 'beginner' | 'intermediate' | 'advanced';
   duration: number; // horas
@@ -139,8 +145,8 @@ export interface Workshop {
   images?: SanityImage[];
   dates: WorkshopDate[];
   location: WorkshopLocation;
-  price: number;
-  currency: 'CLP' | 'USD';
+  price: number; // Solo CLP (talleres presenciales solo en Chile)
+  currency: 'CLP';
   duration: number; // horas
   level: 'beginner' | 'intermediate' | 'advanced' | 'all';
   includes?: string[];

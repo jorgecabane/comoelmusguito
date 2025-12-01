@@ -11,13 +11,19 @@ import { X, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useCartStore } from '@/lib/store/useCartStore';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export function AddToCartModal() {
   const { isOpen, closeCart, items } = useCartStore();
+  const router = useRouter();
   
   // Obtener el último item agregado
   const lastItem = items[items.length - 1];
+
+  const handleViewCart = () => {
+    closeCart();
+    router.push('/carrito');
+  };
 
   // Cerrar modal con ESC
   useEffect(() => {
@@ -140,15 +146,14 @@ export function AddToCartModal() {
                 >
                   Seguir Comprando
                 </Button>
-                <Link href="/carrito" className="flex-1" onClick={closeCart}>
-                  <Button
-                    variant="primary"
-                    className="w-full"
-                    icon={<ShoppingBag size={18} />}
-                  >
-                    Ver Carrito
-                  </Button>
-                </Link>
+                <Button
+                  variant="primary"
+                  onClick={handleViewCart}
+                  className="flex-1"
+                  icon={<ShoppingBag size={18} />}
+                >
+                  Ver Carrito
+                </Button>
               </motion.div>
 
               {/* Decoración de fondo */}

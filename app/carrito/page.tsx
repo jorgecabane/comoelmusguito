@@ -208,17 +208,19 @@ export default function CarritoPage() {
                 </div>
               </div>
 
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full"
-                icon={<ShoppingBag size={20} />}
-              >
-                Proceder al Pago
-              </Button>
+              <Link href="/checkout">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full"
+                  icon={<ShoppingBag size={20} />}
+                >
+                  Proceder al Pago
+                </Button>
+              </Link>
 
               <div className="text-center text-sm text-gray">
-                <p>Pago seguro con Stripe</p>
+                <p>Pago seguro con Flow</p>
                 <p className="mt-2">🔒 Tus datos están protegidos</p>
               </div>
             </div>

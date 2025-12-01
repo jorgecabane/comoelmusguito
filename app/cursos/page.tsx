@@ -6,7 +6,8 @@
 import { Card, Badge, Button } from '@/components/ui';
 import { Play, Clock, BookOpen, ArrowRight } from 'lucide-react';
 import { getAllCourses } from '@/lib/sanity/fetch';
-import { getImageUrl, formatPriceWithSale, getSlugString, levelLabels } from '@/lib/sanity/utils';
+import { getImageUrl, formatPriceWithSale, getSlugString, levelLabels, getCoursePrice } from '@/lib/sanity/utils';
+import { getUserCurrency } from '@/lib/utils/geolocation';
 import Link from 'next/link';
 
 export const revalidate = 60;
@@ -19,6 +20,7 @@ export const metadata = {
 
 export default async function CursosPage() {
   const cursos = await getAllCourses();
+  const userCurrency = await getUserCurrency();
 
   return (
     <div className="pt-32 pb-16">
@@ -95,7 +97,12 @@ export default async function CursosPage() {
                 const slug = getSlugString(course.slug);
                 const imageUrl = getImageUrl(course.thumbnail, { width: 1200, height: 675 });
                 const levelLabel = course.level ? levelLabels[course.level] : 'Todos';
-                const pricing = formatPriceWithSale(course.price, course.salePrice, course.currency);
+                const coursePricing = getCoursePrice(course, userCurrency);
+                const pricing = formatPriceWithSale(
+                  coursePricing.price,
+                  coursePricing.salePrice,
+                  coursePricing.currency
+                );
 
                 return (
                   <Link key={course._id} href={`/cursos/${slug}`}>

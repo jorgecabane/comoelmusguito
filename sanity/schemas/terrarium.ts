@@ -72,7 +72,7 @@ export default defineType({
       validation: (Rule) => Rule.required().min(2).max(6),
     }),
 
-    // Pricing & Stock
+    // Pricing & Stock (solo CLP - productos físicos solo para Chile)
     defineField({
       name: 'price',
       title: 'Precio',
@@ -87,9 +87,10 @@ export default defineType({
       options: {
         list: [
           { title: 'Peso Chileno (CLP)', value: 'CLP' },
-          { title: 'Dólar (USD)', value: 'USD' },
         ],
       },
+      readOnly: true,
+      description: 'Los terrarios solo se venden en CLP (envío solo a Chile)',
     }),
     defineField({
       name: 'inStock',

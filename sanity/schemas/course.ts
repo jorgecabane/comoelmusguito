@@ -89,16 +89,53 @@ export default defineType({
       description: 'Video corto de presentación del curso (1-2 min)',
     }),
 
-    // Pricing
+    // Pricing - Multi-moneda
     defineField({
-      name: 'price',
-      title: 'Precio',
+      name: 'priceCLP',
+      title: 'Precio en CLP',
       type: 'number',
-      validation: (Rule) => Rule.required().min(0),
+      description: 'Precio en pesos chilenos',
+      validation: (Rule) => Rule.min(0),
     }),
     defineField({
+      name: 'priceUSD',
+      title: 'Precio en USD',
+      type: 'number',
+      description: 'Precio en dólares (opcional, para ventas internacionales)',
+      validation: (Rule) => Rule.min(0),
+    }),
+    defineField({
+      name: 'salePriceCLP',
+      title: 'Precio en Oferta (CLP)',
+      type: 'number',
+      description: 'Precio con descuento en CLP (opcional)',
+      validation: (Rule) =>
+        Rule.custom((salePriceCLP, context) => {
+          const priceCLP = (context.parent as any)?.priceCLP;
+          if (salePriceCLP && priceCLP && salePriceCLP >= priceCLP) {
+            return 'El precio en oferta debe ser menor al precio regular';
+          }
+          return true;
+        }),
+    }),
+    defineField({
+      name: 'salePriceUSD',
+      title: 'Precio en Oferta (USD)',
+      type: 'number',
+      description: 'Precio con descuento en USD (opcional)',
+      validation: (Rule) =>
+        Rule.custom((salePriceUSD, context) => {
+          const priceUSD = (context.parent as any)?.priceUSD;
+          if (salePriceUSD && priceUSD && salePriceUSD >= priceUSD) {
+            return 'El precio en oferta debe ser menor al precio regular';
+          }
+          return true;
+        }),
+    }),
+    // Mantener currency para compatibilidad (determinado automáticamente)
+    defineField({
       name: 'currency',
-      title: 'Moneda',
+      title: 'Moneda Principal',
       type: 'string',
       initialValue: 'CLP',
       options: {
@@ -107,20 +144,7 @@ export default defineType({
           { title: 'Dólar (USD)', value: 'USD' },
         ],
       },
-    }),
-    defineField({
-      name: 'salePrice',
-      title: 'Precio en Oferta',
-      type: 'number',
-      description: 'Precio con descuento (opcional)',
-      validation: (Rule) =>
-        Rule.custom((salePrice, context) => {
-          const price = (context.parent as any)?.price;
-          if (salePrice && price && salePrice >= price) {
-            return 'El precio en oferta debe ser menor al precio regular';
-          }
-          return true;
-        }),
+      description: 'Moneda principal del producto (se usa si no hay precio específico)',
     }),
 
     // Información del Curso

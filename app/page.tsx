@@ -12,15 +12,17 @@ import { CommunitySection } from '@/components/sections/home/CommunitySection';
 import { FinalCTA } from '@/components/sections/home/FinalCTA';
 import { ScrollProgress } from '@/components/animations';
 import { getFeaturedTerrariums, getFeaturedCourses } from '@/lib/sanity/fetch';
+import { getUserCurrency } from '@/lib/utils/geolocation';
 
 // Revalidar cada 60 segundos
 export const revalidate = 60;
 
 export default async function Home() {
-  // Fetch datos destacados de Sanity
-  const [terrarios, cursos] = await Promise.all([
+  // Fetch datos destacados de Sanity y detectar moneda del usuario
+  const [terrarios, cursos, userCurrency] = await Promise.all([
     getFeaturedTerrariums(),
     getFeaturedCourses(),
+    getUserCurrency(),
   ]);
 
   return (
@@ -40,7 +42,7 @@ export default async function Home() {
       <ExploreSection terrarios={terrarios} />
 
       {/* CAPÍTULO 5: APRENDE */}
-      <LearnSection courses={cursos} />
+      <LearnSection courses={cursos} userCurrency={userCurrency} />
 
       {/* CAPÍTULO 6: LA COMUNIDAD */}
       <CommunitySection />
