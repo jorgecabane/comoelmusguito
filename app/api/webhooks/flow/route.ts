@@ -207,9 +207,10 @@ export async function POST(request: NextRequest) {
     // Verificar si el usuario tiene cuenta (si userId existe, tiene cuenta)
     const hasAccount = !!savedOrder.userId?._ref;
 
+    const flowOrderValue = paymentStatus.flowOrder || savedOrder.flowOrder;
     const emailData: EmailOrderData = {
       orderId: savedOrder.orderId,
-      flowOrder: paymentStatus.flowOrder || savedOrder.flowOrder,
+      flowOrder: flowOrderValue ? String(flowOrderValue) : undefined,
       customerEmail: savedOrder.customerEmail,
       customerName: savedOrder.customerName,
       items: orderItems,
