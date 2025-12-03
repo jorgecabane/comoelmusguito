@@ -2,6 +2,8 @@
  * Página 404 - No Encontrado
  */
 
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { Home, ArrowLeft, Search } from 'lucide-react';

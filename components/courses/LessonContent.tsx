@@ -187,7 +187,7 @@ export function LessonContent({
                     }`
                   : `/cursos/${course.slug.current}/leccion/${
                       moduleIndex - 1
-                    }/${course.modules?.[moduleIndex - 1]?.lessons.length - 1 || 0}`
+                    }/${(course.modules?.[moduleIndex - 1]?.lessons?.length || 1) - 1}`
               }
             >
               <Button variant="secondary">
