@@ -437,3 +437,134 @@ function generateVerificationEmail(
   return { html, subject };
 }
 
+/**
+ * Enviar email de contacto desde formulario
+ */
+export async function sendContactEmail(data: {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+}): Promise<void> {
+  if (!resend) {
+    throw new Error('Resend no está configurado');
+  }
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'hola@comoelmusguito.cl';
+  const toEmail = process.env.CONTACT_EMAIL || 'hola@comoelmusguito.cl';
+
+  await resend.emails.send({
+    from: fromEmail,
+    to: toEmail,
+    replyTo: data.email,
+    subject: `[Contacto] ${data.subject}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+            <h1 style="color: #f5f5dc; margin: 0; font-size: 24px;">Nuevo Mensaje de Contacto</h1>
+          </div>
+          
+          <div style="background: #f5f5dc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e0e0e0;">
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h2 style="color: #2d5016; margin-top: 0; font-size: 20px;">Información del Contacto</h2>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-weight: 600; width: 120px;">Nombre:</td>
+                  <td style="padding: 8px 0; color: #333;">${data.name}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-weight: 600;">Email:</td>
+                  <td style="padding: 8px 0; color: #333;">
+                    <a href="mailto:${data.email}" style="color: #4a7c2a; text-decoration: none;">${data.email}</a>
+                  </td>
+                </tr>
+                ${data.phone ? `
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-weight: 600;">Teléfono:</td>
+                  <td style="padding: 8px 0; color: #333;">
+                    <a href="tel:${data.phone}" style="color: #4a7c2a; text-decoration: none;">${data.phone}</a>
+                  </td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-weight: 600;">Asunto:</td>
+                  <td style="padding: 8px 0; color: #333;">${data.subject}</td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+              <h2 style="color: #2d5016; margin-top: 0; font-size: 20px;">Mensaje</h2>
+              <div style="color: #333; white-space: pre-wrap; line-height: 1.8;">${data.message}</div>
+            </div>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: center;">
+              <p style="color: #666; font-size: 14px; margin: 0;">
+                Puedes responder directamente a este email para contactar a ${data.name}
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  });
+
+  // También enviar confirmación al usuario
+  await resend.emails.send({
+    from: fromEmail,
+    to: data.email,
+    subject: 'Hemos recibido tu mensaje - Como el Musguito',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+            <h1 style="color: #f5f5dc; margin: 0; font-size: 24px;">¡Hola ${data.name}!</h1>
+          </div>
+          
+          <div style="background: #f5f5dc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e0e0e0;">
+            <p style="color: #333; font-size: 16px; margin-top: 0;">
+              Hemos recibido tu mensaje sobre: <strong>${data.subject}</strong>
+            </p>
+            
+            <p style="color: #333; font-size: 16px;">
+              Te responderemos lo antes posible, generalmente en un plazo de 24-48 horas hábiles.
+            </p>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="color: #666; font-size: 14px; margin: 0 0 10px 0;"><strong>Tu mensaje:</strong></p>
+              <p style="color: #333; font-size: 14px; white-space: pre-wrap; margin: 0;">${data.message}</p>
+            </div>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+              <p style="color: #666; font-size: 14px; margin: 0 0 10px 0;"><strong>¿Necesitas contactarnos urgentemente?</strong></p>
+              <p style="color: #333; font-size: 14px; margin: 0;">
+                Teléfono: <a href="tel:+56966563208" style="color: #4a7c2a; text-decoration: none;">+56 9 6656 3208</a><br>
+                Email: <a href="mailto:hola@comoelmusguito.cl" style="color: #4a7c2a; text-decoration: none;">hola@comoelmusguito.cl</a>
+              </p>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+              <p style="color: #666; font-size: 12px; margin: 0;">
+                Gracias por contactarnos,<br>
+                <strong style="color: #2d5016;">El equipo de Como el Musguito</strong>
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  });
+}
+

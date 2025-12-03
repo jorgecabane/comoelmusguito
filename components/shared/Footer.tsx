@@ -5,8 +5,8 @@
 
 import Link from 'next/link';
 import { Instagram, Youtube, Mail, Leaf } from 'lucide-react';
-import { Button, Input } from '@/components/ui';
 import { Logo } from './Logo';
+import { NewsletterForm } from './NewsletterForm';
 
 const footerLinks = {
   shop: [
@@ -64,19 +64,9 @@ export function Footer() {
             <p className="text-cream/80 text-lg">
               Recibe tips de cuidado, nuevos terrarios y ofertas exclusivas cada semana
             </p>
-            <form className="flex gap-3 max-w-md mx-auto">
-              <Input
-                type="email"
-                placeholder="tu@email.com"
-                className="flex-1 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/50"
-              />
-              <Button variant="primary">
-                Suscribirme
-              </Button>
-            </form>
-            <p className="text-sm text-cream/60">
-              Sin spam. Solo contenido útil y hermosos terrarios 💚
-            </p>
+            <div className="max-w-md mx-auto">
+              <NewsletterForm source="footer-home" variant="footer" />
+            </div>
           </div>
         </div>
       </div>

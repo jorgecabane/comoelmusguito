@@ -9,6 +9,7 @@ import workshop from './workshop';
 import user from './user';
 import order from './order';
 import courseAccess from './courseAccess';
+import newsletter from './newsletter';
 
 export const schemaTypes = [
   // Contenido
@@ -19,5 +20,6 @@ export const schemaTypes = [
   user,
   order,
   courseAccess,
+  newsletter,
 ];
 
