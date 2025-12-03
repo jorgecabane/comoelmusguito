@@ -317,7 +317,7 @@ Este es un proyecto privado, pero si trabajas en él:
 
 ## 🔗 Enlaces
 
-- **Sitio Web**: [comoelmusguito.com](https://comoelmusguito.com)
+- **Sitio Web**: [comoelmusguito.cl](https://comoelmusguito.cl)
 - **Instagram**: [@comoelmusguito](https://www.instagram.com/comoelmusguito)
 - **YouTube**: [@comoelmusguito](https://www.youtube.com/@comoelmusguito)
 

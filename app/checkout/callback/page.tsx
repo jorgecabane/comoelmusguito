@@ -7,19 +7,39 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui';
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useCartStore } from '@/lib/store/useCartStore';
 
 type PaymentStatus = 'loading' | 'success' | 'error' | 'pending';
+
+interface OrderItem {
+  name: string;
+  type: 'terrarium' | 'course' | 'workshop';
+  quantity: number;
+  price: number;
+  currency: 'CLP' | 'USD';
+  slug?: string;
+}
 
 function CheckoutCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
+  const clearCart = useCartStore((state) => state.clearCart);
   const [status, setStatus] = useState<PaymentStatus>('loading');
   const [message, setMessage] = useState('');
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [hasCourses, setHasCourses] = useState(false);
+  const [courseSlug, setCourseSlug] = useState<string | null>(null);
+  const [customerEmail, setCustomerEmail] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState<string | null>(null);
+  
+  const isLoggedIn = sessionStatus === 'authenticated' && session?.user;
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -58,16 +78,34 @@ function CheckoutCallbackContent() {
         // Estados de Flow: 1=Pendiente, 2=Pagado, 3=Rechazado, 4=Anulado
         if (data.paymentStatus === 2) {
           setStatus('success');
-          setMessage('¡Pago confirmado! Recibirás un email con los detalles de tu compra.');
+          setMessage('¡Tu compra fue exitosa! Hemos recibido tu pago y estamos preparando todo para ti. Recibirás un email con los detalles de tu compra en los próximos minutos.');
+          // Vaciar carrito cuando el pago es exitoso
+          clearCart();
+          // Obtener detalles de la orden para mostrar items
+          if (data.commerceOrder) {
+            fetchOrderDetails(data.commerceOrder);
+          }
+          
+          // Guardar email y nombre para crear cuenta si es necesario
+          if (data.customerEmail) {
+            setCustomerEmail(data.customerEmail);
+          }
+          if (data.customerName) {
+            setCustomerName(data.customerName);
+          }
         } else if (data.paymentStatus === 3) {
           setStatus('error');
-          setMessage('El pago fue rechazado. Por favor, intenta nuevamente.');
+          setMessage('El pago no pudo ser procesado. No te preocupes, tu dinero está seguro. Por favor, intenta nuevamente o contáctanos si el problema persiste.');
+          // NO vaciar carrito si el pago falla
         } else if (data.paymentStatus === 4) {
           setStatus('error');
-          setMessage('El pago fue anulado.');
+          setMessage('El pago fue anulado. Si tienes alguna pregunta, no dudes en escribirnos.');
+          // NO vaciar carrito si el pago fue anulado
         } else {
           setStatus('pending');
-          setMessage('Tu pago está siendo procesado. Te notificaremos cuando se confirme.');
+          setMessage('Tu pago está siendo procesado. Esto puede tomar unos minutos. Te notificaremos por email cuando se confirme.');
+          // Vaciar carrito cuando el pago está pendiente (para evitar compras duplicadas)
+          clearCart();
         }
       } catch (error) {
         console.error('Error consultando estado:', error);
@@ -81,7 +119,38 @@ function CheckoutCallbackContent() {
     };
 
     checkPaymentStatus();
-  }, [searchParams]);
+  }, [searchParams, clearCart]);
+
+  // Función para obtener detalles de la orden
+  const fetchOrderDetails = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/checkout/order-details?orderId=${orderId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.items) {
+          setOrderItems(data.items);
+          
+          // Verificar si hay cursos
+          const courses = data.items.filter((item: OrderItem) => item.type === 'course');
+          if (courses.length > 0) {
+            setHasCourses(true);
+            // Obtener el slug del primer curso (o podríamos mostrar todos)
+            if (courses[0].slug) {
+              setCourseSlug(courses[0].slug);
+            }
+          }
+        }
+        if (data.customerEmail) {
+          setCustomerEmail(data.customerEmail);
+        }
+        if (data.customerName) {
+          setCustomerName(data.customerName);
+        }
+      }
+    } catch (error) {
+      console.error('Error obteniendo detalles de la orden:', error);
+    }
+  };
 
   return (
     <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
@@ -116,24 +185,122 @@ function CheckoutCallbackContent() {
                 </div>
               </motion.div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-forest mb-4">
-                ¡Pago Confirmado! 🌱
+                ¡Tu Compra Fue Exitosa! 🌿
               </h1>
-              <p className="text-gray text-lg mb-8">{message}</p>
+              <p className="text-gray text-lg mb-6 leading-relaxed">{message}</p>
+              
               {orderId && (
-                <p className="text-sm text-gray mb-8">
-                  Número de orden: <span className="font-mono font-semibold">{orderId}</span>
-                </p>
+                <div className="bg-cream rounded-xl p-4 mb-6">
+                  <p className="text-sm text-gray mb-2">Número de orden</p>
+                  <p className="font-mono font-semibold text-forest text-lg">{orderId}</p>
+                </div>
               )}
+
+              {/* Lista de productos comprados */}
+              {orderItems.length > 0 && (
+                <div className="bg-cream/50 rounded-xl p-6 mb-8 text-left">
+                  <h3 className="font-display text-lg font-semibold text-forest mb-4">
+                    Lo que compraste:
+                  </h3>
+                  <div className="space-y-3">
+                    {orderItems.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex justify-between items-center pb-3 border-b border-gray/10 last:border-0"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium text-forest">{item.name}</p>
+                          <p className="text-sm text-gray">
+                            {item.type === 'terrarium' && '🌿 Terrario'}
+                            {item.type === 'course' && '🎓 Curso Online'}
+                            {item.type === 'workshop' && '🤝 Taller Presencial'}
+                            {' · '}
+                            Cantidad: {item.quantity}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-forest">
+                            {new Intl.NumberFormat('es-CL', {
+                              style: 'currency',
+                              currency: item.currency,
+                            }).format(item.price * item.quantity)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4 mb-8">
+                <p className="text-gray text-sm">
+                  📧 Revisa tu email para ver los detalles completos de tu compra
+                </p>
+                
+                {/* Mensaje especial para cursos */}
+                {hasCourses && (
+                  <div className="bg-musgo/10 border border-musgo/20 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-forest mb-2">
+                      🎓 Para acceder a tu curso online:
+                    </p>
+                    {!isLoggedIn && (
+                      <>
+                        <p className="text-sm text-gray mb-3">
+                          {courseSlug ? (
+                            <>
+                              Necesitas crear una cuenta para ver tu curso y seguir tu progreso.
+                            </>
+                          ) : (
+                            <>
+                              Necesitas crear una cuenta para acceder a tus cursos.
+                            </>
+                          )}
+                        </p>
+                        <p className="text-xs text-gray/60 mb-3">
+                          Al crear tu cuenta con el mismo email ({customerEmail || 'tu email'}), tu curso se vinculará automáticamente.
+                        </p>
+                      </>
+                    )}
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      {isLoggedIn ? (
+                        <Link href="/mi-cuenta?tab=cursos">
+                          <Button variant="primary" size="sm" className="w-full sm:w-auto">
+                            Ver mi Curso
+                          </Button>
+                        </Link>
+                      ) : (
+                        <>
+                          {courseSlug && (
+                            <Link href={`/cursos/${courseSlug}`}>
+                              <Button variant="primary" size="sm" className="w-full sm:w-auto">
+                                Ver mi Curso
+                              </Button>
+                            </Link>
+                          )}
+                          <Link
+                            href={`/auth/register${customerEmail ? `?email=${encodeURIComponent(customerEmail)}${customerName ? `&name=${encodeURIComponent(customerName)}` : ''}` : ''}`}
+                          >
+                            <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                              Crear mi Cuenta
+                            </Button>
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/">
                   <Button variant="primary" size="lg">
-                    Volver al Inicio
+                    Seguir Explorando
                     <ArrowRight size={20} />
                   </Button>
                 </Link>
-                <Link href="/cursos">
+                <Link href="/mi-cuenta">
                   <Button variant="secondary" size="lg">
-                    Ver Mis Cursos
+                    Ver Mi Cuenta
                   </Button>
                 </Link>
               </div>
@@ -153,9 +320,17 @@ function CheckoutCallbackContent() {
                 </div>
               </motion.div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-forest mb-4">
-                Error en el Pago
+                Algo Salió Mal
               </h1>
-              <p className="text-gray text-lg mb-8">{message}</p>
+              <p className="text-gray text-lg mb-6 leading-relaxed">{message}</p>
+              
+              <div className="bg-cream/50 rounded-xl p-6 mb-8 text-left">
+                <p className="text-sm text-gray mb-2">💡 ¿Necesitas ayuda?</p>
+                <p className="text-sm text-gray">
+                  Si el problema persiste, escríbenos y te ayudaremos a completar tu compra.
+                </p>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/carrito">
                   <Button variant="primary" size="lg">
@@ -175,14 +350,23 @@ function CheckoutCallbackContent() {
             <>
               <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={64} />
               <h1 className="font-display text-3xl font-bold text-forest mb-4">
-                Pago en Proceso
+                Procesando tu Pago
               </h1>
-              <p className="text-gray text-lg mb-8">{message}</p>
+              <p className="text-gray text-lg mb-6 leading-relaxed">{message}</p>
+              
               {orderId && (
-                <p className="text-sm text-gray mb-8">
-                  Número de orden: <span className="font-mono font-semibold">{orderId}</span>
-                </p>
+                <div className="bg-cream rounded-xl p-4 mb-8">
+                  <p className="text-sm text-gray mb-2">Número de orden</p>
+                  <p className="font-mono font-semibold text-forest text-lg">{orderId}</p>
+                </div>
               )}
+
+              <div className="bg-cream/50 rounded-xl p-6 mb-8">
+                <p className="text-sm text-gray text-center">
+                  ⏳ Esto puede tomar unos minutos. Te notificaremos por email cuando se confirme.
+                </p>
+              </div>
+
               <Link href="/">
                 <Button variant="secondary" size="lg">
                   Volver al Inicio

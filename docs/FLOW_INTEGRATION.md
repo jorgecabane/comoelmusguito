@@ -162,6 +162,37 @@ La función `signFlowRequest()` en `lib/flow/utils.ts` maneja esto automáticame
 - Cache: 1 hora
 - Fallback: 950 CLP = 1 USD (si la API falla)
 
+## 📧 Email de Confirmación
+
+Cuando un pago se confirma exitosamente, se envía automáticamente un email de confirmación usando Resend.
+
+### Configuración
+
+Agregar a `.env.local`:
+```env
+RESEND_API_KEY=re_xxxxx
+RESEND_FROM_EMAIL=hola@comoelmusguito.cl
+```
+
+### Contenido del Email
+
+El email incluye:
+- ✅ Resumen de la compra
+- ✅ Número de orden
+- ✅ Detalles de productos
+- ✅ Próximos pasos según tipo de producto:
+  - **Terrarios**: Instrucciones de retiro/envío
+  - **Cursos Online**: Link de acceso
+  - **Talleres**: Confirmación de fecha y hora
+
+### Webhook
+
+El webhook (`/api/webhooks/flow`) se ejecuta automáticamente cuando Flow confirma un pago:
+1. Valida la firma de Flow
+2. Consulta el estado del pago
+3. Recupera los detalles de la orden
+4. Envía el email de confirmación
+
 ## 🧪 Testing
 
 ### Sandbox

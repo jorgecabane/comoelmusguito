@@ -188,10 +188,10 @@ export function Footer() {
           <div className="flex items-center gap-2 text-cream/60 text-sm">
             <Mail size={16} />
             <a
-              href="mailto:hola@comoelmusguito.com"
+              href="mailto:hola@comoelmusguito.cl"
               className="hover:text-vida transition-colors"
             >
-              hola@comoelmusguito.com
+              hola@comoelmusguito.cl
             </a>
           </div>
         </div>

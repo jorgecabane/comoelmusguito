@@ -11,7 +11,9 @@ import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { Logo } from './Logo';
+import { UserMenu } from './UserMenu';
 import { useCartStore } from '@/lib/store/useCartStore';
+import { useSession } from 'next-auth/react';
 
 const navigation = [
   { name: 'Inicio', href: '/' },
@@ -23,9 +25,11 @@ const navigation = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showAccountMenu, setShowAccountMenu] = useState(false); // Nuevo estado para mostrar menú de cuenta
   const [scrolled, setScrolled] = useState(false);
   const [visible, setVisible] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const { data: session } = useSession();
   
   // Obtener cantidad de items del carrito
   const cartItemCount = useCartStore((state) => state.itemCount);
@@ -93,7 +97,7 @@ export function Header() {
             ))}
           </div>
 
-          {/* Cart & Mobile Menu Button */}
+          {/* Cart, Auth & Mobile Menu Button */}
           <div className="flex items-center gap-4">
             {/* Cart Button - Como jardín */}
             <Link 
@@ -109,9 +113,31 @@ export function Header() {
               )}
             </Link>
 
+            {/* Auth Button */}
+            {session?.user ? (
+              <div className="hidden lg:flex items-center gap-3">
+                <UserMenu
+                  userName={session.user.name}
+                  userEmail={session.user.email}
+                  variant="desktop"
+                />
+              </div>
+            ) : (
+              <div className="hidden lg:flex items-center gap-3">
+                <Link href="/auth/login">
+                  <Button variant="secondary" size="sm">
+                    Iniciar Sesión
+                  </Button>
+                </Link>
+              </div>
+            )}
+
             {/* Mobile Menu Button */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                setShowAccountMenu(false); // Reset account menu cuando se cierra/abre el menú principal
+              }}
               className="lg:hidden p-2 text-forest hover:text-musgo transition-colors"
               aria-label="Toggle menu"
             >
@@ -123,16 +149,57 @@ export function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden py-6 space-y-4 border-t border-gray/20">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-forest hover:text-musgo font-medium transition-colors py-2"
-              >
-                {item.name}
-              </Link>
-            ))}
+            {!showAccountMenu ? (
+              // Menú principal de navegación
+              <>
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-forest hover:text-musgo font-medium transition-colors py-2"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                <div className="pt-4 border-t border-gray/20">
+                  {session?.user ? (
+                    <button
+                      onClick={() => setShowAccountMenu(true)}
+                      className="w-full text-left px-4 py-3 bg-cream/50 rounded-lg font-semibold text-forest hover:bg-cream transition-colors"
+                    >
+                      {session.user.name || session.user.email?.split('@')[0] || 'Mi Cuenta'}
+                    </button>
+                  ) : (
+                    <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="secondary" size="sm" className="w-full">
+                        Iniciar Sesión
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </>
+            ) : (
+              // Menú de cuenta (reemplaza el menú principal)
+              <>
+                <button
+                  onClick={() => setShowAccountMenu(false)}
+                  className="flex items-center gap-2 text-forest hover:text-musgo font-medium transition-colors py-2 mb-4"
+                >
+                  <span>←</span>
+                  <span>Volver</span>
+                </button>
+                <UserMenu
+                  userName={session?.user?.name}
+                  userEmail={session?.user?.email}
+                  variant="mobile"
+                  onClose={() => {
+                    setMobileMenuOpen(false);
+                    setShowAccountMenu(false);
+                  }}
+                />
+              </>
+            )}
           </div>
         )}
       </nav>

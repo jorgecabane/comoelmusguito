@@ -16,6 +16,9 @@ interface VideoPlayerProps {
   className?: string;
   autoplay?: boolean;
   controls?: boolean;
+  onEnded?: () => void;
+  url?: string; // URL completa del video (para compatibilidad)
+  provider?: 'vimeo' | 'youtube' | 'bunny';
 }
 
 /**
@@ -51,7 +54,12 @@ export function VideoPlayer({
   className,
   autoplay = false,
   controls = false,
+  onEnded,
+  url,
+  provider,
 }: VideoPlayerProps) {
+  // Usar url si está disponible, sino src
+  const videoUrl = url || src;
   const [hasError, setHasError] = useState(false);
 
   if (!src) {
@@ -69,8 +77,8 @@ export function VideoPlayer({
   }
 
   // Detectar tipo de video y extraer ID
-  const youtubeId = getYouTubeVideoId(src);
-  const vimeoId = getVimeoVideoId(src);
+  const youtubeId = getYouTubeVideoId(videoUrl);
+  const vimeoId = getVimeoVideoId(videoUrl);
 
   // Construir URL del iframe
   let iframeSrc = '';
@@ -98,8 +106,12 @@ export function VideoPlayer({
     if (!controls) iframeSrc += 'controls=0&';
   } else {
     // Para otros proveedores, usar la URL directamente
-    iframeSrc = src;
+    iframeSrc = videoUrl;
   }
+
+  // Nota: Detectar cuando termina un video embebido requiere APIs específicas
+  // Por ahora, el usuario puede marcar manualmente la lección como completada
+  // En el futuro, podemos integrar YouTube/Vimeo Player APIs para detectar onEnded
 
   return (
     <div className={cn('relative group rounded-2xl overflow-hidden bg-cream aspect-video', className)}>

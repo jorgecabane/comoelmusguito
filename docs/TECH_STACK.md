@@ -20,7 +20,7 @@
 | **Resend** | Envío emails | Free (3k emails) | **$0** |
 | **Stripe** | Pagos | Pay-per-transaction | **3.6% + $0.30 por venta** |
 | **Video Hosting** | Videos cursos | Ver abajo | **$0 - $20** |
-| **Dominio** | comoelmusguito.com | Anual | **~$15/año** |
+| **Dominio** | comoelmusguito.cl | Anual | **~$15/año** |
 
 **Total Mensual MVP: $0 - $20 USD** (sin contar comisiones de venta)
 
@@ -273,7 +273,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Enviar acceso a curso
 await resend.emails.send({
-  from: 'Tomás <hola@comoelmusguito.com>',
+  from: 'Tomás <hola@comoelmusguito.cl>',
   to: user.email,
   subject: '🌿 Tu curso está listo',
   react: CursoCompradoEmail({ userName, courseUrl }),

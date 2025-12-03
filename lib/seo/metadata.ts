@@ -4,7 +4,7 @@
 
 import type { Metadata } from 'next';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
 const SITE_NAME = 'comoelmusguito';
 const SITE_DESCRIPTION = 'Descubre terrarios artesanales únicos y aprende a crear ecosistemas autosustentables con el Musguito. Cursos online, talleres presenciales y terrarios hechos a mano en Chile.';
 

@@ -6,8 +6,11 @@
 import { getCourseBySlug, getAllCourses } from '@/lib/sanity/fetch';
 import { getImageUrl, formatPriceWithSale, levelLabels, getCoursePrice } from '@/lib/sanity/utils';
 import { getUserCurrency } from '@/lib/utils/geolocation';
+import { getSession } from '@/lib/auth/get-session';
+import { getUserByEmail } from '@/lib/auth/sanity-adapter';
+import { hasCourseAccess } from '@/lib/sanity/course-access';
 import { Badge, Button, VideoPlayer } from '@/components/ui';
-import { Play, Clock, BookOpen, Award, CheckCircle2, Download } from 'lucide-react';
+import { Play, Clock, BookOpen, Award, CheckCircle2, Download, Lock, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -21,6 +24,7 @@ interface CoursePageProps {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{ requireAuth?: string; requireAccess?: string }>;
 }
 
 // Generate static params for all courses
@@ -48,12 +52,29 @@ export async function generateMetadata({ params }: CoursePageProps) {
   };
 }
 
-export default async function CoursePage({ params }: CoursePageProps) {
+export default async function CoursePage({ 
+  params,
+  searchParams,
+}: CoursePageProps & {
+  searchParams: Promise<{ requireAuth?: string; requireAccess?: string }>;
+}) {
   const { slug } = await params;
+  const params_search = await searchParams;
   const course = await getCourseBySlug(slug);
 
   if (!course) {
     notFound();
+  }
+
+  // Verificar si el usuario tiene acceso
+  const session = await getSession();
+  let hasAccess = false;
+  
+  if (session?.user?.email) {
+    const user = await getUserByEmail(session.user.email);
+    if (user?._id) {
+      hasAccess = await hasCourseAccess(user._id, course._id);
+    }
   }
 
   // Detectar moneda del usuario
@@ -83,6 +104,56 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <span className="text-forest">{course.name}</span>
         </div>
       </div>
+
+      {/* Mensajes de alerta según query params */}
+      {params_search?.requireAuth === 'true' && (
+        <div className="container mb-6">
+          <div className="bg-musgo/10 border border-musgo/20 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="text-musgo mt-0.5" size={20} />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-forest mb-1">
+                  Inicia sesión para continuar
+                </p>
+                <p className="text-sm text-gray mb-3">
+                  Necesitas iniciar sesión para acceder a este curso.
+                </p>
+                <Link href={`/auth/login?callbackUrl=${encodeURIComponent(`/cursos/${slug}`)}`}>
+                  <Button variant="primary" size="sm">
+                    Iniciar Sesión
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {params_search?.requireAccess === 'true' && (
+        <div className="container mb-6">
+          <div className="bg-vida/10 border border-vida/20 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Lock className="text-vida mt-0.5" size={20} />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-forest mb-1">
+                  Acceso Requerido
+                </p>
+                <p className="text-sm text-gray mb-3">
+                  Necesitas comprar este curso para acceder al contenido completo.
+                </p>
+                <div className="flex gap-2">
+                  <CourseDetail course={course} userCurrency={userCurrency} />
+                  <Link href="/mi-cuenta?tab=cursos">
+                    <Button variant="secondary" size="sm">
+                      Ver Mis Cursos
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="container mb-16">
@@ -172,14 +243,23 @@ export default async function CoursePage({ params }: CoursePageProps) {
       {/* Course Content */}
       {course.modules && course.modules.length > 0 && (
         <section className="container mb-16">
-          <h2 className="font-display text-3xl font-semibold text-forest mb-8">
-            Contenido del Curso
-          </h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="font-display text-3xl font-semibold text-forest">
+              Contenido del Curso
+            </h2>
+            {!hasAccess && (
+              <Badge variant="warning" className="flex items-center gap-2">
+                <Lock size={14} />
+                Requiere compra
+              </Badge>
+            )}
+          </div>
           <div className="space-y-4 max-w-3xl">
             {course.modules.map((module, index) => (
               <details
                 key={index}
                 className="bg-white border border-gray/20 rounded-xl overflow-hidden group"
+                open={hasAccess && index === 0} // Abrir primer módulo si tiene acceso
               >
                 <summary className="p-6 cursor-pointer list-none flex items-center justify-between hover:bg-cream/50 transition-colors">
                   <div>
@@ -193,27 +273,59 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <span className="text-2xl text-musgo">+</span>
                 </summary>
                 <div className="px-6 pb-6 space-y-3">
-                  {module.lessons?.map((lesson, lessonIndex) => (
-                    <div
-                      key={lessonIndex}
-                      className="flex items-center justify-between py-3 border-t border-gray/10"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Play className="text-musgo" size={16} />
-                        <span className="text-gray">{lesson.title}</span>
-                        {lesson.isFree && (
-                          <Badge variant="success" size="sm">
-                            Gratis
-                          </Badge>
-                        )}
-                      </div>
-                      <span className="text-sm text-gray">{lesson.duration} min</span>
-                    </div>
-                  ))}
+                  {module.lessons?.map((lesson, lessonIndex) => {
+                    const isFree = lesson.isFree;
+                    const canAccess = hasAccess || isFree;
+                    const LessonWrapper = canAccess ? Link : 'div';
+                    const lessonHref = canAccess
+                      ? `/cursos/${course.slug.current}/leccion/${index}/${lessonIndex}`
+                      : '#';
+
+                    return (
+                      <LessonWrapper
+                        key={lessonIndex}
+                        href={lessonHref}
+                        className={`
+                          flex items-center justify-between py-3 border-t border-gray/10 transition-colors
+                          ${canAccess ? 'hover:bg-cream/50 cursor-pointer' : 'opacity-60'}
+                        `}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          {canAccess ? (
+                            <Play className="text-musgo" size={16} />
+                          ) : (
+                            <Lock className="text-gray/40" size={16} />
+                          )}
+                          <span className={canAccess ? 'text-gray' : 'text-gray/60'}>
+                            {lesson.title}
+                          </span>
+                          {isFree && (
+                            <Badge variant="success" size="sm">
+                              Gratis
+                            </Badge>
+                          )}
+                          {!canAccess && !isFree && (
+                            <Badge variant="warning" size="sm">
+                              Bloqueado
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-sm text-gray">{lesson.duration} min</span>
+                      </LessonWrapper>
+                    );
+                  })}
                 </div>
               </details>
             ))}
           </div>
+          {!hasAccess && (
+            <div className="mt-8 p-6 bg-cream rounded-xl text-center">
+              <p className="text-gray mb-4">
+                Para acceder a todo el contenido del curso, necesitas comprarlo
+              </p>
+              <CourseDetail course={course} userCurrency={userCurrency} />
+            </div>
+          )}
         </section>
       )}
 

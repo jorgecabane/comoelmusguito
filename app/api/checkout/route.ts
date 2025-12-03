@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentOrder } from '@/lib/flow/client';
 import { getUserCurrency, getUserCountry } from '@/lib/utils/geolocation';
 import { convertUSDToCLP } from '@/lib/utils/currency';
+import { saveOrderToSanity } from '@/lib/sanity/orders';
+import { checkTerrariumStock, checkWorkshopSpots } from '@/lib/sanity/inventory';
 import type { CartItem } from '@/types/cart';
 
 export const dynamic = 'force-dynamic';
@@ -15,12 +17,13 @@ interface CheckoutRequest {
   items: CartItem[];
   email: string;
   customerName?: string;
+  userId?: string; // ID del usuario si está registrado
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: CheckoutRequest = await request.json();
-    const { items, email, customerName } = body;
+    const { items, email, customerName, userId } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -34,6 +37,41 @@ export async function POST(request: NextRequest) {
         { error: 'Email válido requerido' },
         { status: 400 }
       );
+    }
+
+    // Validar stock/cupos disponibles antes de procesar el pago
+    for (const item of items) {
+      if (item.type === 'terrarium') {
+        const stockCheck = await checkTerrariumStock(item.id, item.quantity);
+        if (!stockCheck.available) {
+          return NextResponse.json(
+            {
+              error: `Lo sentimos, "${item.name}" ya no está disponible. Solo quedan ${stockCheck.currentStock} unidades.`,
+              outOfStock: true,
+              itemId: item.id,
+              itemName: item.name,
+            },
+            { status: 400 }
+          );
+        }
+      } else if (item.type === 'workshop' && item.selectedDate) {
+        const spotsCheck = await checkWorkshopSpots(
+          item.id,
+          item.selectedDate.date,
+          item.quantity
+        );
+        if (!spotsCheck.available) {
+          return NextResponse.json(
+            {
+              error: `Lo sentimos, no hay suficientes cupos disponibles para "${item.name}" en la fecha seleccionada. Solo quedan ${spotsCheck.currentSpots} cupos.`,
+              outOfStock: true,
+              itemId: item.id,
+              itemName: item.name,
+            },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Detectar país y moneda del usuario
@@ -121,6 +159,18 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Guardar orden en Sanity
+    await saveOrderToSanity({
+      orderId: commerceOrder,
+      flowOrder: paymentResponse.flowOrder,
+      customerEmail: email,
+      customerName: customerName,
+      userId: userId, // Si el usuario está registrado, vincular desde el inicio
+      items,
+      total: finalAmount,
+      currency: finalCurrency,
+    });
 
     return NextResponse.json({
       success: true,

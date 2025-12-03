@@ -42,35 +42,35 @@
 ✅ URLs Semánticas y Limpias
 
 Home:
-https://comoelmusguito.com/
+https://comoelmusguito.cl/
 
 Terrarios (Tienda):
-https://comoelmusguito.com/terrarios
-https://comoelmusguito.com/terrarios/bosque-nublado
-https://comoelmusguito.com/terrarios/desertico-suculentas
+https://comoelmusguito.cl/terrarios
+https://comoelmusguito.cl/terrarios/bosque-nublado
+https://comoelmusguito.cl/terrarios/desertico-suculentas
 
 Cursos Online:
-https://comoelmusguito.com/cursos
-https://comoelmusguito.com/cursos/terrarios-desde-cero
-https://comoelmusguito.com/cursos/terrarios-avanzado
+https://comoelmusguito.cl/cursos
+https://comoelmusguito.cl/cursos/terrarios-desde-cero
+https://comoelmusguito.cl/cursos/terrarios-avanzado
 
 Talleres Presenciales:
-https://comoelmusguito.com/talleres
-https://comoelmusguito.com/talleres/terrario-bosque-santiago-diciembre
+https://comoelmusguito.cl/talleres
+https://comoelmusguito.cl/talleres/terrario-bosque-santiago-diciembre
 
 Blog/Recursos:
-https://comoelmusguito.com/blog
-https://comoelmusguito.com/blog/como-cuidar-musgo-terrario
-https://comoelmusguito.com/blog/plantas-nativas-terrarios-chile
+https://comoelmusguito.cl/blog
+https://comoelmusguito.cl/blog/como-cuidar-musgo-terrario
+https://comoelmusguito.cl/blog/plantas-nativas-terrarios-chile
 
 Sobre:
-https://comoelmusguito.com/sobre
-https://comoelmusguito.com/contacto
+https://comoelmusguito.cl/sobre
+https://comoelmusguito.cl/contacto
 
 ❌ URLs a Evitar:
-https://comoelmusguito.com/products?id=123
-https://comoelmusguito.com/p/terrarium-1
-https://comoelmusguito.com/index.php?page=courses
+https://comoelmusguito.cl/products?id=123
+https://comoelmusguito.cl/p/terrarium-1
+https://comoelmusguito.cl/index.php?page=courses
 ```
 
 ### 2. Jerarquía de Contenido
@@ -127,7 +127,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'es_CL',
-    url: 'https://comoelmusguito.com',
+    url: 'https://comoelmusguito.cl',
     siteName: 'comoelmusguito',
     title: 'comoelmusguito - Crea Vida en Cualquier Lugar',
     description: 'Terrarios artesanales únicos y cursos para aprender a crear ecosistemas autosustentables.',
@@ -148,10 +148,10 @@ export const metadata: Metadata = {
     creator: '@comoelmusguito',
   },
   alternates: {
-    canonical: 'https://comoelmusguito.com',
+    canonical: 'https://comoelmusguito.cl',
     languages: {
-      'es-CL': 'https://comoelmusguito.com',
-      'en': 'https://comoelmusguito.com/en', // Futuro
+      'es-CL': 'https://comoelmusguito.cl',
+      'en': 'https://comoelmusguito.cl/en', // Futuro
     },
   },
   robots: {
@@ -211,10 +211,10 @@ export async function generateMetadata({
         height: 1200,
         alt: `${terrarium.name} - Vista ${img.index + 1}`,
       })),
-      url: `https://comoelmusguito.com/terrarios/${params.slug}`,
+      url: `https://comoelmusguito.cl/terrarios/${params.slug}`,
     },
     alternates: {
-      canonical: `https://comoelmusguito.com/terrarios/${params.slug}`,
+      canonical: `https://comoelmusguito.cl/terrarios/${params.slug}`,
     },
   };
 }
@@ -242,7 +242,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       title: course.name,
       description: course.description,
       images: [course.thumbnail],
-      url: `https://comoelmusguito.com/cursos/${params.slug}`,
+      url: `https://comoelmusguito.cl/cursos/${params.slug}`,
     },
   };
 }
@@ -259,7 +259,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 import { getTerrariums, getCourses, getBlogPosts } from '@/lib/cms';
 
 export default async function sitemap() {
-  const baseUrl = 'https://comoelmusguito.com';
+  const baseUrl = 'https://comoelmusguito.cl';
   
   // Páginas estáticas
   const staticPages = [
@@ -354,7 +354,7 @@ export default function robots() {
         ],
       },
     ],
-    sitemap: 'https://comoelmusguito.com/sitemap.xml',
+    sitemap: 'https://comoelmusguito.cl/sitemap.xml',
   };
 }
 ```
@@ -373,8 +373,8 @@ export function OrganizationSchema() {
     '@type': 'Organization',
     name: 'comoelmusguito',
     alternateName: 'El Musguito',
-    url: 'https://comoelmusguito.com',
-    logo: 'https://comoelmusguito.com/logo.png',
+    url: 'https://comoelmusguito.cl',
+    logo: 'https://comoelmusguito.cl/logo.png',
     description: 'Terrarios artesanales y cursos online para crear ecosistemas autosustentables',
     founder: {
       '@type': 'Person',
@@ -384,7 +384,7 @@ export function OrganizationSchema() {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer service',
-      email: 'hola@comoelmusguito.com',
+      email: 'hola@comoelmusguito.cl',
       availableLanguage: ['Spanish', 'English'],
     },
     sameAs: [
@@ -424,7 +424,7 @@ export function ProductSchema({ product }: { product: Terrarium }) {
     },
     offers: {
       '@type': 'Offer',
-      url: `https://comoelmusguito.com/terrarios/${product.slug}`,
+      url: `https://comoelmusguito.cl/terrarios/${product.slug}`,
       priceCurrency: 'CLP',
       price: product.price,
       availability: product.inStock 
@@ -463,7 +463,7 @@ export function CourseSchema({ course }: { course: Course }) {
     provider: {
       '@type': 'Organization',
       name: 'comoelmusguito',
-      url: 'https://comoelmusguito.com',
+      url: 'https://comoelmusguito.cl',
     },
     image: course.thumbnail,
     offers: {
@@ -529,19 +529,19 @@ export function ArticleSchema({ post }: { post: BlogPost }) {
     author: {
       '@type': 'Person',
       name: post.author.name,
-      url: `https://comoelmusguito.com/sobre`,
+      url: `https://comoelmusguito.cl/sobre`,
     },
     publisher: {
       '@type': 'Organization',
       name: 'comoelmusguito',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://comoelmusguito.com/logo.png',
+        url: 'https://comoelmusguito.cl/logo.png',
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://comoelmusguito.com/blog/${post.slug}`,
+      '@id': `https://comoelmusguito.cl/blog/${post.slug}`,
     },
   };
   
@@ -818,8 +818,8 @@ export const viewport = {
 export const metadata = {
   alternates: {
     languages: {
-      'es-CL': 'https://comoelmusguito.com',
-      'en': 'https://comoelmusguito.com/en',
+      'es-CL': 'https://comoelmusguito.cl',
+      'en': 'https://comoelmusguito.cl/en',
     },
   },
 };

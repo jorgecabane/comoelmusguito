@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_CL",
-    url: "https://comoelmusguito.com",
+    url: "https://comoelmusguito.cl",
     siteName: "comoelmusguito",
     title: "comoelmusguito - Crea Vida en Cualquier Lugar",
     description:
@@ -84,6 +84,8 @@ export const viewport = {
 
 import { Header, Footer } from "@/components/shared";
 import { AddToCartModal } from "@/components/cart/AddToCartModal";
+import { SessionProvider } from "@/components/auth/SessionProvider";
+import { RecaptchaProvider } from "@/components/auth/RecaptchaProvider";
 
 export default function RootLayout({
   children,
@@ -96,14 +98,18 @@ export default function RootLayout({
         <OrganizationSchema />
       </head>
       <body className="antialiased">
-        <Header />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
-        
-        {/* Modal global del carrito */}
-        <AddToCartModal />
+        <RecaptchaProvider>
+          <SessionProvider>
+            <Header />
+            <main className="min-h-screen">
+              {children}
+            </main>
+            <Footer />
+            
+            {/* Modal global del carrito */}
+            <AddToCartModal />
+          </SessionProvider>
+        </RecaptchaProvider>
       </body>
     </html>
   );

@@ -236,6 +236,7 @@ export async function getPaymentStatus(
 
 /**
  * Consultar estado de un pago usando el commerceOrder
+ * Nota: Flow espera 'commerceId' como parámetro, no 'commerceOrder'
  */
 export async function getPaymentStatusByOrder(
   commerceOrder: string
@@ -245,7 +246,7 @@ export async function getPaymentStatusByOrder(
 
   const requestParams: Record<string, string> = {
     apiKey: FLOW_API_KEY,
-    commerceOrder,
+    commerceId: commerceOrder, // Flow espera 'commerceId', no 'commerceOrder'
   };
 
   // Calcular firma con valores SIN codificar

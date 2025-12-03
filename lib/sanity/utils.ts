@@ -54,6 +54,17 @@ export function getFirstImage(
 /**
  * Formatear precio según moneda
  */
+/**
+ * Formatear precio con moneda (alias para compatibilidad)
+ */
+export function formatCurrency(amount: number, currency: 'CLP' | 'USD'): string {
+  if (currency === 'CLP') {
+    return `$${amount.toLocaleString('es-CL')} CLP`;
+  } else {
+    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+  }
+}
+
 export function formatPrice(price: number, currency: 'CLP' | 'USD' = 'CLP'): string {
   if (currency === 'USD') {
     return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;

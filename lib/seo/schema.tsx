@@ -29,7 +29,7 @@ export function OrganizationSchema({}: SchemaProps) {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer service',
-      email: 'hola@comoelmusguito.com',
+      email: 'hola@comoelmusguito.cl',
       availableLanguage: ['Spanish', 'English'],
     },
     sameAs: [

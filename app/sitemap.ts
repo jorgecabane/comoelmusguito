@@ -5,7 +5,7 @@ import { MetadataRoute } from 'next';
  * Se actualiza automáticamente con el contenido del CMS
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
   
   // TODO: Descomentar cuando implementemos Sanity
   // const terrariums = await getTerrariums();

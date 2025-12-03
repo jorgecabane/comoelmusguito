@@ -5,7 +5,7 @@ import { MetadataRoute } from 'next';
  * Controla qué pueden y no pueden indexar los buscadores
  */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
   
   return {
     rules: [
