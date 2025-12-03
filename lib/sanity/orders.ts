@@ -10,7 +10,7 @@ export interface SanityOrder {
   _id?: string;
   _type: 'order';
   orderId: string;
-  flowOrder?: string;
+  flowOrder?: string | number; // Flow puede devolver string o number, pero siempre se guarda como string
   customerEmail: string;
   customerName?: string;
   userId?: {
@@ -68,7 +68,8 @@ export async function saveOrderToSanity(data: {
   const orderDoc: Omit<SanityOrder, '_id'> = {
     _type: 'order',
     orderId: data.orderId,
-    flowOrder: data.flowOrder,
+    // Convertir flowOrder a string si es number
+    flowOrder: data.flowOrder ? String(data.flowOrder) : undefined,
     customerEmail: data.customerEmail.toLowerCase(),
     customerName: data.customerName,
     userId: data.userId
@@ -77,7 +78,8 @@ export async function saveOrderToSanity(data: {
           _ref: data.userId,
         }
       : null,
-    items: data.items.map((item) => ({
+    items: data.items.map((item, index) => ({
+      _key: `${item.id}-${index}-${Date.now()}`, // _key único requerido por Sanity para arrays
       id: item.id,
       type: item.type,
       name: item.name,
@@ -116,7 +118,7 @@ export async function updateOrderPaymentStatus(
   orderId: string,
   paymentStatus: number,
   paymentDate?: string,
-  flowOrder?: string
+  flowOrder?: string | number
 ): Promise<void> {
   // Buscar orden por orderId
   const query = `*[_type == "order" && orderId == $orderId][0]`;
@@ -135,9 +137,10 @@ export async function updateOrderPaymentStatus(
     updates.paymentDate = paymentDate;
   }
 
-  if (flowOrder) {
-    updates.flowOrder = flowOrder;
-  }
+    if (flowOrder !== undefined) {
+      // Convertir a string si es number
+      updates.flowOrder = typeof flowOrder === 'number' ? String(flowOrder) : flowOrder;
+    }
 
   // Usar writeClient para operaciones de escritura
   await writeClient.patch(order._id).set(updates).commit();

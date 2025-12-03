@@ -22,7 +22,17 @@ export default defineType({
       name: 'flowOrder',
       title: 'Orden de Flow',
       type: 'string',
-      description: 'Número de orden de Flow.cl',
+      description: 'Número de orden de Flow.cl (puede venir como string o number desde la API)',
+      // Convertir number a string si es necesario
+      validation: (Rule) =>
+        Rule.custom((value) => {
+          if (value === undefined || value === null) return true; // Opcional
+          // Aceptar tanto string como number
+          if (typeof value === 'string' || typeof value === 'number') {
+            return true;
+          }
+          return 'Debe ser un string o number';
+        }),
     }),
     defineField({
       name: 'customerEmail',
@@ -54,6 +64,9 @@ export default defineType({
       of: [
         {
           type: 'object',
+          options: {
+            // Habilitar _key automático para items del array
+          },
           fields: [
             {
               name: 'id',

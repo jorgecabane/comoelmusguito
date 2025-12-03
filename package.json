@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "script:associate-courses": "tsx scripts/associate-courses-to-users.ts"
+    "script:associate-courses": "tsx scripts/associate-courses-to-users.ts",
+    "script:fix-orders": "tsx scripts/fix-orders-keys.ts"
   },
   "dependencies": {
     "@portabletext/react": "^5.0.0",

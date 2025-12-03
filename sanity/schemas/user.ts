@@ -28,11 +28,12 @@ export default defineType({
     defineField({
       name: 'image',
       title: 'Imagen de Perfil',
-      type: 'image',
-      description: 'Foto de perfil (puede venir de Google OAuth)',
-      options: {
-        hotspot: true,
-      },
+      type: 'url',
+      description: 'URL de la foto de perfil (puede venir de Google OAuth o ser una URL externa)',
+      validation: (Rule) =>
+        Rule.uri({
+          scheme: ['http', 'https'],
+        }).error('Debe ser una URL válida'),
     }),
     defineField({
       name: 'passwordHash',
@@ -93,13 +94,21 @@ export default defineType({
     select: {
       title: 'name',
       subtitle: 'email',
-      media: 'image',
+      imageUrl: 'image',
+      provider: 'provider',
+      emailVerified: 'emailVerified',
     },
-    prepare({ title, subtitle, media }) {
+    prepare({ title, subtitle, imageUrl, provider, emailVerified }) {
+      // Agregar indicador de verificación
+      const verifiedIcon = emailVerified ? ' ✅' : '';
+      const providerText = provider === 'google' ? ' (Google)' : provider === 'github' ? ' (GitHub)' : ' (Email)';
+
+      // No usar media - Sanity usará el icono por defecto del schema (👤)
+      // Las URLs de imágenes externas no se pueden usar directamente como media en previews
       return {
         title: title || subtitle || 'Usuario sin nombre',
-        subtitle: subtitle || 'Sin email',
-        media: media || '👤',
+        subtitle: `${subtitle || 'Sin email'}${providerText}${verifiedIcon}`,
+        // No incluir media - usar icono por defecto del schema
       };
     },
   },
