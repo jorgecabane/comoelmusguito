@@ -41,11 +41,33 @@ function getYouTubeVideoId(url: string): string | null {
 }
 
 /**
- * Extraer ID del video de Vimeo
+ * Extraer ID y hash privado del video de Vimeo
+ * Soporta múltiples formatos:
+ * - vimeo.com/1144342696
+ * - vimeo.com/video/1144342696
+ * - vimeo.com/1144342696/f88bb2c0a2 (hash privado en la ruta)
+ * - vimeo.com/1144342696?h=f88bb2c0a2 (hash privado como query param)
  */
-function getVimeoVideoId(url: string): string | null {
-  const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  return match ? match[1] : null;
+function getVimeoVideoInfo(url: string): { id: string; hash?: string } | null {
+  // Formato con hash en la ruta: vimeo.com/1144342696/f88bb2c0a2
+  const routeHashMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)\/([a-f0-9]+)/);
+  if (routeHashMatch) {
+    return { id: routeHashMatch[1], hash: routeHashMatch[2] };
+  }
+
+  // Formato con hash como query param: vimeo.com/1144342696?h=f88bb2c0a2
+  const queryHashMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+).*[?&]h=([a-f0-9]+)/);
+  if (queryHashMatch) {
+    return { id: queryHashMatch[1], hash: queryHashMatch[2] };
+  }
+
+  // Formato simple: vimeo.com/1144342696
+  const simpleMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (simpleMatch) {
+    return { id: simpleMatch[1] };
+  }
+
+  return null;
 }
 
 export function VideoPlayer({
@@ -78,7 +100,7 @@ export function VideoPlayer({
 
   // Detectar tipo de video y extraer ID
   const youtubeId = getYouTubeVideoId(videoUrl);
-  const vimeoId = getVimeoVideoId(videoUrl);
+  const vimeoInfo = getVimeoVideoInfo(videoUrl);
 
   // Construir URL del iframe
   let iframeSrc = '';
@@ -100,10 +122,29 @@ export function VideoPlayer({
     });
     
     iframeSrc = `https://www.youtube.com/embed/${youtubeId}?${params.toString()}`;
-  } else if (vimeoId) {
-    iframeSrc = `https://player.vimeo.com/video/${vimeoId}?`;
+  } else if (vimeoInfo) {
+    // Vimeo embed URL
+    // IMPORTANTE: Los videos deben estar configurados en Vimeo para permitir embedding
+    // solo en los siguientes dominios:
+    // - localhost:3000 (desarrollo)
+    // - comoelmusguito.vercel.app (preview)
+    // - comoelmusguito.cl (producción)
+    // Ver: docs/VIMEO_DOMAIN_RESTRICTION.md
+    
+    // Construir URL base con ID del video
+    iframeSrc = `https://player.vimeo.com/video/${vimeoInfo.id}?`;
+    
+    // Agregar hash privado si está presente (necesario para videos privados)
+    if (vimeoInfo.hash) {
+      iframeSrc += `h=${vimeoInfo.hash}&`;
+    }
+    
+    // Agregar otros parámetros
     if (autoplay) iframeSrc += 'autoplay=1&';
     if (!controls) iframeSrc += 'controls=0&';
+    
+    // Agregar parámetros adicionales para mejor seguridad
+    iframeSrc += 'dnt=1&'; // Do Not Track
   } else {
     // Para otros proveedores, usar la URL directamente
     iframeSrc = videoUrl;

@@ -301,12 +301,14 @@ export default defineType({
           preview: {
             select: {
               title: 'title',
-              lessonCount: 'lessons.length',
+              lessons: 'lessons',
             },
-            prepare({ title, lessonCount }) {
+            prepare({ title, lessons }) {
+              const lessonCount = Array.isArray(lessons) ? lessons.length : 0;
+              const lessonText = lessonCount === 1 ? 'lección' : 'lecciones';
               return {
                 title,
-                subtitle: `${lessonCount || 0} lecciones`,
+                subtitle: `${lessonCount} ${lessonText}`,
               };
             },
           },

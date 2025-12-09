@@ -63,7 +63,19 @@ export interface CourseLesson {
   videoUrl: string;
   videoProvider: 'vimeo' | 'youtube' | 'bunny';
   isFree?: boolean;
-  downloadables?: any[];
+  downloadables?: Array<{
+    _key?: string;
+    _type: string;
+    title?: string;
+    asset?: {
+      _id: string;
+      _type: string;
+      url: string;
+      originalFilename?: string;
+      size?: number;
+      mimeType?: string;
+    };
+  }>;
   order: number;
 }
 

@@ -64,17 +64,17 @@ export function CourseLessonView({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream to-white">
+    <div className="min-h-screen bg-gradient-to-br from-cream to-white pt-20">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray/20">
+      <div className="top-20 z-40 bg-white/80 backdrop-blur-sm border-b border-gray/20">
         <div className="container py-4">
           <div className="flex items-center justify-between">
             <Link
-              href={`/cursos/${course.slug.current}`}
+              href={`/mi-cuenta?tab=cursos`}
               className="flex items-center gap-2 text-gray hover:text-musgo transition-colors"
             >
               <ChevronLeft size={20} />
-              <span className="font-medium">Volver al Curso</span>
+              <span className="font-medium">Cursos</span>
             </Link>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -90,7 +90,7 @@ export function CourseLessonView({
         {/* Sidebar de Navegación */}
         <aside
           className={`
-            fixed md:sticky top-16 left-0 h-[calc(100vh-4rem)] 
+            fixed md:sticky top-35 left-0 h-[calc(100vh-9rem)] 
             w-80 bg-white border-r border-gray/20 overflow-y-auto
             transition-transform duration-300 z-30
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}

@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/animations';
 import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { FAQSchema } from '@/lib/seo/schema';
@@ -147,6 +147,25 @@ const faqCategories = {
 export default function FAQPage() {
   const [openCategory, setOpenCategory] = useState<string | null>('productos');
   const [openQuestions, setOpenQuestions] = useState<Set<string>>(new Set());
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Logs de debugging y forzar montaje
+  useEffect(() => {
+    console.log('[FAQ] Componente montado');
+    setIsMounted(true);
+    
+    // Log para verificar que el contenido está renderizado
+    const timer = setTimeout(() => {
+      const content = document.querySelector('[data-faq-content]');
+      console.log('[FAQ] Contenido encontrado:', !!content);
+      console.log('[FAQ] Window height:', window.innerHeight);
+      console.log('[FAQ] Scroll position:', window.scrollY);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
 
   const toggleQuestion = (category: string, index: number) => {
     const key = `${category}-${index}`;
@@ -164,12 +183,25 @@ export default function FAQPage() {
     cat.questions.map(q => ({ question: q.question, answer: q.answer }))
   );
 
+  // No renderizar hasta que esté montado para evitar problemas de hidratación
+  if (!isMounted) {
+    return (
+      <div className="pt-32 pb-16">
+        <div className="container max-w-4xl">
+          <div className="text-center">
+            <p className="text-gray">Cargando...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <FAQSchema questions={allQuestions} />
       <div className="pt-32 pb-16">
-        <div className="container max-w-4xl">
-          <FadeIn>
+        <div className="container max-w-4xl" data-faq-content>
+          <FadeIn immediate={true}>
             {/* Header */}
             <div className="text-center mb-12">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-vida/20 mb-6">

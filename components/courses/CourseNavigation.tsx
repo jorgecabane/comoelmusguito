@@ -54,7 +54,7 @@ export function CourseNavigation({
         <h2 className="font-display text-xl font-bold text-forest mb-2">
           {course.name}
         </h2>
-        <p className="text-sm text-gray line-clamp-2">
+        <p className="text-sm text-gray line-clamp-4">
           {course.shortDescription}
         </p>
       </div>

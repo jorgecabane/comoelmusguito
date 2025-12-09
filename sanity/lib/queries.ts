@@ -130,7 +130,19 @@ export const courseBySlugQuery = groq`
         videoUrl,
         videoProvider,
         isFree,
-        downloadables,
+        downloadables[] {
+          _key,
+          _type,
+          title,
+          asset-> {
+            _id,
+            _type,
+            url,
+            originalFilename,
+            size,
+            mimeType
+          }
+        },
         order
       }
     },

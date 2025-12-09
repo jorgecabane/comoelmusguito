@@ -15,7 +15,7 @@ export default function PrivacidadPage() {
   return (
     <div className="pt-32 pb-16">
       <div className="container max-w-4xl">
-        <FadeIn>
+        <FadeIn immediate={true}>
           {/* Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-vida/20 mb-6">

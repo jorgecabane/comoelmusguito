@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { formatFileSize } from '@/sanity/lib/file';
 
 interface LessonContentProps {
   course: Course;
@@ -133,13 +134,13 @@ export function LessonContent({
       )}
 
       {/* Descripción adicional */}
-      {lesson.description && (
+      {/* {lesson.description && (
         <div className="prose prose-lg max-w-none mb-8">
           <div className="text-gray leading-relaxed whitespace-pre-line">
             {lesson.description}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Downloadables */}
       {lesson.downloadables && lesson.downloadables.length > 0 && (
@@ -148,29 +149,43 @@ export function LessonContent({
             Materiales Descargables
           </h3>
           <div className="space-y-2">
-            {lesson.downloadables.map((downloadable: any, idx: number) => (
-              <a
-                key={idx}
-                href={downloadable.url}
-                download
-                className="flex items-center gap-3 p-4 bg-cream rounded-lg hover:bg-cream/80 transition-colors group"
-              >
-                <Download
-                  size={20}
-                  className="text-musgo group-hover:text-forest transition-colors"
-                />
-                <div className="flex-1">
-                  <div className="font-medium text-forest">
-                    {downloadable.name || 'Descargar'}
-                  </div>
-                  {downloadable.size && (
-                    <div className="text-sm text-gray">
-                      {downloadable.size}
+            {lesson.downloadables.map((downloadable: any, idx: number) => {
+              // Obtener URL del archivo desde el asset
+              const fileUrl = downloadable?.asset?.url || '';
+              const fileName = downloadable?.title || downloadable?.asset?.originalFilename || 'Descargar';
+              const fileSize = downloadable?.asset?.size ? formatFileSize(downloadable.asset.size) : '';
+              
+              if (!fileUrl) {
+                console.warn('Downloadable sin URL:', downloadable);
+                return null;
+              }
+
+              return (
+                <a
+                  key={downloadable._key || idx}
+                  href={fileUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-4 bg-cream rounded-lg hover:bg-cream/80 transition-colors group"
+                >
+                  <Download
+                    size={20}
+                    className="text-musgo group-hover:text-forest transition-colors flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-forest truncate">
+                      {fileName}
                     </div>
-                  )}
-                </div>
-              </a>
-            ))}
+                    {fileSize && (
+                      <div className="text-sm text-gray">
+                        {fileSize}
+                      </div>
+                    )}
+                  </div>
+                </a>
+              );
+            })}
           </div>
         </div>
       )}
