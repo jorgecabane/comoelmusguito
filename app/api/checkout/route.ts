@@ -130,8 +130,9 @@ export async function POST(request: NextRequest) {
       : `${items.length} productos - comoelmusguito`;
 
     // URL de retorno (después del pago)
+    // Usamos el API route que maneja tanto POST como GET de Flow
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const urlReturn = `${baseUrl}/checkout/callback?order=${commerceOrder}`;
+    const urlReturn = `${baseUrl}/api/checkout/callback?order=${commerceOrder}`;
 
     // URL de confirmación (webhook - opcional)
     const urlConfirmation = `${baseUrl}/api/webhooks/flow`;
