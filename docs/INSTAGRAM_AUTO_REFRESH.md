@@ -167,18 +167,19 @@ En Vercel → Deployments → Function Logs, deberías ver:
 
 ## 🕐 Schedule del Cron
 
-El cron está configurado para ejecutarse cada 50 días:
-- **Formato:** `0 0 */50 * *`
-- **Significado:** Cada 50 días a las 00:00 UTC
+El cron está configurado para ejecutarse **el día 1 de cada mes**:
+- **Formato:** `0 0 1 * *`
+- **Significado:** Día 1 de cada mes a las 00:00 UTC
+- **Frecuencia:** Mensual (más que suficiente, el token dura 60 días)
 
-**Nota:** Vercel cron jobs tienen algunas limitaciones:
-- El schedule `*/50` puede no ser exactamente cada 50 días
-- Vercel ejecuta crons basándose en días del mes, no en intervalos exactos
-- Para mayor precisión, considera usar un servicio externo como cron-job.org
+**¿Por qué mensual y no cada 50 días?**
+- Vercel no soporta intervalos de días mayores a 31 en el formato cron estándar
+- El token de Instagram dura 60 días, así que ejecutarlo mensualmente es seguro
+- Es más simple y confiable que intentar hacerlo cada 50 días exactos
 
-**Alternativa más precisa:**
-Si necesitas mayor precisión, puedes usar un servicio externo:
-- [cron-job.org](https://cron-job.org/) - Gratis
+**Alternativa si necesitas cada 50 días exactos:**
+Puedes usar un servicio externo que sí soporte intervalos personalizados:
+- [cron-job.org](https://cron-job.org/) - Gratis, soporta intervalos personalizados
 - [EasyCron](https://www.easycron.com/) - Freemium
 - [GitHub Actions](https://github.com/features/actions) - Gratis para repos públicos
 

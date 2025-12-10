@@ -50,11 +50,13 @@ Edita `vercel.json` y reemplaza `CRON_SECRET_PLACEHOLDER` con tu secret real:
   "crons": [
     {
       "path": "/api/instagram/refresh-auto?secret=TU_SECRET_AQUI",
-      "schedule": "0 0 */50 * *"
+      "schedule": "0 0 1 * *"
     }
   ]
 }
 ```
+
+**Nota:** El schedule `0 0 1 * *` ejecuta el cron el día 1 de cada mes. Esto es suficiente ya que el token dura 60 días.
 
 ### 6. Deploy
 
