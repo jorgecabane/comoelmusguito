@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/instagram/refresh-auto?secret=gvMedm73J6MqGtNSnzqt+61wqdPVx9A/0FvKzJ2wCBE=",
+      "schedule": "0 0 */50 * *"
+    }
+  ]
+}
+

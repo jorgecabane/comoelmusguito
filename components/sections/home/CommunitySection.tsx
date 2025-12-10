@@ -8,6 +8,7 @@
 import { FadeIn } from '@/components/animations';
 import { Button } from '@/components/ui';
 import { Instagram, Heart } from 'lucide-react';
+import { InstagramFeed } from '@/components/social/InstagramFeed';
 
 export function CommunitySection() {
   return (
@@ -38,20 +39,10 @@ export function CommunitySection() {
           </FadeIn>
         </div>
 
-        {/* Testimonios / Grid simulado */}
+        {/* Instagram Feed */}
         <FadeIn delay={0.6}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 max-w-5xl mx-auto">
-            {/* Placeholder para fotos de Instagram */}
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div
-                key={i}
-                className="aspect-square bg-gradient-to-br from-musgo/10 to-vida/10 rounded-lg shadow-natural-sm hover:shadow-natural-md transition-all cursor-pointer group overflow-hidden relative"
-              >
-                <div className="absolute inset-0 bg-musgo/0 group-hover:bg-musgo/10 transition-colors flex items-center justify-center">
-                  <Instagram className="text-musgo opacity-0 group-hover:opacity-100 transition-opacity" size={32} />
-                </div>
-              </div>
-            ))}
+          <div className="mb-12 max-w-5xl mx-auto">
+            <InstagramFeed limit={8} />
           </div>
         </FadeIn>
 
