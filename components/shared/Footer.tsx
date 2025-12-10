@@ -11,15 +11,10 @@ import { NewsletterForm } from './NewsletterForm';
 const footerLinks = {
   shop: [
     { name: 'Todos los Terrarios', href: '/terrarios' },
-    { name: 'Terrarios Bosque', href: '/terrarios?category=bosque' },
-    { name: 'Terrarios Desierto', href: '/terrarios?category=desierto' },
-    { name: 'Regalos', href: '/terrarios?category=regalo' },
   ],
   learn: [
     { name: 'Cursos Online', href: '/cursos' },
     { name: 'Talleres Presenciales', href: '/talleres' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Guías Gratuitas', href: '/recursos' },
   ],
   about: [
     { name: 'Sobre el Musguito', href: '/sobre' },
@@ -73,16 +68,16 @@ export function Footer() {
 
       {/* Main Footer Content */}
       <div className="container py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12 mb-12">
           {/* Brand */}
-          <div className="lg:col-span-1 space-y-4">
-            <Logo size="md" />
+          <div className="col-span-2 md:col-span-1 lg:col-span-1 space-y-4 text-center md:text-left">
+            <Logo size="md"/>
             <p className="text-cream/70 text-sm leading-relaxed">
               Crea vida en cualquier lugar. Terrarios artesanales y educación
               para conectar con la naturaleza.
             </p>
             {/* Social Links */}
-            <div className="flex gap-4 pt-2">
+            <div className="flex gap-4 pt-2 justify-center md:justify-start">
               {socialLinks.map((social) => (
                 <a
                   key={social.name}
@@ -102,8 +97,8 @@ export function Footer() {
           </div>
 
           {/* Shop Links */}
-          <div>
-            <h4 className="font-display text-lg font-semibold mb-4">Tienda</h4>
+          <div className="text-center md:text-left">
+            <h4 className="font-display text-lg font-semibold mb-4 !text-white">Tienda</h4>
             <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
                 <li key={link.name}>
@@ -119,8 +114,8 @@ export function Footer() {
           </div>
 
           {/* Learn Links */}
-          <div>
-            <h4 className="font-display text-lg font-semibold mb-4">Aprender</h4>
+          <div className="text-center md:text-left">
+            <h4 className="font-display text-lg font-semibold mb-4 !text-white">Aprender</h4>
             <ul className="space-y-3">
               {footerLinks.learn.map((link) => (
                 <li key={link.name}>
@@ -136,8 +131,8 @@ export function Footer() {
           </div>
 
           {/* About Links */}
-          <div>
-            <h4 className="font-display text-lg font-semibold mb-4">Nosotros</h4>
+          <div className="text-center md:text-left">
+            <h4 className="font-display text-lg font-semibold mb-4 !text-white">Nosotros</h4>
             <ul className="space-y-3">
               {footerLinks.about.map((link) => (
                 <li key={link.name}>
@@ -153,8 +148,8 @@ export function Footer() {
           </div>
 
           {/* Legal Links */}
-          <div>
-            <h4 className="font-display text-lg font-semibold mb-4">Legal</h4>
+          <div className="text-center md:text-left">
+            <h4 className="font-display text-lg font-semibold mb-4 !text-white">Legal</h4>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
