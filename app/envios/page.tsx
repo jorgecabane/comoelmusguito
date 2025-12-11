@@ -5,6 +5,7 @@
 import { FadeIn } from '@/components/animations';
 import { Truck, Package, RefreshCw, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import { getFormattedPhoneNumber } from '@/lib/config/contact';
 
 export const metadata = {
   title: 'Envíos y Devoluciones | Como el Musguito',
@@ -75,7 +76,7 @@ export default function EnviosPage() {
                       <ol className="list-decimal list-inside space-y-1 ml-2">
                         <li>Realice su compra online</li>
                         <li>Recibirá un email de confirmación con los detalles</li>
-                        <li>Coordine el retiro contactándonos al +56 9 6656 3208</li>
+                        <li>Coordine el retiro contactándonos al {getFormattedPhoneNumber()}</li>
                         <li>Retire su terrario en nuestra ubicación</li>
                       </ol>
                     </div>
@@ -166,7 +167,7 @@ export default function EnviosPage() {
                 <ol className="list-decimal list-inside space-y-3 text-gray">
                   <li>
                     <strong>Contacte con nosotros:</strong> Envíe un email a hola@comoelmusguito.cl o llame 
-                    al +56 9 6656 3208 indicando el número de orden y motivo de la devolución.
+                    al {getFormattedPhoneNumber()} indicando el número de orden y motivo de la devolución.
                   </li>
                   <li>
                     <strong>Evaluación:</strong> Revisaremos su solicitud y le confirmaremos si procede la devolución.
@@ -211,7 +212,7 @@ export default function EnviosPage() {
                 </p>
                 <div className="space-y-2 text-sm text-gray">
                   <p><strong>Email:</strong> hola@comoelmusguito.cl</p>
-                  <p><strong>Teléfono:</strong> +56 9 6656 3208</p>
+                  <p><strong>Teléfono:</strong> {getFormattedPhoneNumber()}</p>
                   <p><strong>Dirección:</strong> Santa Isabel 676, Providencia, Santiago</p>
                   <p><strong>Horario de atención:</strong> Lunes a Viernes 10:00 - 18:00 hrs</p>
                 </div>

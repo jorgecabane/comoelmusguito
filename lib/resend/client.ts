@@ -5,6 +5,7 @@
 
 import 'server-only';
 import { Resend } from 'resend';
+import { getTelLink, getFormattedPhoneNumber } from '@/lib/config/contact';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'hola@comoelmusguito.cl';
@@ -550,7 +551,7 @@ export async function sendContactEmail(data: {
             <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
               <p style="color: #666; font-size: 14px; margin: 0 0 10px 0;"><strong>¿Necesitas contactarnos urgentemente?</strong></p>
               <p style="color: #333; font-size: 14px; margin: 0;">
-                Teléfono: <a href="tel:+56966563208" style="color: #4a7c2a; text-decoration: none;">+56 9 6656 3208</a><br>
+                Teléfono: <a href="${getTelLink()}" style="color: #4a7c2a; text-decoration: none;">${getFormattedPhoneNumber()}</a><br>
                 Email: <a href="mailto:hola@comoelmusguito.cl" style="color: #4a7c2a; text-decoration: none;">hola@comoelmusguito.cl</a>
               </p>
             </div>

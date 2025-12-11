@@ -33,7 +33,7 @@ export default async function CursosPage() {
             Aprende a Crear Terrarios
           </h1>
           <p className="text-xl text-gray leading-relaxed">
-            Cursos online completos donde aprenderás desde cero hasta técnicas avanzadas.
+            Cursos online completos donde aprenderás desde lo básico hasta técnicas avanzadas.
             Acceso de por vida, aprende a tu propio ritmo desde cualquier parte del mundo.
           </p>
         </div>
@@ -165,7 +165,7 @@ export default async function CursosPage() {
               </h2>
               <p className="text-white/90 mb-6 max-w-2xl mx-auto text-lg">
                 Ofrecemos talleres presenciales en Santiago donde crearás tu propio
-                terrario mientras aprendes las técnicas directamente.
+                terrario, aprendiendo la teoría a través de la práctica.
               </p>
               <Link href="/talleres">
                 <Button

@@ -13,38 +13,38 @@ const processSteps = [
   {
     step: '01',
     title: 'Recolección',
-    description: 'Recolecto musgo y plantas nativas de forma sustentable, respetando el ecosistema.',
+    description: 'Recolecto troncos y piedras de forma sustentable, respetando el ecosistema.',
     icon: Leaf,
     image: '/images/process/proceso-01-recoleccion.jpg', // TODO: Reemplazar con foto real
     imagePlaceholder: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
-    story: 'Cada salida al bosque es una aventura. Este musgo tiene 3 meses creciendo en mi taller.',
+    story: 'Cada recolección es una aventura. Busco materiales a la vez que me inspiro en los pequeños paisajes naturales.',
   },
   {
     step: '02',
     title: 'Cultivo',
-    description: 'Cuido y propago las especies, esperando el momento perfecto para cada planta.',
+    description: 'Propago y cultivo diferentes especies de musgos y plantas tropicales, esperando la oportunidad perfecta para usar cada planta.',
     icon: Sparkles,
     image: '/images/process/proceso-02-cultivo.jpg', // TODO: Reemplazar con foto real
     imagePlaceholder: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=800&q=80',
-    story: 'La paciencia es clave. Algunas especies tardan semanas en adaptarse.',
+    story: 'La paciencia es clave. Trabajar con plantas siempre significa trabajar con las estaciones.',
   },
   {
     step: '03',
     title: 'Diseño',
-    description: 'Compongo cada terrario como una obra de arte, creando capas y profundidad.',
+    description: 'Compongo cada terrario como un cuadro, buscando una sensación realista con profundidad y perspectiva.',
     icon: Palette,
     image: '/images/process/proceso-03-diseño.png',
     imagePlaceholder: 'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=800&q=80',
-    story: 'Esta madera la encontré en un río. Cada elemento cuenta una historia.',
+    story: 'Todos mis diseños nacen de la naturaleza, pero en el proceso busco que cada uno transmita esa sensación que lo hace diferente.',
   },
   {
     step: '04',
     title: 'Vida',
-    description: 'El ecosistema cobra vida, autosustentable y listo para crecer contigo.',
+    description: 'El ecosistema cobra vida, saludable y listo para crecer contigo.',
     icon: Heart,
     image: '/images/process/proceso-04-vida.jpg', // TODO: Reemplazar con foto real
     imagePlaceholder: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=800&q=80',
-    story: 'Ver cómo un terrario crece y evoluciona es mágico. Cada uno es único.',
+    story: 'Observar cómo un terrario crece y evoluciona es un fin en sí mismo.',
   },
 ];
 
@@ -61,8 +61,8 @@ export function ProcessSection() {
           </FadeIn>
           <FadeIn delay={0.2}>
             <p className="text-xl text-gray max-w-2xl mx-auto">
-              Cada terrario pasa por un cuidadoso proceso de creación.
-              No es magia, es dedicación y amor por la naturaleza.
+              Cada terrario pasa por un cuidadoso proceso de elaboración. 
+              No son dedos verdes, es dedicación y amor por la naturaleza.
             </p>
           </FadeIn>
         </div>

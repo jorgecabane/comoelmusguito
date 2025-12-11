@@ -9,6 +9,7 @@ import { FadeIn } from '@/components/animations';
 import { Mail, Phone, MapPin, Send, Instagram, Youtube } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import Link from 'next/link';
+import { getTelLink, getFormattedPhoneNumber } from '@/lib/config/contact';
 
 export default function ContactoPage() {
   const [formData, setFormData] = useState({
@@ -105,10 +106,10 @@ export default function ContactoPage() {
                     <div>
                       <h3 className="font-semibold text-forest mb-1">Teléfono</h3>
                       <a
-                        href="tel:+56966563208"
+                        href={getTelLink()}
                         className="text-gray hover:text-musgo transition-colors text-sm"
                       >
-                        +56 9 6656 3208
+                        {getFormattedPhoneNumber()}
                       </a>
                       <p className="text-gray text-xs mt-1">
                         Lunes a Viernes: 10:00 - 18:00 hrs<br />

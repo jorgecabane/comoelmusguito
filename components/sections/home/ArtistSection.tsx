@@ -74,15 +74,14 @@ export function ArtistSection() {
                   <br />
                   Cultivo ecosistemas.
                   <br />
-                  Capturo momentos.
+                  Capturo paisajes.
                   <br />
                   Enseño a crear vida.
                 </p>
 
                 <p>
-                  Cada terrario que creo es una historia única. Un pedazo de bosque,
-                  un suspiro de naturaleza, un recordatorio de que la vida puede
-                  florecer en cualquier lugar.
+                  Cada terrario es una historia única. Un rincón de bosque, 
+                  un recordatorio de que la vida puede florecer en cualquier lugar.
                 </p>
               </div>
             </FadeIn>

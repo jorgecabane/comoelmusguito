@@ -42,7 +42,7 @@ export default function SobrePage() {
           <FadeIn direction="left">
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-natural-lg">
               <Image
-                src="/images/about/tomas-table.png"
+                src="/images/about/tomas-table.jpg"
                 alt="Tomás Barrera en su taller"
                 fill
                 className="object-cover"
@@ -65,7 +65,7 @@ export default function SobrePage() {
               </h2>
               <div className="space-y-4 text-lg text-gray leading-relaxed">
                 <p>
-                  <strong className="text-forest">Tomás Barrera es licenciado en Literatura y Horticultor.</strong> Su formación es humanista. Su acercamiento al mundo de la botánica comenzó como un pasatiempo que se fue estrechando, a medida que se relacionaba con las plantas.
+                  <strong className="text-forest">Tomás Barrera es licenciado en Literatura y Horticultor.</strong> Su acercamiento al mundo de la botánica comenzó como un pasatiempo que se fue ampliando, a medida que experimentaba con el cultivo de diferentes tipos de plantas.
                 </p>
                 <p>
                   En este proceso le surgieron preguntas que lo motivaron a investigar sobre horticultura, botánica y ecología de forma autodidacta. En el 2019 comienza su proyecto de investigación y realización visual-botánica <strong className="text-musgo">"Como el musguito"</strong>.
@@ -100,7 +100,7 @@ export default function SobrePage() {
                   <div className="text-6xl text-musgo/20 font-display">"</div>
                   <div className="space-y-4 text-lg md:text-xl text-gray leading-relaxed flex-1">
                     <p>
-                      En 2018, después de trabajar en la recuperación de un jardín abandonado y tras algunas lluvias, Tomás Barrera fue testigo del inicio de la temporada de musgos en Santiago.
+                      En 2018, después de trabajar en la recuperación de un jardín abandonado y tras algunas lluvias, Tomás fue testigo del inicio de la temporada de musgos en Santiago.
                     </p>
                     <p className="text-2xl md:text-3xl font-display text-forest font-semibold italic">
                       "Esto me maravilló profundamente, pero los musgos no duraron mucho"
@@ -135,7 +135,7 @@ export default function SobrePage() {
                   <strong className="text-forest">"Buscamos la belleza a través de la salud de las plantas"</strong> y con esto en mente nos dedicamos a la producción de terrarios colaborando con seres vivos de los cinco reinos.
                 </p>
                 <p>
-                  Cada terrario es un ecosistema completo, un pequeño universo donde la vida se desarrolla de forma autónoma. No son solo decoración, son <strong className="text-musgo">ventanas a la naturaleza</strong>, recordatorios de que la vida puede florecer en cualquier lugar.
+                  Cada terrario es un ecosistema, un pequeño universo donde la vida se desarrolla de forma autónoma. No son solo decoración, son <strong className="text-musgo">ventanas a la naturaleza</strong>, o incluso un espejo: creamos recordatorios de que la vida puede florecer en cualquier lugar.
                 </p>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function SobrePage() {
                     Visítanos
                   </h3>
                   <p className="text-gray leading-relaxed mb-6">
-                    Estas creaciones se pueden ver de lunes a viernes en su taller (Santa Isabel 676, Providencia), donde siempre tiene un stock disponible, de distintos formatos y tamaños.
+                    Estas creaciones se pueden ver de lunes a viernes agendando una visita a su taller (Santa Isabel 676, Providencia), donde siempre tiene un stock disponible, de distintos formatos y tamaños.
                   </p>
                   <p className="text-lg text-musgo font-semibold">
                     "Estas visitas son muy entretenidas pues el taller es un espacio muy cautivante con un ambiente de laboratorio, repleto de terrarios, materiales y plantas tropicales"
@@ -237,7 +237,7 @@ export default function SobrePage() {
                 >
                   @comoelmusguito
                 </a>
-                , donde también se pueden hacer encargo especiales.
+                , donde se pueden hacer encargos especiales.
               </p>
               <p>
                 Únete a una comunidad de más de 40,000 personas que comparten la pasión por crear vida y conectar con la naturaleza.

@@ -69,7 +69,7 @@ export function FinalCTA() {
                 </h2>
 
                 <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed">
-                  Tu viaje hacia crear vida puede comenzar de muchas formas.
+                  Tu viaje puede comenzar de muchas formas.
                   Elige la tuya.
                 </p>
               </div>

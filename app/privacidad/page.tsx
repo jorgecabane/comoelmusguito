@@ -5,6 +5,7 @@
 import { FadeIn } from '@/components/animations';
 import { Shield, Lock, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { getFormattedPhoneNumber } from '@/lib/config/contact';
 
 export const metadata = {
   title: 'Política de Privacidad | Como el Musguito',
@@ -55,7 +56,7 @@ export default function PrivacidadPage() {
                   <strong>Como el Musguito</strong><br />
                   Santa Isabel 676, Providencia, Santiago, Chile<br />
                   <strong>Email:</strong> hola@comoelmusguito.cl<br />
-                  <strong>Teléfono:</strong> +56 9 6656 3208
+                  <strong>Teléfono:</strong> {getFormattedPhoneNumber()}
                 </p>
               </div>
             </section>
@@ -248,7 +249,7 @@ export default function PrivacidadPage() {
               <div className="bg-cream/50 rounded-lg p-4 mt-4">
                 <p className="text-sm text-gray">
                   <strong>Email:</strong> hola@comoelmusguito.cl<br />
-                  <strong>Teléfono:</strong> +56 9 6656 3208<br />
+                  <strong>Teléfono:</strong> {getFormattedPhoneNumber()}<br />
                   <strong>Dirección:</strong> Santa Isabel 676, Providencia, Santiago
                 </p>
               </div>

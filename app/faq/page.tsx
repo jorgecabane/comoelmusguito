@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/animations';
 import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { FAQSchema } from '@/lib/seo/schema';
+import { getTelLink, getFormattedPhoneNumber } from '@/lib/config/contact';
 
 const faqCategories = {
   productos: {
@@ -286,10 +287,10 @@ export default function FAQPage() {
                   Enviar Email
                 </a>
                 <a
-                  href="tel:+56966563208"
+                  href={getTelLink()}
                   className="inline-flex items-center justify-center px-6 py-3 bg-forest text-white rounded-lg hover:bg-forest/90 transition-colors"
                 >
-                  Llamar: +56 9 6656 3208
+                  Llamar: {getFormattedPhoneNumber()}
                 </a>
               </div>
             </div>

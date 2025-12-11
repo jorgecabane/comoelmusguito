@@ -35,7 +35,7 @@ export function ExploreSection({ terrarios }: ExploreSectionProps) {
           </FadeIn>
           <FadeIn delay={0.2}>
             <p className="text-xl text-gray max-w-2xl mx-auto">
-              Explora ecosistemas únicos, cada uno hecho a mano con dedicación.
+              Explora ecosistemas únicos, cada uno hecho a mano con tiempo y dedicación.
               No hay dos iguales.
             </p>
           </FadeIn>

@@ -46,7 +46,7 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
           <FadeIn delay={0.4}>
             <p className="text-xl text-gray max-w-2xl mx-auto">
               Aprende a crear terrarios desde cero. Cursos online completos
-              donde te enseño todo lo que sé, a tu ritmo, desde cualquier lugar.
+              donde te enseño todo lo que sé, a tu ritmo y desde cualquier lugar.
             </p>
           </FadeIn>
         </div>

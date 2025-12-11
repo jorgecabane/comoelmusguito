@@ -45,7 +45,7 @@ export default async function TalleresPage() {
             Talleres Presenciales
           </h1>
           <p className="text-xl text-gray leading-relaxed">
-            Experiencias prácticas donde aprenderás a crear terrarios de la mano de Tomás.
+            Experiencias prácticas donde aprenderás a crear terrarios con las manos en la masa.
             Cada taller incluye todos los materiales y te llevas tu terrario a casa.
           </p>
         </div>
@@ -58,7 +58,7 @@ export default async function TalleresPage() {
             {
               icon: <Users className="text-musgo" size={32} />,
               title: 'Grupos Reducidos',
-              description: 'Máximo 12 personas para atención personalizada',
+              description: 'Máximo 8 personas para atención personalizada',
             },
             {
               icon: <Calendar className="text-musgo" size={32} />,
@@ -204,8 +204,8 @@ export default async function TalleresPage() {
                 ¿No puedes venir en persona?
               </h2>
               <p className="text-gray mb-6 max-w-2xl mx-auto">
-                Aprende desde cualquier lugar con nuestros cursos online.
-                Mismo contenido, aprende a tu ritmo desde casa.
+                Aprende desde cualquier lugar con nuestros cursos online
+                y más de 9 horas de contenido educativo.
               </p>
               <Link href="/cursos">
                 <Button variant="primary" size="lg">

@@ -8,6 +8,7 @@ import { Heart, Filter, ArrowRight } from 'lucide-react';
 import { getAllTerrariums } from '@/lib/sanity/fetch';
 import { getFirstImage, formatPrice, getSlugString, sizeLabels, categoryLabels } from '@/lib/sanity/utils';
 import Link from 'next/link';
+import { getWhatsAppLink } from '@/lib/config/contact';
 
 export const revalidate = 60;
 
@@ -29,8 +30,8 @@ export default async function TerrariosPage() {
             Ecosistemas Vivos
           </h1>
           <p className="text-xl text-gray leading-relaxed">
-            Cada terrario es una obra de arte viva, hecha a mano con plantas cultivadas
-            por Tomás y musgo nativo recolectado de forma sustentable en Chile.
+            Cada terrario es una obra de arte viva, hecha a mano con plantas y musgos cultivados por Tomás
+            y materiales recolectados de forma sustentable en Chile.
           </p>
         </div>
       </section>
@@ -133,9 +134,15 @@ export default async function TerrariosPage() {
                 Creamos terrarios personalizados según tus gustos y espacio.
                 Contáctanos y diseñemos juntos tu ecosistema perfecto.
               </p>
-              <Button variant="primary" size="lg">
-                Solicitar Terrario Personalizado
-              </Button>
+              <a
+                href={getWhatsAppLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="primary" size="lg">
+                  Solicitar Terrario Personalizado
+                </Button>
+              </a>
             </div>
           </section>
         </>
