@@ -59,7 +59,7 @@ export function ArtistSection() {
               <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-forest leading-tight relative z-10">
                 Hola, soy
                 <br />
-                <span className="text-musgo">Tomás Barrera</span>
+                <span className="text-musgo" style={{ textShadow: '1px 1px 7px white' }}>Tomás Barrera</span>
               </h2>
             </FadeIn>
 

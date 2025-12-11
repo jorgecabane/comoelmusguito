@@ -13,8 +13,6 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   href?: string;
-  textColor?: string;
-  hideText?: boolean;
 }
 
 const sizeMap = {
@@ -27,9 +25,7 @@ export function Logo({
   variant = 'default', 
   size = 'md',
   className = '',
-  href = '/',
-  textColor = 'text-forest',
-  hideText = false
+  href = '/'
 }: LogoProps) {
   const dimensions = sizeMap[size];
 
@@ -44,8 +40,8 @@ export function Logo({
         className={className}
         priority
         />
-      {variant === 'default' && !hideText && (
-        <span className={`font-display font-bold ${textColor}`} style={{ fontSize: `${dimensions.height * 0.5}px` }}>
+      {variant === 'default' && (
+        <span className="font-display font-bold text-forest" style={{ fontSize: `${dimensions.height * 0.5}px` }}>
           comoelmusguito
         </span>
       )}

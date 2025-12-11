@@ -12,30 +12,10 @@ import { getWhatsAppLink } from '@/lib/config/contact';
 
 export const revalidate = 60;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
-
 export const metadata = {
   title: 'Terrarios Artesanales',
   description:
     'Explora nuestra colección de terrarios artesanales únicos. Cada uno hecho a mano con plantas nativas y musgo recolectado sustentablemente.',
-  openGraph: {
-    title: 'Terrarios Artesanales | comoelmusguito',
-    description: 'Explora nuestra colección de terrarios artesanales únicos. Cada uno hecho a mano con plantas nativas y musgo recolectado sustentablemente.',
-    images: [
-      {
-        url: `${SITE_URL}/api/og?type=terrarios`,
-        width: 1200,
-        height: 630,
-        alt: 'Terrarios artesanales comoelmusguito',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Terrarios Artesanales | comoelmusguito',
-    description: 'Explora nuestra colección de terrarios artesanales únicos.',
-    images: [`${SITE_URL}/api/og?type=terrarios`],
-  },
 };
 
 export default async function TerrariosPage() {
