@@ -47,7 +47,7 @@ export default async function Home() {
       <LearnSection courses={cursos} userCurrency={userCurrency} />
 
       {/* CAPÍTULO 6: LA COMUNIDAD */}
-      <CommunitySection />
+      {/* <CommunitySection /> */}
 
       {/* CAPÍTULO 7: TU TURNO */}
       <FinalCTA />
