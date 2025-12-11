@@ -19,8 +19,10 @@ const inter = Inter({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3002'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "comoelmusguito - Terrarios Artesanales y Cursos Online",
     template: "%s | comoelmusguito",
@@ -42,14 +44,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_CL",
-    url: "https://comoelmusguito.cl",
+    url: SITE_URL,
     siteName: "comoelmusguito",
     title: "comoelmusguito - Crea Vida en Cualquier Lugar",
     description:
       "Terrarios artesanales únicos y cursos para aprender a crear ecosistemas autosustentables.",
     images: [
       {
-        url: "/og/home.jpg",
+        url: `${SITE_URL}/api/og?type=home`,
         width: 1200,
         height: 630,
         alt: "Terrarios artesanales comoelmusguito",
@@ -60,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "comoelmusguito - Terrarios Artesanales",
     description: "Crea vida en cualquier lugar. Terrarios únicos y cursos online.",
-    images: ["/og/home.jpg"],
+    images: [`${SITE_URL}/api/og?type=home`],
     creator: "@comoelmusguito",
   },
   robots: {
@@ -73,6 +75,11 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
+  },
+  icons: {
+    icon: "/logo/logo.svg",
+    shortcut: "/logo/logo.svg",
+    apple: "/logo/logo.svg",
   },
 };
 

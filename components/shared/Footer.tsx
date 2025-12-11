@@ -72,7 +72,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1 lg:col-span-1 space-y-4 text-center md:text-left">
             <div className="flex justify-center md:justify-start">
-              <Logo size="md" textColor="text-white"/>
+              <Logo size="md" textColor="text-white" hideText={true}/>
             </div>
             <p className="text-cream/70 text-sm leading-relaxed">
               Crea vida en cualquier lugar. Terrarios artesanales y educación

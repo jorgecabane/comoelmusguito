@@ -14,10 +14,30 @@ export const revalidate = 60;
 // Forzar renderizado dinámico porque usamos geolocalización
 export const dynamic = 'force-dynamic';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
+
 export const metadata = {
   title: 'Cursos Online de Terrarios',
   description:
     'Aprende a crear terrarios autosustentables con cursos online completos. A tu ritmo, desde cualquier lugar del mundo.',
+  openGraph: {
+    title: 'Cursos Online de Terrarios | comoelmusguito',
+    description: 'Aprende a crear terrarios autosustentables con cursos online completos. A tu ritmo, desde cualquier lugar del mundo.',
+    images: [
+      {
+        url: `${SITE_URL}/api/og?type=cursos`,
+        width: 1200,
+        height: 630,
+        alt: 'Cursos online de terrarios comoelmusguito',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Cursos Online de Terrarios | comoelmusguito',
+    description: 'Aprende a crear terrarios autosustentables con cursos online completos.',
+    images: [`${SITE_URL}/api/og?type=cursos`],
+  },
 };
 
 export default async function CursosPage() {

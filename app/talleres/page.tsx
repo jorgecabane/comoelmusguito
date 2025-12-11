@@ -11,10 +11,30 @@ import Link from 'next/link';
 
 export const revalidate = 60;
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
+
 export const metadata = {
   title: 'Talleres Presenciales',
   description:
     'Aprende a crear terrarios en persona. Talleres prácticos en Santiago donde crearás tu propio terrario mientras aprendes las técnicas directamente.',
+  openGraph: {
+    title: 'Talleres Presenciales | comoelmusguito',
+    description: 'Aprende a crear terrarios en persona. Talleres prácticos en Santiago donde crearás tu propio terrario mientras aprendes las técnicas directamente.',
+    images: [
+      {
+        url: `${SITE_URL}/api/og?type=talleres`,
+        width: 1200,
+        height: 630,
+        alt: 'Talleres presenciales comoelmusguito',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Talleres Presenciales | comoelmusguito',
+    description: 'Aprende a crear terrarios en persona. Talleres prácticos en Santiago.',
+    images: [`${SITE_URL}/api/og?type=talleres`],
+  },
 };
 
 export default async function TalleresPage() {
