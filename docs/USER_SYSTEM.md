@@ -381,3 +381,4 @@ export default async function CoursePage({ params }) {
 - [Sanity Authentication](https://www.sanity.io/docs/authentication)
 - [OAuth Providers](https://next-auth.js.org/providers/)
 
+

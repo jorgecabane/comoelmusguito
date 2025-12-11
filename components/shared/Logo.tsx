@@ -13,6 +13,7 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   href?: string;
+  textColor?: string;
 }
 
 const sizeMap = {
@@ -25,7 +26,8 @@ export function Logo({
   variant = 'default', 
   size = 'md',
   className = '',
-  href = '/'
+  href = '/',
+  textColor = 'text-forest'
 }: LogoProps) {
   const dimensions = sizeMap[size];
 
@@ -41,7 +43,7 @@ export function Logo({
         priority
         />
       {variant === 'default' && (
-        <span className="font-display font-bold text-forest" style={{ fontSize: `${dimensions.height * 0.5}px` }}>
+        <span className={`font-display font-bold ${textColor}`} style={{ fontSize: `${dimensions.height * 0.5}px` }}>
           comoelmusguito
         </span>
       )}

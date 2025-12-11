@@ -71,7 +71,9 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12 mb-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1 lg:col-span-1 space-y-4 text-center md:text-left">
-            <Logo size="md"/>
+            <div className="flex justify-center md:justify-start">
+              <Logo size="md" textColor="text-white"/>
+            </div>
             <p className="text-cream/70 text-sm leading-relaxed">
               Crea vida en cualquier lugar. Terrarios artesanales y educación
               para conectar con la naturaleza.
