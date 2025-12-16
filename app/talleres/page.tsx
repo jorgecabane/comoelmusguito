@@ -111,7 +111,19 @@ export default async function TalleresPage() {
                 const slug = getSlugString(taller.slug);
                 const imageUrl = getFirstImage(taller.images, { width: 800 });
                 const levelLabel = taller.level && taller.level !== 'all' ? levelLabels[taller.level] : 'Todos los Niveles';
-                const proximaFecha = taller.proximasFechas[0];
+                
+                // Buscar la primera fecha disponible (no agotada)
+                const primeraFechaDisponible = taller.proximasFechas?.find(
+                  (fecha) => fecha.status !== 'sold_out'
+                );
+                
+                // Si no hay fecha disponible, usar la primera fecha (que estará agotada)
+                const proximaFecha = primeraFechaDisponible || taller.proximasFechas?.[0];
+                
+                // Verificar si hay alguna fecha disponible para habilitar el botón
+                const hayFechasDisponibles = taller.proximasFechas?.some(
+                  (fecha) => fecha.status !== 'sold_out'
+                ) ?? false;
 
                 return (
                   <Link key={taller._id} href={`/talleres/${slug}`}>
@@ -136,6 +148,8 @@ export default async function TalleresPage() {
                               >
                                 {proximaFecha.status === 'sold_out'
                                   ? 'Agotado'
+                                  : proximaFecha.spotsAvailable === 1
+                                  ? '1 cupo'
                                   : `${proximaFecha.spotsAvailable} cupos`}
                               </Badge>
                             ) : (
@@ -183,10 +197,10 @@ export default async function TalleresPage() {
                           <Button
                             variant="primary"
                             className="w-full group-hover:bg-musgo-dark transition-colors"
-                            disabled={!proximaFecha || proximaFecha.status === 'sold_out'}
+                            disabled={!proximaFecha || !hayFechasDisponibles}
                           >
-                            {proximaFecha?.status === 'sold_out' ? 'Agotado' : 'Ver Detalles'}
-                            {proximaFecha?.status !== 'sold_out' && <ArrowRight size={18} />}
+                            {!hayFechasDisponibles ? 'Agotado' : 'Ver Detalles'}
+                            {hayFechasDisponibles && <ArrowRight size={18} />}
                           </Button>
                         </Card.Footer>
                       </div>

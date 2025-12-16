@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Configuración de Turbopack (Next.js 16 usa Turbopack por defecto)
+  // El override en package.json ya resuelve el conflicto de jsdom
+  turbopack: {},
+  
   images: {
     remotePatterns: [
       {

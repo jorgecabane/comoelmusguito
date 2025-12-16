@@ -3,6 +3,9 @@
  * Links, redes sociales, newsletter
  */
 
+'use client';
+
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Instagram, Youtube, Mail, Leaf } from 'lucide-react';
 import { Logo } from './Logo';
@@ -46,6 +49,13 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const pathname = usePathname();
+  
+  // Ocultar el Footer en /studio
+  if (pathname?.startsWith('/studio')) {
+    return null;
+  }
+
   return (
     <footer className="bg-forest text-cream">
       {/* Newsletter Section */}

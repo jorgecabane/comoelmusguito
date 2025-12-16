@@ -354,7 +354,7 @@ export default async function CoursePage({
           <div className="max-w-3xl">
             <h2 className="font-display text-2xl font-semibold text-forest mb-6 flex items-center gap-2">
               <Download size={24} />
-              Materiales que Necesitarás
+              Materiales Incluidos
             </h2>
             <div className="bg-cream rounded-xl p-6">
               <ul className="space-y-2">
