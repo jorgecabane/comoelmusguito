@@ -113,8 +113,6 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
                   >
                     {fecha.status === 'sold_out'
                       ? 'Agotado'
-                      : fecha.spotsAvailable === 1
-                      ? '1 cupo'
                       : `${fecha.spotsAvailable} cupos`}
                   </Badge>
                 </button>

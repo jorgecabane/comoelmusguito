@@ -225,6 +225,11 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                       </a>
                     </div>
                   ` : `
+                    <div style="background-color: #fff9e6; border: 2px solid #ffd700; border-radius: 8px; padding: 12px; margin: 12px 0;">
+                      <p style="margin: 0; color: #856404; font-size: 13px; font-weight: 600; text-align: center; line-height: 1.5;">
+                        ⚠️ Importante: Crea tu cuenta usando el mismo email con el que compraste (${data.customerEmail}) para que tus cursos se vinculen automáticamente.
+                      </p>
+                    </div>
                     <div style="text-align: center; margin: 16px 0 0 0;">
                       <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl'}/auth/register" 
                          style="display: inline-block; background-color: #4a7c59; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin-right: 8px;">
@@ -235,9 +240,6 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                         Ya tengo cuenta
                       </a>
                     </div>
-                    <p style="margin: 12px 0 0 0; color: #5a5a5a; font-size: 12px; text-align: center; line-height: 1.5;">
-                      Al crear tu cuenta con el mismo email (${data.customerEmail}), tus cursos se vincularán automáticamente.
-                    </p>
                   `}
                 </div>
                 ` : ''}

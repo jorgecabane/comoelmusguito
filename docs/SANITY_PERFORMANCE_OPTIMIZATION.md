@@ -199,3 +199,4 @@ npm run script:update-prices
 
 **Última actualización**: Configuración de debounce a 3 segundos implementada.
 
+

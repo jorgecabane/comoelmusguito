@@ -7,7 +7,6 @@ export { ArtistSection } from './ArtistSection';
 export { ProcessSection } from './ProcessSection';
 export { ExploreSection } from './ExploreSection';
 export { LearnSection } from './LearnSection';
-export { WorkshopsSection } from './WorkshopsSection';
 export { CommunitySection } from './CommunitySection';
 export { FinalCTA } from './FinalCTA';
 
