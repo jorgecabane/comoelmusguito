@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         if (!spotsCheck.available) {
           return NextResponse.json(
             {
-              error: `Lo sentimos, no hay suficientes cupos disponibles para "${item.name}" en la fecha seleccionada. Solo quedan ${spotsCheck.currentSpots} cupos.`,
+              error: `Lo sentimos, no hay suficientes cupos disponibles para "${item.name}" en la fecha seleccionada. Solo queda${spotsCheck.currentSpots === 1 ? '' : 'n'} ${spotsCheck.currentSpots} ${spotsCheck.currentSpots === 1 ? 'cupo' : 'cupos'}.`,
               outOfStock: true,
               itemId: item.id,
               itemName: item.name,

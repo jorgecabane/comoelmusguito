@@ -30,9 +30,13 @@ export default async function TalleresPage() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 3);
 
+    // Verificar si hay alguna fecha futura con cupos disponibles
+    const hayCuposDisponibles = proximasFechas?.some((f) => f.status !== 'sold_out') || false;
+
     return {
       ...taller,
       proximasFechas: proximasFechas || [],
+      hayCuposDisponibles,
     };
   });
 
@@ -112,6 +116,11 @@ export default async function TalleresPage() {
                 const imageUrl = getFirstImage(taller.images, { width: 800 });
                 const levelLabel = taller.level && taller.level !== 'all' ? levelLabels[taller.level] : 'Todos los Niveles';
                 const proximaFecha = taller.proximasFechas[0];
+                
+                // Buscar la primera fecha con cupos disponibles (no agotada)
+                const fechaConCupos = taller.proximasFechas.find((f) => f.status !== 'sold_out');
+                // Si no hay ninguna con cupos, usar la primera fecha (que estará agotada)
+                const fechaParaBadge = fechaConCupos || proximaFecha;
 
                 return (
                   <Link key={taller._id} href={`/talleres/${slug}`}>
@@ -123,20 +132,20 @@ export default async function TalleresPage() {
                       <div className="p-6 space-y-4 flex flex-col flex-1">
                         <Card.Content>
                           <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                            {proximaFecha ? (
+                            {fechaParaBadge ? (
                               <Badge
                                 variant={
-                                  proximaFecha.status === 'available'
+                                  fechaParaBadge.status === 'available'
                                     ? 'success'
-                                    : proximaFecha.status === 'limited'
+                                    : fechaParaBadge.status === 'limited'
                                     ? 'warning'
                                     : 'error'
                                 }
                                 size="sm"
                               >
-                                {proximaFecha.status === 'sold_out'
+                                {fechaParaBadge.status === 'sold_out'
                                   ? 'Agotado'
-                                  : `${proximaFecha.spotsAvailable} cupos`}
+                                  : `${fechaParaBadge.spotsAvailable} ${fechaParaBadge.spotsAvailable === 1 ? 'cupo' : 'cupos'}`}
                               </Badge>
                             ) : (
                               <Badge variant="default" size="sm">
@@ -183,10 +192,10 @@ export default async function TalleresPage() {
                           <Button
                             variant="primary"
                             className="w-full group-hover:bg-musgo-dark transition-colors"
-                            disabled={!proximaFecha || proximaFecha.status === 'sold_out'}
+                            disabled={!taller.hayCuposDisponibles}
                           >
-                            {proximaFecha?.status === 'sold_out' ? 'Agotado' : 'Ver Detalles'}
-                            {proximaFecha?.status !== 'sold_out' && <ArrowRight size={18} />}
+                            {!taller.hayCuposDisponibles ? 'Agotado' : 'Ver Detalles'}
+                            {taller.hayCuposDisponibles && <ArrowRight size={18} />}
                           </Button>
                         </Card.Footer>
                       </div>
