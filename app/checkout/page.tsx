@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useCartStore } from '@/lib/store/useCartStore';
 import { Button, Input } from '@/components/ui';
 import { Loader2, ArrowLeft } from 'lucide-react';
@@ -19,6 +20,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, clearCart, removeItem } = useCartStore();
   const { data: session, status } = useSession();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -27,6 +29,10 @@ export default function CheckoutPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  
+  // Verificar si reCAPTCHA está configurado
+  const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const isRecaptchaConfigured = !!RECAPTCHA_SITE_KEY;
 
   // Si el usuario está logueado, usar su información
   useEffect(() => {
@@ -88,6 +94,32 @@ export default function CheckoutPage() {
       
       if (!finalUserId && createAccount && password) {
         try {
+          // Obtener token de reCAPTCHA si está configurado
+          let recaptchaToken: string | undefined;
+          
+          if (isRecaptchaConfigured) {
+            if (!executeRecaptcha) {
+              setError('Error: reCAPTCHA no está listo. Por favor, recarga la página e intenta nuevamente.');
+              setLoading(false);
+              return;
+            }
+
+            try {
+              recaptchaToken = await executeRecaptcha('register');
+              
+              if (!recaptchaToken) {
+                setError('Error generando verificación de seguridad. Por favor, intenta nuevamente.');
+                setLoading(false);
+                return;
+              }
+            } catch (recaptchaError) {
+              console.error('Error ejecutando reCAPTCHA:', recaptchaError);
+              setError('Error generando verificación de seguridad. Por favor, intenta nuevamente.');
+              setLoading(false);
+              return;
+            }
+          }
+          
           const registerResponse = await fetch('/api/auth/register', {
             method: 'POST',
             headers: {
@@ -97,6 +129,7 @@ export default function CheckoutPage() {
               email,
               name: customerName || undefined,
               password,
+              recaptchaToken, // Incluir token si está disponible
             }),
           });
 

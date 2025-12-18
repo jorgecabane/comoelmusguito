@@ -69,6 +69,19 @@ export const terrariumBySlugQuery = groq`
   }
 `;
 
+export const terrariumByIdQuery = groq`
+  *[_type == "terrarium" && _id == $id][0] {
+    _id,
+    name,
+    slug,
+    price,
+    currency,
+    inStock,
+    stock,
+    published
+  }
+`;
+
 // ============ CURSOS ============
 
 export const coursesQuery = groq`
@@ -168,6 +181,22 @@ export const courseBySlugQuery = groq`
   }
 `;
 
+export const courseByIdQuery = groq`
+  *[_type == "course" && _id == $id][0] {
+    _id,
+    name,
+    slug,
+    priceCLP,
+    priceUSD,
+    salePriceCLP,
+    salePriceUSD,
+    price,
+    currency,
+    salePrice,
+    published
+  }
+`;
+
 // ============ TALLERES ============
 
 export const workshopsQuery = groq`
@@ -238,6 +267,23 @@ export const workshopBySlugQuery = groq`
     requirements,
     cancellationPolicy,
     seo
+  }
+`;
+
+export const workshopByIdQuery = groq`
+  *[_type == "workshop" && _id == $id][0] {
+    _id,
+    name,
+    slug,
+    price,
+    currency,
+    published,
+    dates[] {
+      date,
+      spotsAvailable,
+      spotsTotal,
+      status
+    }
   }
 `;
 

@@ -46,6 +46,7 @@ export interface SanityOrder {
   currency: 'CLP' | 'USD';
   paymentStatus: number;
   paymentDate?: string;
+  emailSent?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -137,13 +138,33 @@ export async function updateOrderPaymentStatus(
     updates.paymentDate = paymentDate;
   }
 
-    if (flowOrder !== undefined) {
-      // Convertir a string si es number
-      updates.flowOrder = typeof flowOrder === 'number' ? String(flowOrder) : flowOrder;
-    }
+  if (flowOrder !== undefined) {
+    // Convertir a string si es number
+    updates.flowOrder = typeof flowOrder === 'number' ? String(flowOrder) : flowOrder;
+  }
 
   // Usar writeClient para operaciones de escritura
   await writeClient.patch(order._id).set(updates).commit();
+}
+
+/**
+ * Marcar email como enviado en una orden
+ */
+export async function markOrderEmailSent(orderId: string): Promise<void> {
+  const query = `*[_type == "order" && orderId == $orderId][0]`;
+  const order = await client.fetch<SanityOrder | null>(query, { orderId });
+
+  if (!order || !order._id) {
+    throw new Error(`Orden ${orderId} no encontrada`);
+  }
+
+  await writeClient
+    .patch(order._id)
+    .set({
+      emailSent: true,
+      updatedAt: new Date().toISOString(),
+    })
+    .commit();
 }
 
 /**

@@ -187,6 +187,13 @@ export default defineType({
       type: 'datetime',
       initialValue: () => new Date().toISOString(),
     }),
+    defineField({
+      name: 'emailSent',
+      title: 'Email de Confirmación Enviado',
+      type: 'boolean',
+      description: 'Indica si ya se envió el email de confirmación de compra',
+      initialValue: false,
+    }),
   ],
   preview: {
     select: {

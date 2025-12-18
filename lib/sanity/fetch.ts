@@ -8,12 +8,15 @@ import {
   terrariumsQuery,
   featuredTerrariumsQuery,
   terrariumBySlugQuery,
+  terrariumByIdQuery,
   coursesQuery,
   featuredCoursesQuery,
   courseBySlugQuery,
+  courseByIdQuery,
   workshopsQuery,
   featuredWorkshopsQuery,
   workshopBySlugQuery,
+  workshopByIdQuery,
   allFeaturedQuery,
 } from '@/sanity/lib/queries';
 import type { Terrarium, Course, Workshop } from '@/types/sanity';
@@ -54,6 +57,18 @@ export async function getTerrariumBySlug(slug: string): Promise<Terrarium | null
   }
 }
 
+export async function getTerrariumById(id: string): Promise<Terrarium | null> {
+  try {
+    if (!id) {
+      return null;
+    }
+    return await client.fetch<Terrarium | null>(terrariumByIdQuery, { id });
+  } catch (error) {
+    console.error('Error fetching terrarium by id:', error);
+    return null;
+  }
+}
+
 // ============ CURSOS ============
 
 export async function getAllCourses(): Promise<Course[]> {
@@ -90,6 +105,18 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
   }
 }
 
+export async function getCourseById(id: string): Promise<Course | null> {
+  try {
+    if (!id) {
+      return null;
+    }
+    return await client.fetch<Course | null>(courseByIdQuery, { id });
+  } catch (error) {
+    console.error('Error fetching course by id:', error);
+    return null;
+  }
+}
+
 // ============ TALLERES ============
 
 export async function getAllWorkshops(): Promise<Workshop[]> {
@@ -122,6 +149,18 @@ export async function getWorkshopBySlug(slug: string): Promise<Workshop | null> 
     return result;
   } catch (error) {
     console.error('Error fetching workshop by slug:', error);
+    return null;
+  }
+}
+
+export async function getWorkshopById(id: string): Promise<Workshop | null> {
+  try {
+    if (!id) {
+      return null;
+    }
+    return await client.fetch<Workshop | null>(workshopByIdQuery, { id });
+  } catch (error) {
+    console.error('Error fetching workshop by id:', error);
     return null;
   }
 }

@@ -4,12 +4,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getPaymentStatusByOrder, getPaymentStatus, verifyFlowSignature } from '@/lib/flow';
+import { getPaymentStatus } from '@/lib/flow';
 import { sendOrderConfirmationEmail } from '@/lib/resend/client';
 import {
   getOrderByOrderId,
   updateOrderPaymentStatus,
   createCourseAccess,
+  markOrderEmailSent,
 } from '@/lib/sanity/orders';
 import {
   decreaseTerrariumStock,
@@ -18,9 +19,6 @@ import {
 import type { EmailOrderData, EmailOrderItem } from '@/lib/resend/client';
 
 export const dynamic = 'force-dynamic';
-
-// Cache simple para evitar emails duplicados (en producción usar Redis o DB)
-const sentEmails = new Set<string>();
 
 /**
  * GET /api/webhooks/flow
@@ -57,12 +55,15 @@ export async function POST(request: NextRequest) {
       flowData = await request.json();
     }
 
-    const { token, commerceOrder, flowOrder, status, amount, currency, payer, s } = flowData;
+    const { token, commerceOrder, flowOrder, status, amount, currency, payer } = flowData;
 
-    // Validar que tenemos los datos mínimos
-    if (!commerceOrder && !token) {
+    // Validar que tenemos el token (Flow siempre envía token en webhooks)
+    // Según documentación: Flow envía notificaciones con un token, no con firma
+    // La firma se usa cuando el comercio consulta la API, no cuando Flow notifica
+    if (!token) {
+      console.error('⚠️ Webhook sin token - rechazado');
       return NextResponse.json(
-        { error: 'Falta token o commerceOrder' },
+        { error: 'Token requerido' },
         { 
           status: 400,
           headers: {
@@ -72,53 +73,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar firma de Flow (si está presente)
-    if (s) {
-      const isValid = verifyFlowSignature(flowData, process.env.FLOW_SECRET_KEY || '', s);
-      if (!isValid) {
-        console.error('Firma inválida en webhook de Flow');
+    // Según documentación de Flow: el webhook solo envía un token
+    // Debemos consultar payment/getStatus con ese token para obtener los datos del pago
+    // Esta consulta SÍ requiere firma (que generamos nosotros), pero el webhook no la trae
+    let paymentStatusFromWebhook: {
+      status: number;
+      amount?: number;
+      currency: string;
+      commerceOrder: string;
+      flowOrder?: string;
+      payer?: string;
+    };
+    let paymentDate: string | undefined;
+
+    try {
+      // Consultar Flow API usando el token recibido en el webhook
+      const fullPaymentStatus = await getPaymentStatus(token);
+      
+      if (!fullPaymentStatus) {
+        console.warn('No se pudo obtener estado del pago desde Flow API');
         return NextResponse.json(
-          { error: 'Firma inválida' },
           { 
-            status: 401,
+            success: true, 
+            message: 'Webhook recibido pero no se pudo obtener estado del pago' 
+          },
+          { 
+            status: 200,
             headers: {
               'Content-Type': 'application/json',
             }
           }
         );
       }
-    }
 
-    // Usar los datos que Flow envía directamente en el webhook
-    // Flow ya envía status, amount, currency, etc. No necesitamos consultar de nuevo
-    // Solo consultamos si necesitamos datos adicionales como paymentDate
-    const paymentStatusFromWebhook = {
-      status: status ? parseInt(status, 10) : undefined,
-      amount: amount ? parseFloat(amount) : undefined,
-      currency: currency || 'CLP',
-      commerceOrder: commerceOrder || '',
-      flowOrder: flowOrder || '',
-      payer: payer || '',
-    };
-
-    // Intentar obtener datos adicionales (paymentDate) consultando Flow, pero no fallar si no se puede
-    let paymentDate: string | undefined;
-    try {
-      const fullPaymentStatus = commerceOrder
-        ? await getPaymentStatusByOrder(commerceOrder)
-        : token
-        ? await getPaymentStatus(token)
-        : null;
-      
-      if (fullPaymentStatus) {
-        paymentDate = fullPaymentStatus.paymentDate;
-        // Actualizar con datos completos si los tenemos
-        if (fullPaymentStatus.status) paymentStatusFromWebhook.status = fullPaymentStatus.status;
-        if (fullPaymentStatus.flowOrder) paymentStatusFromWebhook.flowOrder = fullPaymentStatus.flowOrder;
-      }
+      // Usar los datos obtenidos de Flow API
+      paymentStatusFromWebhook = {
+        status: fullPaymentStatus.status || 0,
+        amount: fullPaymentStatus.amount,
+        currency: fullPaymentStatus.currency || 'CLP',
+        commerceOrder: fullPaymentStatus.commerceOrder || '',
+        flowOrder: fullPaymentStatus.flowOrder,
+        payer: fullPaymentStatus.payer,
+      };
+      paymentDate = fullPaymentStatus.paymentDate;
     } catch (error) {
-      // No fallar si no podemos consultar el estado - usar los datos del webhook
-      console.warn('No se pudo consultar estado completo del pago, usando datos del webhook:', error);
+      console.error('Error consultando estado del pago desde Flow API:', error);
+      // Retornar 200 de todas formas - Flow espera 200 siempre
+      return NextResponse.json(
+        { 
+          success: true, 
+          message: 'Webhook recibido pero hubo error consultando estado' 
+        },
+        { 
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
     }
 
     // Validar que tenemos al menos el status
@@ -154,22 +166,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Evitar enviar emails duplicados
-    const emailKey = `${commerceOrder || token}-${paymentStatusFromWebhook.status}`;
-    if (sentEmails.has(emailKey)) {
-      console.log(`Email ya enviado para orden ${commerceOrder || token}`);
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Email ya enviado' 
-      },
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-    }
-
     // Obtener detalles de la orden desde Sanity
     const savedOrder = await getOrderByOrderId(paymentStatusFromWebhook.commerceOrder);
     
@@ -180,6 +176,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         success: true, 
         message: 'Orden no encontrada, email no enviado' 
+      },
+      { 
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+    }
+
+    // 🔒 EVITAR EMAILS DUPLICADOS: Verificar en Sanity si ya se envió el email
+    if (savedOrder.emailSent) {
+      console.log(`✅ Email ya enviado para orden ${paymentStatusFromWebhook.commerceOrder}`);
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Email ya enviado' 
       },
       { 
         status: 200,
@@ -300,13 +311,21 @@ export async function POST(request: NextRequest) {
 
     // Enviar email de confirmación
     if (emailData.customerEmail) {
-      await sendOrderConfirmationEmail(emailData);
-      sentEmails.add(emailKey);
-      
-      // Limpiar cache después de 24 horas (simple, en producción usar TTL)
-      setTimeout(() => {
-        sentEmails.delete(emailKey);
-      }, 24 * 60 * 60 * 1000);
+      try {
+        await sendOrderConfirmationEmail(emailData);
+        
+        // 🔒 MARCAR EMAIL COMO ENVIADO EN SANITY (idempotente)
+        try {
+          await markOrderEmailSent(paymentStatusFromWebhook.commerceOrder);
+          console.log(`✅ Email marcado como enviado para orden ${paymentStatusFromWebhook.commerceOrder}`);
+        } catch (error) {
+          console.error('Error marcando email como enviado:', error);
+          // No fallar el webhook si hay error marcando el email
+        }
+      } catch (emailError) {
+        console.error('Error enviando email de confirmación:', emailError);
+        // No fallar el webhook si hay error enviando email
+      }
     }
 
     // IMPORTANTE: Retornar explícitamente 200 OK con headers correctos

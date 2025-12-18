@@ -63,3 +63,42 @@ Errores: 0
 ✅ Script completado
 ```
 
+---
+
+### `test-webhook-local.sh`
+
+Script para facilitar testing de webhook de Flow desde localhost usando ngrok.
+
+**¿Qué hace?**
+- Verifica que ngrok está instalado
+- Verifica que el servidor Next.js está corriendo
+- Inicia ngrok para crear túnel público a localhost:3000
+- Proporciona instrucciones para configurar `NEXT_PUBLIC_SITE_URL`
+
+**Uso:**
+
+```bash
+# Asegúrate de que el servidor Next.js esté corriendo en otra terminal
+npm run dev
+
+# En otra terminal, ejecutar el script
+./scripts/test-webhook-local.sh
+```
+
+**Requisitos:**
+- ngrok instalado (`brew install ngrok` o descargar desde https://ngrok.com/download)
+- Servidor Next.js corriendo en `localhost:3000`
+
+**Pasos después de ejecutar:**
+1. Copiar la URL pública que ngrok proporciona (ej: `https://abc123.ngrok.io`)
+2. Actualizar `.env.local`:
+   ```bash
+   NEXT_PUBLIC_SITE_URL=https://abc123.ngrok.io
+   ```
+3. Reiniciar servidor Next.js para que tome la nueva variable
+4. Usar esa URL para probar el checkout y recibir webhooks
+
+**Ver guía completa:** `docs/TESTING_FLOW_WEBHOOK_LOCAL.md`
+
+---
+
