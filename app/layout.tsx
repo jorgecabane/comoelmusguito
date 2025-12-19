@@ -88,6 +88,7 @@ import { AddToCartModal } from "@/components/cart/AddToCartModal";
 import { SessionProvider } from "@/components/auth/SessionProvider";
 import { RecaptchaProvider } from "@/components/auth/RecaptchaProvider";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function RootLayout({
   children,
@@ -114,6 +115,7 @@ export default function RootLayout({
           </SessionProvider>
         </RecaptchaProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
