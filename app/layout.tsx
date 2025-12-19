@@ -98,6 +98,9 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${playfair.variable} ${inter.variable}`}>
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <OrganizationSchema />
       </head>
       <body className="antialiased">

@@ -42,6 +42,11 @@ export async function GET() {
  * Recibe notificaciones de Flow cuando un pago se completa
  */
 export async function POST(request: NextRequest) {
+  const timestamp = new Date().toISOString();
+  const clientIP = request.headers.get('x-forwarded-for') || 
+                   request.headers.get('x-real-ip') || 
+                   'unknown';
+  
   try {
     // Flow envía los datos como form-urlencoded o JSON
     const contentType = request.headers.get('content-type') || '';
@@ -57,15 +62,24 @@ export async function POST(request: NextRequest) {
 
     const { token, commerceOrder, flowOrder, status, amount, currency, payer } = flowData;
 
+    // 📝 LOG INICIAL: Registrar TODOS los webhooks que llegan
+    console.log(`[Webhook Flow] ${timestamp} | IP: ${clientIP} | Token: ${token || 'N/A'} | CommerceOrder: ${commerceOrder || 'N/A'} | FlowOrder: ${flowOrder || 'N/A'} | Status: ${status || 'N/A'}`);
+
     // Validar que tenemos el token (Flow siempre envía token en webhooks)
     // Según documentación: Flow envía notificaciones con un token, no con firma
     // La firma se usa cuando el comercio consulta la API, no cuando Flow notifica
     if (!token) {
-      console.error('⚠️ Webhook sin token - rechazado');
+      console.error(`[Webhook Flow] ⚠️ ${timestamp} | IP: ${clientIP} | Webhook sin token - rechazado`);
+      // IMPORTANTE: Retornar 200 siempre - Flow espera 200 incluso si el webhook es inválido
+      // Si retornamos 400/500, Flow podría intentar reenviar el webhook
       return NextResponse.json(
-        { error: 'Token requerido' },
         { 
-          status: 400,
+          success: false,
+          error: 'Token requerido',
+          message: 'Webhook recibido pero sin token válido' 
+        },
+        { 
+          status: 200, // Siempre 200 para Flow
           headers: {
             'Content-Type': 'application/json',
           }
@@ -91,7 +105,7 @@ export async function POST(request: NextRequest) {
       const fullPaymentStatus = await getPaymentStatus(token);
       
       if (!fullPaymentStatus) {
-        console.warn('No se pudo obtener estado del pago desde Flow API');
+        console.warn(`[Webhook Flow] ⚠️ ${timestamp} | Token: ${token} | No se pudo obtener estado del pago desde Flow API`);
         return NextResponse.json(
           { 
             success: true, 
@@ -117,7 +131,7 @@ export async function POST(request: NextRequest) {
       };
       paymentDate = fullPaymentStatus.paymentDate;
     } catch (error) {
-      console.error('Error consultando estado del pago desde Flow API:', error);
+      console.error(`[Webhook Flow] ❌ ${timestamp} | Token: ${token} | Error consultando estado del pago desde Flow API:`, error);
       // Retornar 200 de todas formas - Flow espera 200 siempre
       return NextResponse.json(
         { 
@@ -135,7 +149,7 @@ export async function POST(request: NextRequest) {
 
     // Validar que tenemos al menos el status
     if (!paymentStatusFromWebhook.status) {
-      console.warn('No se pudo determinar el estado del pago desde el webhook');
+      console.warn(`[Webhook Flow] ⚠️ ${timestamp} | Token: ${token} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | No se pudo determinar el estado del pago desde el webhook`);
       // Retornar 200 de todas formas - Flow espera 200 siempre
       return NextResponse.json(
         { 
@@ -153,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     // Solo procesar si el pago está confirmado (status = 2)
     if (paymentStatusFromWebhook.status !== 2) {
-      console.log(`Pago ${commerceOrder || token} no está confirmado (status: ${paymentStatusFromWebhook.status})`);
+      console.log(`[Webhook Flow] ℹ️ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Pago no está confirmado (status: ${paymentStatusFromWebhook.status})`);
       return NextResponse.json({ 
         success: true, 
         message: 'Pago no confirmado, email no enviado' 
@@ -170,7 +184,7 @@ export async function POST(request: NextRequest) {
     const savedOrder = await getOrderByOrderId(paymentStatusFromWebhook.commerceOrder);
     
     if (!savedOrder) {
-      console.warn(`Orden ${paymentStatusFromWebhook.commerceOrder} no encontrada en el sistema`);
+      console.warn(`[Webhook Flow] ⚠️ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Orden no encontrada en el sistema`);
       // Si no encontramos la orden, retornar éxito pero no enviar email
       // IMPORTANTE: Retornar 200 siempre - Flow espera 200
       return NextResponse.json({ 
@@ -187,7 +201,7 @@ export async function POST(request: NextRequest) {
 
     // 🔒 EVITAR EMAILS DUPLICADOS: Verificar en Sanity si ya se envió el email
     if (savedOrder.emailSent) {
-      console.log(`✅ Email ya enviado para orden ${paymentStatusFromWebhook.commerceOrder}`);
+      console.log(`[Webhook Flow] ✅ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Email ya enviado previamente`);
       return NextResponse.json({ 
         success: true, 
         message: 'Email ya enviado' 
@@ -328,6 +342,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 📝 LOG FINAL: Registrar webhook procesado exitosamente
+    console.log(`[Webhook Flow] ✅ ${timestamp} | Orden ${paymentStatusFromWebhook.commerceOrder} procesada exitosamente`);
+
     // IMPORTANTE: Retornar explícitamente 200 OK con headers correctos
     // NO usar redirect() - Flow espera una respuesta JSON directa, no una redirección
     // El 307 que Flow recibía probablemente venía de retornar errores (500) o de alguna
@@ -351,7 +368,12 @@ export async function POST(request: NextRequest) {
     return response;
 
   } catch (error) {
-    console.error('Error procesando webhook de Flow:', error);
+    // 📝 LOG ERROR: Registrar error pero también los datos recibidos
+    console.error(`[Webhook Flow] ❌ ${timestamp} | IP: ${clientIP} | Error procesando webhook:`, error);
+    if (error instanceof Error) {
+      console.error(`[Webhook Flow] Stack trace:`, error.stack);
+    }
+    
     // IMPORTANTE: Flow espera que siempre retornemos 200, incluso si hay errores
     // Si retornamos 500, Vercel/Next.js podría redirigir automáticamente (causando el 307)
     // Por eso siempre retornamos 200 con un mensaje de error en el body

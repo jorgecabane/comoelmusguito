@@ -4,7 +4,7 @@
  */
 
 import { getCourseBySlug, getAllCourses } from '@/lib/sanity/fetch';
-import { getImageUrl, formatPriceWithSale, levelLabels, getCoursePrice } from '@/lib/sanity/utils';
+import { getImageUrl, formatPriceWithSale, levelLabels, getCoursePrice, getSlugString } from '@/lib/sanity/utils';
 import { getUserCurrency } from '@/lib/utils/geolocation';
 import { getSession } from '@/lib/auth/get-session';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { CourseDetail } from '@/components/product/CourseDetail';
+import { CourseSchema, BreadcrumbSchema } from '@/lib/seo/schema';
 
 export const revalidate = 60;
 // Forzar renderizado dinámico porque usamos geolocalización
@@ -46,9 +47,32 @@ export async function generateMetadata({ params }: CoursePageProps) {
     };
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
+  const courseSlug = getSlugString(course.slug);
+  const thumbnail = getImageUrl(course.thumbnail, { width: 1200, height: 675 });
+
+  // Obtener precio del curso (usar precio base en CLP para metadata)
+  const coursePricing = getCoursePrice(course, 'CLP');
+  const price = coursePricing.price;
+  const currency = coursePricing.currency;
+
   return {
-    title: course.seo?.metaTitle || course.name,
+    title: course.seo?.metaTitle || `${course.name} - Curso Online`,
     description: course.seo?.metaDescription || course.shortDescription,
+    openGraph: {
+      title: course.seo?.metaTitle || course.name,
+      description: course.seo?.metaDescription || course.shortDescription,
+      images: [{ url: thumbnail, width: 1200, height: 675 }],
+      url: `${baseUrl}/cursos/${courseSlug}`,
+      type: 'website',
+    },
+    // Metadata adicional para rich snippets
+    other: {
+      'product:price:amount': price.toString(),
+      'product:price:currency': currency,
+      'product:availability': 'in stock', // Los cursos siempre están disponibles
+      'product:condition': 'new',
+    },
   };
 }
 
@@ -87,23 +111,45 @@ export default async function CoursePage({
   );
 
   const levelLabel = course.level ? levelLabels[course.level] : 'Todos';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
+  const courseSlug = getSlugString(course.slug);
+  const thumbnail = getImageUrl(course.thumbnail, { width: 1200, height: 675 });
 
   return (
-    <div className="pt-32 pb-16">
-      {/* Breadcrumb */}
-      <div className="container mb-8">
-        <div className="flex items-center gap-2 text-sm text-gray">
-          <Link href="/" className="hover:text-musgo transition-colors">
-            Inicio
-          </Link>
-          <span>/</span>
-          <Link href="/cursos" className="hover:text-musgo transition-colors">
-            Cursos
-          </Link>
-          <span>/</span>
-          <span className="text-forest">{course.name}</span>
+    <>
+      {/* Structured Data para SEO */}
+      <CourseSchema
+        name={course.name}
+        description={course.shortDescription || ''}
+        thumbnail={thumbnail}
+        price={coursePricing.price}
+        currency={coursePricing.currency}
+        duration={course.duration || 0}
+        level={course.level === 'beginner' ? 'Beginner' : course.level === 'intermediate' ? 'Intermediate' : 'Advanced'}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Inicio', url: baseUrl },
+          { name: 'Cursos Online', url: `${baseUrl}/cursos` },
+          { name: course.name, url: `${baseUrl}/cursos/${courseSlug}` },
+        ]}
+      />
+      
+      <div className="pt-32 pb-16">
+        {/* Breadcrumb */}
+        <div className="container mb-8">
+          <div className="flex items-center gap-2 text-sm text-gray">
+            <Link href="/" className="hover:text-musgo transition-colors">
+              Inicio
+            </Link>
+            <span>/</span>
+            <Link href="/cursos" className="hover:text-musgo transition-colors">
+              Cursos
+            </Link>
+            <span>/</span>
+            <span className="text-forest">{course.name}</span>
+          </div>
         </div>
-      </div>
 
       {/* Mensajes de alerta según query params */}
       {params_search?.requireAuth === 'true' && (
@@ -408,6 +454,7 @@ export default async function CoursePage({
         </Link>
       </section>
     </div>
+    </>
   );
 }
 

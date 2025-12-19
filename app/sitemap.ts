@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { getAllTerrariums, getAllCourses, getAllWorkshops } from '@/lib/sanity/fetch';
 
 /**
  * Genera sitemap.xml dinámico
@@ -6,11 +7,6 @@ import { MetadataRoute } from 'next';
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
-  
-  // TODO: Descomentar cuando implementemos Sanity
-  // const terrariums = await getTerrariums();
-  // const courses = await getCourses();
-  // const blogPosts = await getBlogPosts();
   
   // Páginas estáticas principales
   const staticPages: MetadataRoute.Sitemap = [
@@ -39,12 +35,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
       url: `${baseUrl}/sobre`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -56,39 +46,75 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    {
+      url: `${baseUrl}/faq`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/sustentabilidad`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/envios`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/privacidad`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/terminos`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
   ];
   
-  // TODO: Agregar páginas dinámicas cuando implementemos Sanity
-  /*
-  const terrariumPages = terrariums.map((terrarium) => ({
-    url: `${baseUrl}/terrarios/${terrarium.slug}`,
-    lastModified: new Date(terrarium.updatedAt),
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }));
-  
-  const coursePages = courses.map((course) => ({
-    url: `${baseUrl}/cursos/${course.slug}`,
-    lastModified: new Date(course.updatedAt),
-    changeFrequency: 'monthly' as const,
-    priority: 0.9,
-  }));
-  
-  const blogPages = blogPosts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.publishedAt),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }));
-  
-  return [
-    ...staticPages,
-    ...terrariumPages,
-    ...coursePages,
-    ...blogPages,
-  ];
-  */
-  
-  return staticPages;
+  // Páginas dinámicas de productos
+  try {
+    const terrariums = await getAllTerrariums();
+    const courses = await getAllCourses();
+    const workshops = await getAllWorkshops();
+    
+    const terrariumPages: MetadataRoute.Sitemap = terrariums.map((terrarium) => ({
+      url: `${baseUrl}/terrarios/${terrarium.slug.current}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
+    
+    const coursePages: MetadataRoute.Sitemap = courses.map((course) => ({
+      url: `${baseUrl}/cursos/${course.slug.current}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    }));
+    
+    const workshopPages: MetadataRoute.Sitemap = workshops.map((workshop) => ({
+      url: `${baseUrl}/talleres/${workshop.slug.current}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
+    
+    return [
+      ...staticPages,
+      ...terrariumPages,
+      ...coursePages,
+      ...workshopPages,
+    ];
+  } catch (error) {
+    console.error('Error generando sitemap:', error);
+    // Si hay error, retornar solo páginas estáticas
+    return staticPages;
+  }
 }
 

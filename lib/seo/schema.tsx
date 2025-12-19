@@ -19,7 +19,7 @@ export function OrganizationSchema({}: SchemaProps) {
     name: SITE_CONFIG.name,
     alternateName: 'El Musguito',
     url: SITE_CONFIG.url,
-    logo: `${SITE_CONFIG.url}/logo.png`,
+    logo: `${SITE_CONFIG.url}/favicon.png`,
     description: SITE_CONFIG.description,
     founder: {
       '@type': 'Person',

@@ -4,12 +4,13 @@
  */
 
 import { getTerrariumBySlug, getAllTerrariums } from '@/lib/sanity/fetch';
-import { getImageUrl, formatPrice, sizeLabels, categoryLabels } from '@/lib/sanity/utils';
+import { getImageUrl, formatPrice, sizeLabels, categoryLabels, getSlugString } from '@/lib/sanity/utils';
 import { Badge, Button, ImageGallery } from '@/components/ui';
 import { Leaf, Package, Droplets } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { TerrariumDetail } from '@/components/product/TerrariumDetail';
+import { ProductSchema, BreadcrumbSchema } from '@/lib/seo/schema';
 
 export const revalidate = 60;
 
@@ -38,9 +39,32 @@ export async function generateMetadata({ params }: TerrariumPageProps) {
     };
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
+  const terrariumSlug = getSlugString(terrarium.slug);
+  const images = terrarium.images?.map((img) => 
+    getImageUrl(img, { width: 1200, height: 1200 })
+  ) || [];
+
+  const price = terrarium.price || 0;
+  const currency = terrarium.currency || 'CLP';
+
   return {
-    title: terrarium.seo?.metaTitle || terrarium.name,
+    title: terrarium.seo?.metaTitle || `${terrarium.name} - Terrario Artesanal`,
     description: terrarium.seo?.metaDescription || terrarium.description,
+    openGraph: {
+      title: terrarium.seo?.metaTitle || terrarium.name,
+      description: terrarium.seo?.metaDescription || terrarium.description,
+      images: images.length > 0 ? [{ url: images[0], width: 1200, height: 1200 }] : [],
+      url: `${baseUrl}/terrarios/${terrariumSlug}`,
+      type: 'website',
+    },
+    // Metadata adicional para rich snippets
+    other: {
+      'product:price:amount': price.toString(),
+      'product:price:currency': currency,
+      'product:availability': terrarium.inStock ? 'in stock' : 'out of stock',
+      'product:condition': 'new',
+    },
   };
 }
 
@@ -54,23 +78,47 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
 
   const sizeLabel = terrarium.size ? sizeLabels[terrarium.size] : 'N/A';
   const categoryLabel = terrarium.category ? categoryLabels[terrarium.category] : 'N/A';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
+  const terrariumSlug = getSlugString(terrarium.slug);
+  const images = terrarium.images?.map((img) => 
+    getImageUrl(img, { width: 1200, height: 1200 })
+  ) || [];
 
   return (
-    <div className="pt-32 pb-16">
-      {/* Breadcrumb */}
-      <div className="container mb-8">
-        <div className="flex items-center gap-2 text-sm text-gray">
-          <Link href="/" className="hover:text-musgo transition-colors">
-            Inicio
-          </Link>
-          <span>/</span>
-          <Link href="/terrarios" className="hover:text-musgo transition-colors">
-            Terrarios
-          </Link>
-          <span>/</span>
-          <span className="text-forest">{terrarium.name}</span>
+    <>
+      {/* Structured Data para SEO */}
+      <ProductSchema
+        name={terrarium.name}
+        description={terrarium.description}
+        images={images}
+        price={terrarium.price}
+        currency={terrarium.currency}
+        slug={terrariumSlug}
+        inStock={terrarium.inStock || false}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Inicio', url: baseUrl },
+          { name: 'Terrarios', url: `${baseUrl}/terrarios` },
+          { name: terrarium.name, url: `${baseUrl}/terrarios/${terrariumSlug}` },
+        ]}
+      />
+      
+      <div className="pt-32 pb-16">
+        {/* Breadcrumb */}
+        <div className="container mb-8">
+          <div className="flex items-center gap-2 text-sm text-gray">
+            <Link href="/" className="hover:text-musgo transition-colors">
+              Inicio
+            </Link>
+            <span>/</span>
+            <Link href="/terrarios" className="hover:text-musgo transition-colors">
+              Terrarios
+            </Link>
+            <span>/</span>
+            <span className="text-forest">{terrarium.name}</span>
+          </div>
         </div>
-      </div>
 
       {/* Main Content */}
       <section className="container">
@@ -190,6 +238,7 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
         </Link>
       </section>
     </div>
+    </>
   );
 }
 

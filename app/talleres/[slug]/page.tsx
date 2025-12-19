@@ -4,12 +4,13 @@
  */
 
 import { getWorkshopBySlug, getAllWorkshops } from '@/lib/sanity/fetch';
-import { getImageUrl, levelLabels } from '@/lib/sanity/utils';
+import { getImageUrl, levelLabels, getSlugString, getFirstImage } from '@/lib/sanity/utils';
 import { Badge, Button, ImageGallery } from '@/components/ui';
 import { MapPin, Clock, CheckCircle2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { WorkshopDetail } from '@/components/product/WorkshopDetail';
+import { EventSchema, BreadcrumbSchema } from '@/lib/seo/schema';
 
 export const revalidate = 60;
 
@@ -53,9 +54,47 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
   }
 
   const levelLabel = taller.level && taller.level !== 'all' ? levelLabels[taller.level] : 'Todos los Niveles';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
+  const workshopSlug = getSlugString(taller.slug);
+  const image = getFirstImage(taller.images, { width: 1200, height: 675 });
+  
+  // Obtener próxima fecha disponible para el schema
+  const proximaFecha = taller.dates
+    ?.filter((date) => {
+      const fechaTaller = new Date(date.date);
+      return fechaTaller > new Date() && date.status !== 'cancelled' && date.status !== 'sold_out';
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
 
   return (
-    <div className="pt-32 pb-16">
+    <>
+      {/* Structured Data para SEO */}
+      {proximaFecha && (
+        <EventSchema
+          name={taller.name}
+          description={taller.description}
+          image={image}
+          startDate={proximaFecha.date}
+          endDate={new Date(new Date(proximaFecha.date).getTime() + (taller.duration || 4) * 60 * 60 * 1000).toISOString()}
+          location={{
+            name: taller.location?.venue || 'Taller comoelmusguito',
+            address: taller.location?.address || '',
+            city: taller.location?.city || 'Santiago',
+          }}
+          price={taller.price}
+          currency={taller.currency}
+          availability={proximaFecha.status === 'sold_out' ? 'SoldOut' : 'InStock'}
+        />
+      )}
+      <BreadcrumbSchema
+        items={[
+          { name: 'Inicio', url: baseUrl },
+          { name: 'Talleres Presenciales', url: `${baseUrl}/talleres` },
+          { name: taller.name, url: `${baseUrl}/talleres/${workshopSlug}` },
+        ]}
+      />
+      
+      <div className="pt-32 pb-16">
       {/* Breadcrumb */}
       <div className="container mb-8">
         <div className="flex items-center gap-2 text-sm text-gray">
@@ -180,6 +219,7 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
         </Link>
       </section>
     </div>
+    </>
   );
 }
 
