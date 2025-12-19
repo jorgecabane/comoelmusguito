@@ -87,6 +87,7 @@ import { PrefetchLinks } from "@/components/shared/PrefetchLinks";
 import { AddToCartModal } from "@/components/cart/AddToCartModal";
 import { SessionProvider } from "@/components/auth/SessionProvider";
 import { RecaptchaProvider } from "@/components/auth/RecaptchaProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 export default function RootLayout({
   children,
@@ -112,6 +113,7 @@ export default function RootLayout({
             <AddToCartModal />
           </SessionProvider>
         </RecaptchaProvider>
+        <Analytics />
       </body>
     </html>
   );
