@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   // El override en package.json ya resuelve el conflicto de jsdom
   turbopack: {},
   
+  // Excluir jsdom del bundle de producción para evitar errores ESM
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Excluir jsdom del bundle del servidor
+      config.externals = config.externals || [];
+      config.externals.push('jsdom');
+    }
+    return config;
+  },
+  
   images: {
     remotePatterns: [
       {

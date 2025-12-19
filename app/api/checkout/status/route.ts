@@ -8,9 +8,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getPaymentStatus, getPaymentStatusByOrder } from '@/lib/flow/client';
-import { updateOrderPaymentStatus, getOrderByOrderId, createCourseAccess } from '@/lib/sanity/orders';
+import { updateOrderPaymentStatus, getOrderByOrderId, createCourseAccess, markOrderEmailSent } from '@/lib/sanity/orders';
 import { decreaseTerrariumStock, decreaseWorkshopSpots } from '@/lib/sanity/inventory';
+import { sendOrderConfirmationEmail } from '@/lib/resend/client';
 import { client } from '@/sanity/lib/client';
+import type { EmailOrderItem } from '@/lib/resend/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,6 +118,53 @@ export async function POST(request: NextRequest) {
           }
         } else if (currentOrder && currentOrder.paymentStatus === 2) {
           console.log(`[Callback] Orden ${paymentStatus.commerceOrder} ya está confirmada, saltando actualización y descuento de stock`);
+          
+          // Si el pago ya está confirmado pero el email no fue enviado, enviarlo como backup
+          if (!currentOrder.emailSent && currentOrder.customerEmail) {
+            try {
+              console.log(`[Callback] Email no enviado aún, enviando desde callback como backup para orden ${paymentStatus.commerceOrder}`);
+              
+              const orderItems: EmailOrderItem[] = currentOrder.items.map((item) => {
+                let selectedDate: { date: string; time: string } | undefined;
+                if (item.selectedDate) {
+                  selectedDate = {
+                    date: item.selectedDate.date,
+                    time: item.selectedDate.time || '',
+                  };
+                }
+                return {
+                  name: item.name,
+                  type: item.type,
+                  quantity: item.quantity,
+                  price: item.price,
+                  currency: item.currency,
+                  slug: item.slug,
+                  selectedDate,
+                };
+              });
+
+              const hasAccount = !!currentOrder.userId?._ref;
+              
+              await sendOrderConfirmationEmail({
+                orderId: currentOrder.orderId,
+                flowOrder: currentOrder.flowOrder ? String(currentOrder.flowOrder) : undefined,
+                customerEmail: currentOrder.customerEmail,
+                customerName: currentOrder.customerName,
+                items: orderItems,
+                total: currentOrder.total,
+                currency: currentOrder.currency,
+                paymentDate: currentOrder.paymentDate || new Date().toISOString(),
+                hasAccount,
+              });
+
+              // Marcar email como enviado
+              await markOrderEmailSent(paymentStatus.commerceOrder);
+              console.log(`✅ Email de confirmación enviado desde callback para orden ${paymentStatus.commerceOrder}`);
+            } catch (emailError) {
+              console.error(`[Callback] Error enviando email de backup para orden ${paymentStatus.commerceOrder}:`, emailError);
+              // No fallar si hay error enviando email
+            }
+          }
         }
       } catch (updateError) {
         // No fallar la respuesta si la actualización falla

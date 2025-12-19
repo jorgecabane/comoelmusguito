@@ -103,6 +103,12 @@ function LoginContent() {
             </div>
           )}
 
+          {searchParams.get('alreadyVerified') === 'true' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-blue-800 text-sm">
+              ℹ️ Tu email ya está verificado. Puedes iniciar sesión con tu email y contraseña.
+            </div>
+          )}
+
           {searchParams.get('passwordReset') === 'true' && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-green-800 text-sm">
               ✅ Contraseña restablecida exitosamente. Ya puedes iniciar sesión.

@@ -23,8 +23,21 @@ export async function GET(request: NextRequest) {
     const user = await getUserByVerificationToken(token);
 
     if (!user) {
+      // Verificar si el email ya está verificado buscando por el token en la URL
+      // Si no encontramos el usuario por token, puede ser que:
+      // 1. El token expiró
+      // 2. El token ya fue usado (email ya verificado)
+      // Intentamos buscar si hay un usuario con email verificado que podría haber usado este token
+      // Pero como no tenemos el email en la URL, simplemente redirigimos con un mensaje más claro
       return NextResponse.redirect(
-        new URL('/auth/error?error=InvalidToken', request.url)
+        new URL('/auth/error?error=TokenUsedOrExpired', request.url)
+      );
+    }
+
+    // Si el usuario ya está verificado, mostrar mensaje amigable
+    if (user.emailVerified) {
+      return NextResponse.redirect(
+        new URL('/auth/login?alreadyVerified=true', request.url)
       );
     }
 

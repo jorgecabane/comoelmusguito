@@ -32,6 +32,22 @@ function ErrorContent() {
           title: 'Error de Verificación',
           message: 'El enlace de verificación ha expirado o es inválido.',
         };
+      case 'InvalidToken':
+      case 'TokenUsedOrExpired':
+        return {
+          title: 'Enlace Expirado o Ya Utilizado',
+          message: 'Este enlace de verificación ya fue utilizado o ha expirado. Si tu email ya está verificado, puedes iniciar sesión directamente. Si necesitas un nuevo enlace, puedes solicitarlo desde la página de login.',
+        };
+      case 'VerificationTokenMissing':
+        return {
+          title: 'Token Faltante',
+          message: 'El enlace de verificación no es válido. Por favor, solicita un nuevo enlace desde la página de login.',
+        };
+      case 'VerificationFailed':
+        return {
+          title: 'Error al Verificar',
+          message: 'No se pudo verificar tu email. Por favor, intenta nuevamente o contacta soporte.',
+        };
       default:
         return {
           title: 'Error de Autenticación',

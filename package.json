@@ -51,6 +51,10 @@
     "typescript": "^5"
   },
   "overrides": {
-    "jsdom": "^27.2.0"
+    "jsdom": "^27.2.0",
+    "parse5": "^7.1.2"
+  },
+  "resolutions": {
+    "parse5": "^7.1.2"
   }
 }
