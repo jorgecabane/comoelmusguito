@@ -18,6 +18,8 @@
     "@sanity/image-url": "^2.0.1",
     "@sanity/vision": "^4.19.0",
     "@types/bcryptjs": "^2.4.6",
+    "@upstash/ratelimit": "^2.0.7",
+    "@upstash/redis": "^1.35.8",
     "@vercel/og": "^0.8.5",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",

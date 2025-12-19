@@ -75,12 +75,28 @@ export default function Error({
           </div>
 
           <div className="mt-8 pt-8 border-t border-gray/20">
-            <p className="text-sm text-gray mb-2">
-              Si el problema persiste, por favor contáctanos.
+            <p className="text-sm text-gray mb-4">
+              Si el problema persiste, puedes:
             </p>
-            <Link href="/contacto" className="text-musgo hover:text-forest transition-colors text-sm">
-              Contactar Soporte
-            </Link>
+            <div className="flex flex-col gap-2 items-center">
+              <Link 
+                href="/contacto" 
+                className="text-musgo hover:text-forest transition-colors text-sm font-medium hover:underline"
+              >
+                Contactar Soporte
+              </Link>
+              <div className="flex gap-4 text-sm">
+                <Link href="/terrarios" className="text-gray hover:text-musgo transition-colors">
+                  Terrarios
+                </Link>
+                <Link href="/cursos" className="text-gray hover:text-musgo transition-colors">
+                  Cursos
+                </Link>
+                <Link href="/talleres" className="text-gray hover:text-musgo transition-colors">
+                  Talleres
+                </Link>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>

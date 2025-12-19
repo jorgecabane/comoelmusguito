@@ -52,18 +52,30 @@ export default function NotFound() {
 
           <div className="pt-8 border-t border-gray/20">
             <p className="text-sm text-gray mb-4">O explora nuestras secciones:</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/terrarios" className="text-musgo hover:text-forest transition-colors text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-md mx-auto">
+              <Link 
+                href="/terrarios" 
+                className="text-musgo hover:text-forest transition-colors text-sm font-medium hover:underline"
+              >
                 Terrarios
               </Link>
-              <Link href="/cursos" className="text-musgo hover:text-forest transition-colors text-sm">
+              <Link 
+                href="/cursos" 
+                className="text-musgo hover:text-forest transition-colors text-sm font-medium hover:underline"
+              >
                 Cursos Online
               </Link>
-              <Link href="/talleres" className="text-musgo hover:text-forest transition-colors text-sm">
+              <Link 
+                href="/talleres" 
+                className="text-musgo hover:text-forest transition-colors text-sm font-medium hover:underline"
+              >
                 Talleres
               </Link>
-              <Link href="/mi-cuenta" className="text-musgo hover:text-forest transition-colors text-sm">
-                Mi Cuenta
+              <Link 
+                href="/sobre" 
+                className="text-musgo hover:text-forest transition-colors text-sm font-medium hover:underline"
+              >
+                Sobre el Musguito
               </Link>
             </div>
           </div>

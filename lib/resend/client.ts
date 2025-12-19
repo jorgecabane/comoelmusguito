@@ -441,6 +441,141 @@ function generateVerificationEmail(
 }
 
 /**
+ * Enviar email de reset de contraseña
+ */
+export async function sendPasswordResetEmail(
+  email: string,
+  name: string | undefined,
+  resetToken: string
+): Promise<void> {
+  if (!resend) {
+    console.warn('Resend no está configurado. Email no enviado.');
+    return;
+  }
+
+  try {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const resetUrl = `${siteUrl}/auth/reset-password?token=${resetToken}`;
+
+    const { html, subject } = generatePasswordResetEmail(name || email, resetUrl);
+
+    await resend.emails.send({
+      from: `comoelmusguito <${RESEND_FROM_EMAIL}>`,
+      to: email,
+      subject,
+      html,
+    });
+
+    console.log(`Email de reset de contraseña enviado a ${email}`);
+  } catch (error) {
+    console.error('Error enviando email de reset de contraseña:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generar HTML del email de reset de contraseña
+ */
+function generatePasswordResetEmail(
+  name: string,
+  resetUrl: string
+): { html: string; subject: string } {
+  const subject = `Restablece tu contraseña - comoelmusguito 🌿`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restablece tu contraseña</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f0; color: #2d3e2d;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f0; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #4a7c59 0%, #6b9f7a 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold; letter-spacing: -0.5px;">
+                🌱 comoelmusguito
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              
+              <h2 style="margin: 0 0 20px 0; color: #2d3e2d; font-size: 24px; font-weight: 600;">
+                Restablece tu contraseña
+              </h2>
+              
+              <p style="margin: 0 0 20px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
+                Hola${name ? ` ${name}` : ''},
+              </p>
+              
+              <p style="margin: 0 0 30px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
+                Recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no fuiste tú, puedes ignorar este email de forma segura.
+              </p>
+
+              <!-- Botón de Reset -->
+              <div style="text-align: center; margin: 40px 0;">
+                <a href="${resetUrl}" 
+                   style="display: inline-block; background-color: #4a7c59; color: #ffffff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+                  Restablecer Contraseña
+                </a>
+              </div>
+
+              <p style="margin: 30px 0 0 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                Si el botón no funciona, copia y pega este enlace en tu navegador:
+              </p>
+              <p style="margin: 8px 0 0 0; color: #4a7c59; font-size: 13px; word-break: break-all;">
+                ${resetUrl}
+              </p>
+
+              <p style="margin: 30px 0 0 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                Este enlace expirará en 1 hora por seguridad.
+              </p>
+
+              <!-- Footer -->
+              <div style="border-top: 1px solid #e8e8e3; padding-top: 30px; margin-top: 40px; text-align: center;">
+                <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                  Si no solicitaste este cambio, puedes ignorar este email de forma segura.
+                </p>
+                <p style="margin: 12px 0 0 0; color: #2d3e2d; font-size: 14px; font-weight: 600;">
+                  Con cariño,<br>
+                  Tomás Barrera<br>
+                  <span style="color: #4a7c59;">comoelmusguito</span>
+                </p>
+              </div>
+
+            </td>
+          </tr>
+
+          <!-- Footer Background -->
+          <tr>
+            <td style="background-color: #f9f9f4; padding: 20px 30px; text-align: center;">
+              <p style="margin: 0; color: #5a5a5a; font-size: 12px;">
+                Este email fue enviado para restablecer tu contraseña
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  return { html, subject };
+}
+
+/**
  * Enviar email de contacto desde formulario
  */
 export async function sendContactEmail(data: {

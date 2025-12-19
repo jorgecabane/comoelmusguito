@@ -83,6 +83,7 @@ export const viewport = {
 };
 
 import { Header, Footer } from "@/components/shared";
+import { PrefetchLinks } from "@/components/shared/PrefetchLinks";
 import { AddToCartModal } from "@/components/cart/AddToCartModal";
 import { SessionProvider } from "@/components/auth/SessionProvider";
 import { RecaptchaProvider } from "@/components/auth/RecaptchaProvider";
@@ -100,6 +101,7 @@ export default function RootLayout({
       <body className="antialiased">
         <RecaptchaProvider>
           <SessionProvider>
+            <PrefetchLinks />
             <Header />
             <main className="min-h-screen">
               {children}

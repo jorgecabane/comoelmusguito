@@ -9,6 +9,7 @@ import { getAllCourses } from '@/lib/sanity/fetch';
 import { getImageUrl, formatPriceWithSale, getSlugString, levelLabels, getCoursePrice } from '@/lib/sanity/utils';
 import { getUserCurrency } from '@/lib/utils/geolocation';
 import Link from 'next/link';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 export const revalidate = 60;
 // Forzar renderizado dinámico porque usamos geolocalización
@@ -26,6 +27,7 @@ export default async function CursosPage() {
 
   return (
     <div className="pt-32 pb-16">
+      <Breadcrumb items={[{ label: 'Cursos Online' }]} />
       {/* Header */}
       <section className="container mb-16">
         <div className="max-w-3xl">

@@ -18,6 +18,8 @@ export interface SanityUser {
   emailVerified?: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -211,6 +213,131 @@ export async function getUserByVerificationToken(
     return user;
   } catch (error) {
     console.error('Error obteniendo usuario por token:', error);
+    return null;
+  }
+}
+
+/**
+ * Generar token de reset de contraseña
+ */
+function generateResetToken(): string {
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15) + 
+         Date.now().toString(36);
+}
+
+/**
+ * Crear token de reset de contraseña para un usuario
+ */
+export async function createPasswordResetToken(email: string): Promise<string | null> {
+  try {
+    const user = await getUserByEmail(email);
+    if (!user || !user.passwordHash) {
+      // Usuario no existe o no tiene contraseña (solo OAuth)
+      return null;
+    }
+
+    const resetToken = generateResetToken();
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 1); // Expira en 1 hora
+
+    await writeClient
+      .patch(user._id)
+      .set({
+        passwordResetToken: resetToken,
+        passwordResetExpires: expires.toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .commit();
+
+    return resetToken;
+  } catch (error) {
+    console.error('Error creando token de reset:', error);
+    return null;
+  }
+}
+
+/**
+ * Obtener usuario por token de reset de contraseña
+ */
+export async function getUserByResetToken(
+  token: string
+): Promise<SanityUser | null> {
+  try {
+    const query = `*[_type == "user" && passwordResetToken == $token][0]`;
+    // @ts-ignore - Sanity type inference issue
+    const user = await client.fetch<SanityUser | null>(query, { token });
+    
+    if (!user) return null;
+    
+    // Verificar si el token expiró
+    if (user.passwordResetExpires) {
+      const expires = new Date(user.passwordResetExpires);
+      if (expires < new Date()) {
+        return null; // Token expirado
+      }
+    }
+    
+    return user;
+  } catch (error) {
+    console.error('Error obteniendo usuario por token de reset:', error);
+    return null;
+  }
+}
+
+/**
+ * Resetear contraseña del usuario
+ */
+export async function resetUserPassword(
+  userId: string,
+  newPassword: string
+): Promise<boolean> {
+  try {
+    const passwordHash = await hashPassword(newPassword);
+    
+    await writeClient
+      .patch(userId)
+      .set({
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        updatedAt: new Date().toISOString(),
+      })
+      .commit();
+    
+    return true;
+  } catch (error) {
+    console.error('Error reseteando contraseña:', error);
+    return false;
+  }
+}
+
+/**
+ * Regenerar token de verificación de email
+ */
+export async function regenerateVerificationToken(email: string): Promise<string | null> {
+  try {
+    const user = await getUserByEmail(email);
+    if (!user || user.emailVerified) {
+      return null;
+    }
+
+    const verificationToken = generateVerificationToken();
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 48); // Expira en 48 horas
+
+    await writeClient
+      .patch(user._id)
+      .set({
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: expires.toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .commit();
+
+    return verificationToken;
+  } catch (error) {
+    console.error('Error regenerando token de verificación:', error);
     return null;
   }
 }

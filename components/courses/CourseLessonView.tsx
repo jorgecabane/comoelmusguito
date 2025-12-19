@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { CourseNavigation } from './CourseNavigation';
 import { LessonContent } from './LessonContent';
 import { Course } from '@/types/sanity';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -31,6 +31,7 @@ export function CourseLessonView({
   userId,
 }: CourseLessonViewProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
   const router = useRouter();
 
   const currentModule = course.modules?.[currentModuleIndex];
@@ -44,6 +45,7 @@ export function CourseLessonView({
     const lessonId = `${currentModuleIndex}-${currentLessonIndex}`;
     if (completedLessons.includes(lessonId)) return;
 
+    setIsUpdatingProgress(true);
     try {
       const response = await fetch('/api/courses/progress', {
         method: 'POST',
@@ -57,9 +59,13 @@ export function CourseLessonView({
 
       if (response.ok) {
         router.refresh();
+      } else {
+        console.error('Error actualizando progreso:', await response.text());
       }
     } catch (error) {
       console.error('Error actualizando progreso:', error);
+    } finally {
+      setIsUpdatingProgress(false);
     }
   };
 
@@ -107,6 +113,12 @@ export function CourseLessonView({
 
         {/* Contenido Principal */}
         <main className="flex-1 min-w-0">
+          {isUpdatingProgress && (
+            <div className="fixed top-20 right-4 z-50 bg-musgo text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+              <Loader2 className="animate-spin" size={16} />
+              <span>Actualizando progreso...</span>
+            </div>
+          )}
           <LessonContent
             course={course}
             module={currentModule}

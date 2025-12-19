@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createUser, emailExists } from '@/lib/auth/sanity-adapter';
 import { linkOrdersToUser } from '@/lib/sanity/orders';
 import { sendVerificationEmail } from '@/lib/resend/client';
+import { registerRateLimit, getClientIP, applyRateLimit } from '@/lib/rate-limit/upstash';
+import { sanitizeEmail, sanitizeString } from '@/lib/utils/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,11 +50,36 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Aplicar rate limiting
+    const ip = getClientIP(request);
+    const rateLimitResult = await applyRateLimit(registerRateLimit, ip);
+    
+    if (rateLimitResult && !rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Demasiados intentos. Por favor, espera un momento antes de intentar nuevamente.',
+        },
+        { status: 429 }
+      );
+    }
+
     const { email, name, password, recaptchaToken }: RegisterRequest = await request.json();
 
-    if (!email || !email.includes('@')) {
+    // Sanitizar inputs
+    const sanitizedEmail = sanitizeEmail(email);
+    if (!sanitizedEmail) {
       return NextResponse.json(
         { error: 'Email válido requerido' },
+        { status: 400 }
+      );
+    }
+
+    const sanitizedName = name ? sanitizeString(name) : undefined;
+    const sanitizedPassword = sanitizeString(password);
+
+    if (!sanitizedPassword || sanitizedPassword.length < 6) {
+      return NextResponse.json(
+        { error: 'Contraseña debe tener al menos 6 caracteres' },
         { status: 400 }
       );
     }
@@ -90,7 +117,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar si el email ya existe
-    const exists = await emailExists(email);
+    const exists = await emailExists(sanitizedEmail);
     if (exists) {
       return NextResponse.json(
         { 
@@ -108,9 +135,9 @@ export async function POST(request: NextRequest) {
 
     // Crear usuario
     const user = await createUser({
-      email,
-      name,
-      password,
+      email: sanitizedEmail,
+      name: sanitizedName,
+      password: sanitizedPassword,
       provider: 'credentials',
       skipEmailVerification: !requireEmailVerification, // Si no se requiere, saltar verificación
     });
@@ -118,7 +145,7 @@ export async function POST(request: NextRequest) {
     // Vincular órdenes pasadas por email
     let linkedCount = 0;
     if (user._id) {
-      linkedCount = await linkOrdersToUser(email, user._id);
+      linkedCount = await linkOrdersToUser(sanitizedEmail, user._id);
     }
 
     // Enviar email de verificación solo si está habilitado

@@ -103,9 +103,41 @@ function LoginContent() {
             </div>
           )}
 
+          {searchParams.get('passwordReset') === 'true' && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-green-800 text-sm">
+              ✅ Contraseña restablecida exitosamente. Ya puedes iniciar sesión.
+            </div>
+          )}
+
           {error && (
             <div className="bg-error/10 border border-error/20 rounded-lg p-4 mb-6 text-error text-sm">
               {error}
+              {error.includes('no ha sido verificado') && (
+                <div className="mt-3">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/api/auth/resend-verification', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email }),
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                          setError('Email de verificación reenviado. Por favor, revisa tu correo.');
+                        } else {
+                          setError(data.error || 'Error al reenviar email de verificación');
+                        }
+                      } catch {
+                        setError('Error al reenviar email de verificación');
+                      }
+                    }}
+                    className="text-sm text-musgo hover:text-forest underline"
+                  >
+                    Reenviar email de verificación
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -126,9 +158,17 @@ function LoginContent() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-forest mb-2">
-                Contraseña
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-forest">
+                  Contraseña
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-musgo hover:text-forest font-medium"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"

@@ -77,6 +77,20 @@ export default defineType({
       hidden: true,
     }),
     defineField({
+      name: 'passwordResetToken',
+      title: 'Token de Reset de Contraseña',
+      type: 'string',
+      description: 'Token para resetear la contraseña',
+      hidden: true,
+    }),
+    defineField({
+      name: 'passwordResetExpires',
+      title: 'Expiración de Token de Reset',
+      type: 'datetime',
+      description: 'Fecha de expiración del token de reset de contraseña',
+      hidden: true,
+    }),
+    defineField({
       name: 'createdAt',
       title: 'Fecha de Registro',
       type: 'datetime',

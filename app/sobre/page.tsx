@@ -7,6 +7,7 @@ import { FadeIn } from '@/components/animations';
 import { Leaf, BookOpen, Sparkles, Droplets, Home, Instagram } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 export const metadata = {
   title: 'Sobre el Musguito | Tomás Barrera',
@@ -16,6 +17,7 @@ export const metadata = {
 export default function SobrePage() {
   return (
     <div className="pt-32 pb-16">
+      <Breadcrumb items={[{ label: 'Sobre el Musguito' }]} />
       {/* Hero Section */}
       <section className="container mb-24">
         <FadeIn>

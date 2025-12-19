@@ -8,6 +8,7 @@ import { Calendar, MapPin, Users, Clock, ArrowRight } from 'lucide-react';
 import { getAllWorkshops } from '@/lib/sanity/fetch';
 import { getFirstImage, formatPrice, formatDateShort, getSlugString, levelLabels } from '@/lib/sanity/utils';
 import Link from 'next/link';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 export const revalidate = 60;
 
@@ -42,6 +43,7 @@ export default async function TalleresPage() {
 
   return (
     <div className="pt-32 pb-16">
+      <Breadcrumb items={[{ label: 'Talleres Presenciales' }]} />
       {/* Header */}
       <section className="container mb-16">
         <div className="max-w-3xl">

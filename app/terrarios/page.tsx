@@ -9,6 +9,7 @@ import { getAllTerrariums } from '@/lib/sanity/fetch';
 import { getFirstImage, formatPrice, getSlugString, sizeLabels, categoryLabels } from '@/lib/sanity/utils';
 import Link from 'next/link';
 import { getWhatsAppLink } from '@/lib/config/contact';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 export const revalidate = 60;
 
@@ -23,6 +24,7 @@ export default async function TerrariosPage() {
 
   return (
     <div className="pt-32 pb-16">
+      <Breadcrumb items={[{ label: 'Terrarios' }]} />
       {/* Header */}
       <section className="container mb-16">
         <div className="max-w-3xl">
