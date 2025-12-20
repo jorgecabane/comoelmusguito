@@ -230,7 +230,22 @@ export async function POST(request: NextRequest) {
         // No fallar el webhook si hay error actualizando
       }
     } else {
-      console.log(`[Webhook] Orden ${paymentStatusFromWebhook.commerceOrder} ya tiene estado ${paymentStatusFromWebhook.status}, saltando actualización`);
+      // Si el estado ya es el mismo, verificar si falta paymentDate y actualizarlo
+      if (paymentStatusFromWebhook.status === 2 && paymentDate && !savedOrder.paymentDate) {
+        console.log(`[Webhook] Orden ${paymentStatusFromWebhook.commerceOrder} ya tiene estado confirmado, actualizando paymentDate`);
+        try {
+          await updateOrderPaymentStatus(
+            paymentStatusFromWebhook.commerceOrder,
+            paymentStatusFromWebhook.status,
+            paymentDate,
+            paymentStatusFromWebhook.flowOrder
+          );
+        } catch (error) {
+          console.error('Error actualizando paymentDate:', error);
+        }
+      } else {
+        console.log(`[Webhook] Orden ${paymentStatusFromWebhook.commerceOrder} ya tiene estado ${paymentStatusFromWebhook.status}, saltando actualización`);
+      }
     }
 
     // Si el pago está confirmado:

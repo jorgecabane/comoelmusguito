@@ -73,18 +73,18 @@ export function AddToCartButton({
           {error}
         </div>
       )}
-      <Button
-        variant="primary"
-        size="lg"
-        onClick={handleAddToCart}
+    <Button
+      variant="primary"
+      size="lg"
+      onClick={handleAddToCart}
         disabled={disabled || !item.inStock || isValidating}
         icon={isValidating ? <Loader2 className="animate-spin" size={20} /> : <ShoppingCart size={20} />}
-        className={className}
-      >
-        {isValidating
-          ? 'Validando...'
-          : children || (item.inStock ? 'Agregar al Carrito' : 'Agotado')}
-      </Button>
+      className={className}
+    >
+      {isValidating
+        ? 'Validando...'
+        : children || (item.inStock ? 'Agregar al Carrito' : 'Agotado')}
+    </Button>
     </div>
   );
 }

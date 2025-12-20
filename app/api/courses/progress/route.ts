@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/get-session';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
-import { updateCourseProgress } from '@/lib/sanity/course-access';
+import { updateCourseProgress, getCourseAccessWithDetails } from '@/lib/sanity/course-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,30 +38,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener progreso actual
-    const { getUserCourseAccesses } = await import('@/lib/sanity/course-access');
-    const userCourses = await getUserCourseAccesses(user._id);
-    const courseAccess = userCourses.find((c) => c.courseId === courseId);
+    // Obtener acceso al curso con detalles completos (incluyendo el curso con módulos y lecciones)
+    const courseAccessDetails = await getCourseAccessWithDetails(user._id, courseId);
 
-    if (!courseAccess) {
+    if (!courseAccessDetails) {
       return NextResponse.json(
         { error: 'No tienes acceso a este curso' },
         { status: 403 }
       );
     }
 
-    // Actualizar progreso
-    const completedLessons = courseAccess.progress?.completedLessons || [];
-    const newCompletedLessons = completedLessons.includes(lessonId)
-      ? completedLessons
-      : [...completedLessons, lessonId];
+    // Parsear lessonId para obtener índices de módulo y lección
+    const lessonIdParts = lessonId.split('-');
+    if (lessonIdParts.length !== 2) {
+      return NextResponse.json(
+        { error: 'Formato de lessonId inválido' },
+        { status: 400 }
+      );
+    }
 
+    const moduleIndex = parseInt(lessonIdParts[0], 10);
+    const lessonIndex = parseInt(lessonIdParts[1], 10);
+
+    // Obtener duración de la lección desde el curso
+    let lessonDuration = 0; // en minutos
+    if (
+      courseAccessDetails.course?.modules &&
+      courseAccessDetails.course.modules[moduleIndex]?.lessons &&
+      courseAccessDetails.course.modules[moduleIndex].lessons[lessonIndex]?.duration
+    ) {
+      lessonDuration = courseAccessDetails.course.modules[moduleIndex].lessons[lessonIndex].duration || 0;
+    }
+
+    // Actualizar progreso
+    const completedLessons = courseAccessDetails.progress?.completedLessons || [];
+    const isNewlyCompleted = !completedLessons.includes(lessonId);
+    const newCompletedLessons = isNewlyCompleted
+      ? [...completedLessons, lessonId]
+      : completedLessons;
+
+    // Calcular nuevo totalWatchTime
+    // Si se marca como completada por primera vez, sumar la duración de la lección
+    const currentTotalWatchTime = courseAccessDetails.progress?.totalWatchTime || 0;
+    const additionalWatchTime = totalWatchTime || 0;
+    const lessonDurationToAdd = isNewlyCompleted ? lessonDuration : 0;
+    const newTotalWatchTime = currentTotalWatchTime + additionalWatchTime + lessonDurationToAdd;
+
+    // Actualizar progreso con lastWatchedAt (fecha/hora actual)
     await updateCourseProgress(user._id, courseId, {
       completedLessons: newCompletedLessons,
       lastWatched: lastWatched || lessonId,
-      totalWatchTime: totalWatchTime
-        ? (courseAccess.progress?.totalWatchTime || 0) + totalWatchTime
-        : courseAccess.progress?.totalWatchTime,
+      lastWatchedAt: new Date().toISOString(),
+      totalWatchTime: newTotalWatchTime,
     });
 
     return NextResponse.json({

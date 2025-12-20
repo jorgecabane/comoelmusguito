@@ -104,21 +104,21 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
         ]}
       />
       
-      <div className="pt-32 pb-16">
-        {/* Breadcrumb */}
-        <div className="container mb-8">
-          <div className="flex items-center gap-2 text-sm text-gray">
-            <Link href="/" className="hover:text-musgo transition-colors">
-              Inicio
-            </Link>
-            <span>/</span>
-            <Link href="/terrarios" className="hover:text-musgo transition-colors">
-              Terrarios
-            </Link>
-            <span>/</span>
-            <span className="text-forest">{terrarium.name}</span>
-          </div>
+    <div className="pt-32 pb-16">
+      {/* Breadcrumb */}
+      <div className="container mb-8">
+        <div className="flex items-center gap-2 text-sm text-gray">
+          <Link href="/" className="hover:text-musgo transition-colors">
+            Inicio
+          </Link>
+          <span>/</span>
+          <Link href="/terrarios" className="hover:text-musgo transition-colors">
+            Terrarios
+          </Link>
+          <span>/</span>
+          <span className="text-forest">{terrarium.name}</span>
         </div>
+      </div>
 
       {/* Main Content */}
       <section className="container">

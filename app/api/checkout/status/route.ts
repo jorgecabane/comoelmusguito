@@ -2,17 +2,19 @@
  * API Route: Consultar estado de pago en Flow
  * POST /api/checkout/status
  * 
- * También actualiza el estado en Sanity si el pago está confirmado
- * Esto sirve como backup al webhook de Flow
+ * Este endpoint SOLO consulta el estado del pago y devuelve información al usuario.
+ * NO modifica estados, NO crea accesos, NO descuenta stock, NO envía emails.
+ * 
+ * El webhook (/api/webhooks/flow) es la ÚNICA fuente de verdad para:
+ * - Actualizar estados de pago
+ * - Crear accesos a cursos
+ * - Descontar stock
+ * - Enviar emails de confirmación
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getPaymentStatus, getPaymentStatusByOrder } from '@/lib/flow/client';
-import { updateOrderPaymentStatus, getOrderByOrderId, createCourseAccess, markOrderEmailSent } from '@/lib/sanity/orders';
-import { decreaseTerrariumStock, decreaseWorkshopSpots } from '@/lib/sanity/inventory';
-import { sendOrderConfirmationEmail } from '@/lib/resend/client';
-import { client } from '@/sanity/lib/client';
-import type { EmailOrderItem } from '@/lib/resend/client';
+import { getOrderByOrderId } from '@/lib/sanity/orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,132 +48,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Si el pago está confirmado (status = 2), actualizar en Sanity
-    // Esto es idempotente: si ya está confirmado, no hace nada
-    if (paymentStatus.status === 2 && paymentStatus.commerceOrder) {
-      try {
-        // Verificar estado actual de la orden para evitar actualizaciones innecesarias
-        const currentOrder = await getOrderByOrderId(paymentStatus.commerceOrder);
-        
-        // Solo actualizar si el estado actual NO es confirmado (2)
-        // Esto previene actualizaciones duplicadas si el webhook ya llegó
-        if (currentOrder && currentOrder.paymentStatus !== 2) {
-          console.log(`[Callback] Actualizando orden ${paymentStatus.commerceOrder} a estado confirmado`);
-          await updateOrderPaymentStatus(
-            paymentStatus.commerceOrder,
-            paymentStatus.status,
-            paymentStatus.paymentDate,
-            paymentStatus.flowOrder
-          );
-
-          // Crear accesos a cursos si hay usuario y la orden tiene cursos
-          if (currentOrder.userId?._ref && currentOrder._id) {
-            for (const item of currentOrder.items) {
-              if (item.type === 'course') {
-                try {
-                  // Verificar si ya existe el acceso (idempotencia)
-                  const existingAccess = await client.fetch(
-                    `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
-                    { userId: currentOrder.userId._ref, courseId: item.id }
-                  );
-
-                  if (!existingAccess) {
-                    await createCourseAccess(
-                      currentOrder.userId._ref,
-                      item.id,
-                      currentOrder._id
-                    );
-                    console.log(`[Callback] Acceso a curso ${item.id} creado para orden ${paymentStatus.commerceOrder}`);
-                  }
-                } catch (error) {
-                  console.error(`[Callback] Error creando acceso a curso ${item.id}:`, error);
-                  // No fallar si hay error creando acceso
-                }
-              }
-            }
-          }
-
-          // Descontar stock de terrarios y cupos de talleres (backup del webhook)
-          // Solo si el estado NO era confirmado antes de actualizar
-          for (const item of currentOrder.items) {
-            if (item.type === 'terrarium') {
-              try {
-                await decreaseTerrariumStock(item.id, item.quantity);
-                console.log(`[Callback] Stock de terrario ${item.id} descontado para orden ${paymentStatus.commerceOrder}`);
-              } catch (error) {
-                console.error(`[Callback] Error descontando stock de terrario ${item.id}:`, error);
-                // No fallar si hay error descontando stock
-              }
-            } else if (item.type === 'workshop' && item.selectedDate) {
-              try {
-                await decreaseWorkshopSpots(
-                  item.id,
-                  item.selectedDate.date,
-                  item.quantity
-                );
-                console.log(`[Callback] Cupos de taller ${item.id} descontados para orden ${paymentStatus.commerceOrder}`);
-              } catch (error) {
-                console.error(`[Callback] Error descontando cupos de taller ${item.id}:`, error);
-                // No fallar si hay error descontando cupos
-              }
-            }
-          }
-        } else if (currentOrder && currentOrder.paymentStatus === 2) {
-          console.log(`[Callback] Orden ${paymentStatus.commerceOrder} ya está confirmada, saltando actualización y descuento de stock`);
-          
-          // Si el pago ya está confirmado pero el email no fue enviado, enviarlo como backup
-          if (!currentOrder.emailSent && currentOrder.customerEmail) {
-            try {
-              console.log(`[Callback] Email no enviado aún, enviando desde callback como backup para orden ${paymentStatus.commerceOrder}`);
-              
-              const orderItems: EmailOrderItem[] = currentOrder.items.map((item) => {
-                let selectedDate: { date: string; time: string } | undefined;
-                if (item.selectedDate) {
-                  selectedDate = {
-                    date: item.selectedDate.date,
-                    time: item.selectedDate.time || '',
-                  };
-                }
-                return {
-                  name: item.name,
-                  type: item.type,
-                  quantity: item.quantity,
-                  price: item.price,
-                  currency: item.currency,
-                  slug: item.slug,
-                  selectedDate,
-                };
-              });
-
-              const hasAccount = !!currentOrder.userId?._ref;
-              
-              await sendOrderConfirmationEmail({
-                orderId: currentOrder.orderId,
-                flowOrder: currentOrder.flowOrder ? String(currentOrder.flowOrder) : undefined,
-                customerEmail: currentOrder.customerEmail,
-                customerName: currentOrder.customerName,
-                items: orderItems,
-                total: currentOrder.total,
-                currency: currentOrder.currency,
-                paymentDate: currentOrder.paymentDate || new Date().toISOString(),
-                hasAccount,
-              });
-
-              // Marcar email como enviado
-              await markOrderEmailSent(paymentStatus.commerceOrder);
-              console.log(`✅ Email de confirmación enviado desde callback para orden ${paymentStatus.commerceOrder}`);
-            } catch (emailError) {
-              console.error(`[Callback] Error enviando email de backup para orden ${paymentStatus.commerceOrder}:`, emailError);
-              // No fallar si hay error enviando email
-            }
-          }
-        }
-      } catch (updateError) {
-        // No fallar la respuesta si la actualización falla
-        // El webhook puede llegar después y actualizar
-        console.error('Error actualizando estado de orden en callback:', updateError);
-      }
-    }
 
     // Obtener email y nombre del cliente si la orden existe
     let customerEmail: string | undefined;

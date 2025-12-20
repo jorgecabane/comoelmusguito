@@ -241,6 +241,7 @@ export async function updateCourseProgress(
   progress: {
     completedLessons?: string[];
     lastWatched?: string;
+    lastWatchedAt?: string;
     totalWatchTime?: number;
   }
 ): Promise<void> {
@@ -252,14 +253,22 @@ export async function updateCourseProgress(
       throw new Error('Acceso a curso no encontrado');
     }
 
+    // Construir objeto de progreso preservando valores existentes
+    const updatedProgress = {
+      ...access.progress,
+      ...progress,
+    };
+
+    // Si se actualiza lastWatched pero no lastWatchedAt, actualizar la fecha automáticamente
+    if (progress.lastWatched && !progress.lastWatchedAt) {
+      updatedProgress.lastWatchedAt = new Date().toISOString();
+    }
+
     // Usar writeClient para operaciones de escritura
     await writeClient
       .patch(access._id)
       .set({
-        progress: {
-          ...access.progress,
-          ...progress,
-        },
+        progress: updatedProgress,
         updatedAt: new Date().toISOString(),
       })
       .commit();

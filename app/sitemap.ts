@@ -90,21 +90,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }));
-    
+  
     const coursePages: MetadataRoute.Sitemap = courses.map((course) => ({
       url: `${baseUrl}/cursos/${course.slug.current}`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.9,
     }));
-    
+  
     const workshopPages: MetadataRoute.Sitemap = workshops.map((workshop) => ({
       url: `${baseUrl}/talleres/${workshop.slug.current}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }));
-    
+  
     return [
       ...staticPages,
       ...terrariumPages,

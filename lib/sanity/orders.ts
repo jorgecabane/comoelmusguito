@@ -315,5 +315,28 @@ export async function createCourseAccess(
   // Usar writeClient para operaciones de escritura
   await writeClient.create(accessDoc);
   console.log(`✅ Acceso a curso ${courseId} creado para usuario ${userId}`);
+
+  // Incrementar enrollmentCount del curso
+  try {
+    const course = await client.fetch(
+      `*[_type == "course" && _id == $courseId][0]`,
+      { courseId }
+    );
+
+    if (course) {
+      const currentEnrollmentCount = course.enrollmentCount || 0;
+      await writeClient
+        .patch(courseId)
+        .set({
+          enrollmentCount: currentEnrollmentCount + 1,
+          updatedAt: new Date().toISOString(),
+        })
+        .commit();
+      console.log(`✅ enrollmentCount del curso ${courseId} incrementado a ${currentEnrollmentCount + 1}`);
+    }
+  } catch (error) {
+    console.error(`Error incrementando enrollmentCount del curso ${courseId}:`, error);
+    // No fallar la creación del acceso si hay error incrementando el contador
+  }
 }
 
