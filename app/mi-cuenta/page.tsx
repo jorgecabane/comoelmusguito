@@ -1,26 +1,23 @@
 /**
  * Dashboard de Usuario
- * Muestra pedidos, cursos y talleres del usuario
+ * Vista moderna estilo feed/timeline con filtros
  */
 
 import { getSession } from '@/lib/auth/get-session';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import { getOrdersByUserId } from '@/lib/sanity/orders';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 import { getUserCoursesWithProgress } from '@/lib/sanity/course-access';
-import { Suspense } from 'react';
-import { TabsController } from './TabsController';
+import { getTerrariumById } from '@/lib/sanity/fetch';
+import { getGiftsSentByUser, getGiftsReceivedByEmail } from '@/lib/sanity/gifts';
+import { AccountFeed } from './AccountFeed';
+import type { SanityOrder } from '@/lib/sanity/orders';
 
 export const dynamic = 'force-dynamic';
 
-export default async function MiCuentaPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tab?: string }>;
-}) {
+export default async function MiCuentaPage() {
   const session = await getSession();
-  const params = await searchParams;
-  const defaultTab = params.tab || 'pedidos';
 
   if (!session?.user?.email) {
     redirect('/auth/login?callbackUrl=/mi-cuenta');
@@ -32,44 +29,68 @@ export default async function MiCuentaPage({
     redirect('/auth/login?callbackUrl=/mi-cuenta');
   }
 
-  const orders = await getOrdersByUserId(user._id);
+  const allOrders = await getOrdersByUserId(user._id);
+  
+  // Filtrar solo órdenes confirmadas (paymentStatus === 2)
+  // Excluir regalos enviados del historial normal (se mostrarán separados)
+  const confirmedOrders = allOrders.filter(
+    (order) => order.paymentStatus === 2 && !order.isGift
+  );
 
-  // Separar órdenes por tipo
-  const ordersWithCourses = orders.filter((order) =>
-    order.items.some((item) => item.type === 'course')
-  );
-  const ordersWithWorkshops = orders.filter((order) =>
-    order.items.some((item) => item.type === 'workshop')
-  );
+  // Obtener regalos enviados
+  const giftsSent = await getGiftsSentByUser(user._id);
+
+  // Obtener regalos recibidos
+  const giftsReceived = await getGiftsReceivedByEmail(session.user.email);
 
   // Obtener cursos con progreso
   const userCourses = await getUserCoursesWithProgress(user._id);
 
+  // Extraer terrarios de órdenes confirmadas y obtener sus datos completos
+  const terrariumItems = confirmedOrders
+    .flatMap((order) => 
+      order.items
+        .filter((item) => item.type === 'terrarium')
+        .map((item) => ({ ...item, orderId: order.orderId, orderDate: order.createdAt }))
+    );
+
+  // Obtener datos completos de terrarios
+  const terrariumsWithDetails = await Promise.all(
+    terrariumItems.map(async (item) => {
+      const terrarium = await getTerrariumById(item.id);
+      return {
+        ...item,
+        terrarium,
+      };
+    })
+  );
+
+  // Extraer talleres de órdenes confirmadas
+  const workshopItems = confirmedOrders
+    .flatMap((order) =>
+      order.items
+        .filter((item) => item.type === 'workshop')
+        .map((item) => ({ 
+          ...item, 
+          orderId: order.orderId, 
+          orderDate: order.createdAt,
+          paymentDate: order.paymentDate 
+        }))
+    );
+
   return (
     <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white">
-      <div className="container max-w-6xl">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-forest mb-4">
-            Hola, {user.name || session.user.email?.split('@')[0]} 👋
-          </h1>
-          <p className="text-gray text-lg">
-            Aquí puedes ver tus pedidos, cursos y talleres
-          </p>
-        </div>
-
-        {/* Tabs */}
-        <Suspense
-          fallback={
-            <div className="w-full h-64 bg-cream rounded-xl animate-pulse" />
-          }
-        >
-          <TabsController
-            defaultTab={defaultTab}
-            orders={orders}
-            ordersWithCourses={ordersWithCourses}
-            ordersWithWorkshops={ordersWithWorkshops}
+      <div className="container max-w-7xl">
+        <Suspense fallback={<div className="text-center py-12">Cargando...</div>}>
+          <AccountFeed
+            userName={user.name || session.user.email?.split('@')[0] || 'Usuario'}
+            userEmail={session.user.email}
+            confirmedOrders={confirmedOrders}
             userCourses={userCourses}
+            terrariumsWithDetails={terrariumsWithDetails}
+            workshopItems={workshopItems}
+            giftsSent={giftsSent}
+            giftsReceived={giftsReceived}
           />
         </Suspense>
       </div>

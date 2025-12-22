@@ -12,10 +12,12 @@ import { hasCourseAccess } from '@/lib/sanity/course-access';
 import { Badge, Button, VideoPlayer } from '@/components/ui';
 import { Play, Clock, BookOpen, Award, CheckCircle2, Download, Lock, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CourseDetail } from '@/components/product/CourseDetail';
 import { CourseSchema, BreadcrumbSchema } from '@/lib/seo/schema';
+import { CourseAccessRedirect } from './CourseAccessRedirect';
+import { Suspense } from 'react';
 
 export const revalidate = 60;
 // Forzar renderizado dinámico porque usamos geolocalización
@@ -90,7 +92,7 @@ export default async function CoursePage({
     notFound();
   }
 
-  // Verificar si el usuario tiene acceso
+  // Verificar si el usuario tiene acceso (solo para mostrar/ocultar botón de compra)
   const session = await getSession();
   let hasAccess = false;
   
@@ -117,6 +119,9 @@ export default async function CoursePage({
 
   return (
     <>
+      {/* Componente cliente que verifica acceso y redirige con loading */}
+      <CourseAccessRedirect courseSlug={courseSlug} courseName={course.name} />
+      
       {/* Structured Data para SEO */}
       <CourseSchema
         name={course.name}
@@ -189,7 +194,7 @@ export default async function CoursePage({
                 </p>
                 <div className="flex gap-2">
                   <CourseDetail course={course} userCurrency={userCurrency} />
-                  <Link href="/mi-cuenta?tab=cursos">
+                  <Link href="/mi-cuenta?filter=courses">
                     <Button variant="secondary" size="sm">
                       Ver Mis Cursos
                     </Button>

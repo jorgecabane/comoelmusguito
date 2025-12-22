@@ -5,18 +5,20 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getPaymentStatus } from '@/lib/flow';
-import { sendOrderConfirmationEmail } from '@/lib/resend/client';
+import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
 import {
   getOrderByOrderId,
   updateOrderPaymentStatus,
   createCourseAccess,
   markOrderEmailSent,
 } from '@/lib/sanity/orders';
+import { client } from '@/sanity/lib/client';
 import {
   decreaseTerrariumStock,
   decreaseWorkshopSpots,
 } from '@/lib/sanity/inventory';
-import type { EmailOrderData, EmailOrderItem } from '@/lib/resend/client';
+import { getUserByEmail } from '@/lib/auth/sanity-adapter';
+import type { EmailOrderData, EmailOrderItem, GiftEmailData } from '@/lib/resend/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -249,23 +251,65 @@ export async function POST(request: NextRequest) {
     }
 
     // Si el pago está confirmado:
-    // 1. Crear accesos a cursos (si hay usuario)
+    // 1. Crear accesos a cursos (si hay usuario o si es regalo)
     // 2. Descontar stock de terrarios
     // 3. Descontar cupos de talleres
     if (paymentStatusFromWebhook.status === 2) {
-      // Crear accesos a cursos
-      if (savedOrder.userId?._ref && savedOrder._id) {
-        for (const item of savedOrder.items) {
-          if (item.type === 'course') {
-            try {
-              await createCourseAccess(
-                savedOrder.userId._ref,
-                item.id,
-                savedOrder._id // Usar el _id de la orden en Sanity
-              );
-            } catch (error) {
-              console.error(`Error creando acceso a curso ${item.id}:`, error);
-              // No fallar el webhook si hay error creando acceso
+      // Manejar regalos
+      if (savedOrder.isGift && savedOrder.recipientEmail && savedOrder.giftToken) {
+        console.log(`[Webhook] Procesando regalo para ${savedOrder.recipientEmail}`);
+        
+        // Buscar si el destinatario tiene cuenta
+        const recipientUser = await getUserByEmail(savedOrder.recipientEmail);
+        
+        if (recipientUser?._id && savedOrder._id) {
+          // Destinatario tiene cuenta → crear acceso inmediatamente
+          console.log(`[Webhook] Destinatario tiene cuenta, creando accesos inmediatamente`);
+          for (const item of savedOrder.items) {
+            if (item.type === 'course') {
+              try {
+                // Verificar si ya tiene acceso (evitar duplicados)
+                const existingAccess = await client.fetch(
+                  `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
+                  {
+                    userId: recipientUser._id,
+                    courseId: item.id,
+                  }
+                );
+
+                if (!existingAccess) {
+                  await createCourseAccess(
+                    recipientUser._id,
+                    item.id,
+                    savedOrder._id
+                  );
+                  console.log(`✅ Acceso a curso ${item.id} creado para destinatario ${savedOrder.recipientEmail}`);
+                } else {
+                  console.log(`⚠️ Destinatario ya tiene acceso a curso ${item.id}`);
+                }
+              } catch (error) {
+                console.error(`Error creando acceso a curso ${item.id} para destinatario:`, error);
+              }
+            }
+          }
+        } else {
+          // Destinatario no tiene cuenta → se creará acceso cuando se registre o canjee el token
+          console.log(`[Webhook] Destinatario no tiene cuenta, acceso se creará al registrarse o canjear token`);
+        }
+      } else {
+        // No es regalo → crear accesos para el comprador (comportamiento normal)
+        if (savedOrder.userId?._ref && savedOrder._id) {
+          for (const item of savedOrder.items) {
+            if (item.type === 'course') {
+              try {
+                await createCourseAccess(
+                  savedOrder.userId._ref,
+                  item.id,
+                  savedOrder._id
+                );
+              } catch (error) {
+                console.error(`Error creando acceso a curso ${item.id}:`, error);
+              }
             }
           }
         }
@@ -336,12 +380,42 @@ export async function POST(request: NextRequest) {
       currency: savedOrder.currency,
       paymentDate: paymentDate || new Date().toISOString(),
       hasAccount,
+      isGift: savedOrder.isGift || false,
+      recipientName: savedOrder.recipientName,
+      recipientEmail: savedOrder.recipientEmail,
+      giftMessage: savedOrder.giftMessage,
     };
 
-    // Enviar email de confirmación
+    // Enviar emails
     if (emailData.customerEmail) {
       try {
+        // Si es regalo, enviar email al destinatario
+        if (savedOrder.isGift && savedOrder.recipientEmail && savedOrder.giftToken) {
+          console.log(`[Webhook] Enviando email de regalo a ${savedOrder.recipientEmail}`);
+          
+          const giftEmailData: GiftEmailData = {
+            giftToken: savedOrder.giftToken,
+            recipientName: savedOrder.recipientName,
+            recipientEmail: savedOrder.recipientEmail,
+            senderName: savedOrder.customerName,
+            senderEmail: savedOrder.customerEmail,
+            giftMessage: savedOrder.giftMessage,
+            items: orderItems,
+            orderId: savedOrder.orderId,
+          };
+
+          try {
+            await sendGiftEmail(giftEmailData);
+            console.log(`✅ Email de regalo enviado a ${savedOrder.recipientEmail}`);
+          } catch (giftEmailError) {
+            console.error('Error enviando email de regalo:', giftEmailError);
+            // No fallar el webhook si hay error enviando email de regalo
+          }
+        }
+
+        // Enviar email de confirmación al comprador (siempre)
         await sendOrderConfirmationEmail(emailData);
+        console.log(`✅ Email de confirmación enviado a ${emailData.customerEmail}`);
         
         // 🔒 MARCAR EMAIL COMO ENVIADO EN SANITY (idempotente)
         try {
@@ -352,7 +426,7 @@ export async function POST(request: NextRequest) {
           // No fallar el webhook si hay error marcando el email
         }
       } catch (emailError) {
-        console.error('Error enviando email de confirmación:', emailError);
+        console.error('Error enviando emails:', emailError);
         // No fallar el webhook si hay error enviando email
       }
     }

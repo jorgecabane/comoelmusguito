@@ -78,7 +78,15 @@ export const terrariumByIdQuery = groq`
     currency,
     inStock,
     stock,
-    published
+    published,
+    size,
+    category,
+    plants,
+    hardscape,
+    careLevel,
+    lightRequirement,
+    wateringFrequency,
+    images
   }
 `;
 

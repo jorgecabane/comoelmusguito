@@ -202,6 +202,11 @@ export async function getUserCoursesWithProgress(userId: string): Promise<
           }
         }
       },
+      order-> {
+        isGift,
+        customerName,
+        customerEmail
+      },
       accessGrantedAt,
       progress
     }`;
@@ -224,6 +229,10 @@ export async function getUserCoursesWithProgress(userId: string): Promise<
           totalWatchTime: access.progress?.totalWatchTime || 0,
         },
         course: access.course,
+        // Información de regalo
+        isGift: access.order?.isGift || false,
+        giftSenderName: access.order?.isGift ? access.order.customerName : undefined,
+        giftSenderEmail: access.order?.isGift ? access.order.customerEmail : undefined,
       };
     });
   } catch (error) {

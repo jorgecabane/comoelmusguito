@@ -6,6 +6,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createUser, emailExists } from '@/lib/auth/sanity-adapter';
 import { linkOrdersToUser } from '@/lib/sanity/orders';
+import { getGiftsReceivedByEmail } from '@/lib/sanity/gifts';
+import { createCourseAccess } from '@/lib/sanity/orders';
+import { client } from '@/sanity/lib/client';
 import { sendVerificationEmail } from '@/lib/resend/client';
 import { registerRateLimit, getClientIP, applyRateLimit } from '@/lib/rate-limit/upstash';
 import { sanitizeEmail, sanitizeString } from '@/lib/utils/sanitize';
@@ -146,6 +149,39 @@ export async function POST(request: NextRequest) {
     let linkedCount = 0;
     if (user._id) {
       linkedCount = await linkOrdersToUser(sanitizedEmail, user._id);
+      
+      // Vincular regalos recibidos por email
+      const giftsReceived = await getGiftsReceivedByEmail(sanitizedEmail);
+      let giftsLinked = 0;
+      
+      for (const giftOrder of giftsReceived) {
+        if (giftOrder.paymentStatus === 2 && giftOrder._id) {
+          // Crear accesos a cursos de regalos recibidos
+          for (const item of giftOrder.items) {
+            if (item.type === 'course') {
+              try {
+                // Verificar si ya existe el acceso (idempotencia)
+                const existingAccess = await client.fetch(
+                  `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
+                  { userId: user._id, courseId: item.id }
+                );
+
+                if (!existingAccess) {
+                  await createCourseAccess(user._id, item.id, giftOrder._id);
+                  giftsLinked++;
+                  console.log(`✅ Acceso a curso ${item.id} creado al vincular regalo recibido ${giftOrder.orderId}`);
+                }
+              } catch (error) {
+                console.error(`Error creando acceso a curso ${item.id} al vincular regalo:`, error);
+              }
+            }
+          }
+        }
+      }
+      
+      if (giftsLinked > 0) {
+        console.log(`✅ ${giftsLinked} regalo(s) vinculado(s) al usuario ${user._id}`);
+      }
     }
 
     // Enviar email de verificación solo si está habilitado

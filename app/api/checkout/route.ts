@@ -11,6 +11,8 @@ import { saveOrderToSanity } from '@/lib/sanity/orders';
 import { checkTerrariumStock, checkWorkshopSpots } from '@/lib/sanity/inventory';
 import { getTerrariumById, getCourseById, getWorkshopById } from '@/lib/sanity/fetch';
 import { getCoursePrice } from '@/lib/sanity/utils';
+import { generateGiftToken } from '@/lib/utils/gift-token';
+import { sanitizeEmail, sanitizeString } from '@/lib/utils/sanitize';
 import type { CartItem } from '@/types/cart';
 
 // Límites de seguridad
@@ -25,12 +27,17 @@ interface CheckoutRequest {
   email: string;
   customerName?: string;
   userId?: string; // ID del usuario si está registrado
+  // Campos de Regalo
+  isGift?: boolean;
+  recipientEmail?: string;
+  recipientName?: string;
+  giftMessage?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: CheckoutRequest = await request.json();
-    const { items, email, customerName, userId } = body;
+    const { items, email, customerName, userId, isGift, recipientEmail, recipientName, giftMessage } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -44,6 +51,38 @@ export async function POST(request: NextRequest) {
         { error: 'Email válido requerido' },
         { status: 400 }
       );
+    }
+
+    // Validar datos de regalo si es regalo
+    if (isGift) {
+      if (!recipientEmail || !recipientEmail.includes('@')) {
+        return NextResponse.json(
+          { error: 'Email del destinatario es requerido para regalos' },
+          { status: 400 }
+        );
+      }
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(recipientEmail)) {
+        return NextResponse.json(
+          { error: 'Email del destinatario inválido' },
+          { status: 400 }
+        );
+      }
+      // Validar longitud del mensaje
+      if (giftMessage && giftMessage.length > 500) {
+        return NextResponse.json(
+          { error: 'El mensaje personalizado no puede exceder 500 caracteres' },
+          { status: 400 }
+        );
+      }
+      // No permitir que el destinatario sea el mismo que el comprador
+      if (recipientEmail.toLowerCase() === email.toLowerCase()) {
+        return NextResponse.json(
+          { error: 'No puedes regalarte algo a ti mismo' },
+          { status: 400 }
+        );
+      }
     }
 
     // Validar límites de cantidad
@@ -307,6 +346,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generar token de regalo si es regalo
+    const giftToken = isGift ? generateGiftToken() : undefined;
+
+    // Sanitizar datos de regalo
+    const sanitizedRecipientEmail = recipientEmail ? (sanitizeEmail(recipientEmail) || undefined) : undefined;
+    const sanitizedRecipientName = recipientName ? (sanitizeString(recipientName) || undefined) : undefined;
+    const sanitizedGiftMessage = giftMessage ? (sanitizeString(giftMessage).substring(0, 500) || undefined) : undefined;
+
     // Guardar orden en Sanity con items validados
     await saveOrderToSanity({
       orderId: commerceOrder,
@@ -317,6 +364,12 @@ export async function POST(request: NextRequest) {
       items: validatedItems, // Usar items validados con precios correctos
       total: finalAmount,
       currency: finalCurrency,
+      // Campos de regalo
+      isGift: isGift || false,
+      recipientEmail: sanitizedRecipientEmail,
+      recipientName: sanitizedRecipientName,
+      giftMessage: sanitizedGiftMessage,
+      giftToken,
     });
 
     return NextResponse.json({

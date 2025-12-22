@@ -194,6 +194,54 @@ export default defineType({
       description: 'Indica si ya se envió el email de confirmación de compra',
       initialValue: false,
     }),
+    // Campos de Regalo
+    defineField({
+      name: 'isGift',
+      title: 'Es Regalo',
+      type: 'boolean',
+      description: 'Indica si esta orden es un regalo para otra persona',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'recipientEmail',
+      title: 'Email del Destinatario',
+      type: 'string',
+      description: 'Email de la persona que recibirá el regalo',
+      hidden: ({ parent }) => !parent?.isGift,
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const isGift = (context.parent as any)?.isGift;
+          if (isGift && !value) {
+            return 'Email del destinatario es requerido para regalos';
+          }
+          if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return 'Email inválido';
+          }
+          return true;
+        }),
+    }),
+    defineField({
+      name: 'recipientName',
+      title: 'Nombre del Destinatario',
+      type: 'string',
+      description: 'Nombre de la persona que recibirá el regalo',
+      hidden: ({ parent }) => !parent?.isGift,
+    }),
+    defineField({
+      name: 'giftMessage',
+      title: 'Mensaje Personalizado',
+      type: 'text',
+      description: 'Mensaje personalizado para el destinatario (máximo 500 caracteres)',
+      hidden: ({ parent }) => !parent?.isGift,
+      validation: (Rule) => Rule.max(500),
+    }),
+    defineField({
+      name: 'giftToken',
+      title: 'Token de Canje',
+      type: 'string',
+      description: 'Token único para canjeo si el destinatario no tiene cuenta',
+      readOnly: true,
+    }),
   ],
   preview: {
     select: {
@@ -203,8 +251,11 @@ export default defineType({
       total: 'total',
       currency: 'currency',
       status: 'paymentStatus',
+      isGift: 'isGift',
+      recipientName: 'recipientName',
+      recipientEmail: 'recipientEmail',
     },
-    prepare({ orderId, customerName, customerEmail, total, currency, status }) {
+    prepare({ orderId, customerName, customerEmail, total, currency, status, isGift, recipientName, recipientEmail }) {
       const statusLabels: Record<number, string> = {
         1: '⏳ Pendiente',
         2: '✅ Pagado',
@@ -212,9 +263,11 @@ export default defineType({
         4: '🚫 Anulado',
       };
 
+      const giftLabel = isGift ? ` 🎁 Regalo para: ${recipientName || recipientEmail || 'Sin destinatario'}` : '';
+
       return {
-        title: `${orderId || 'Sin ID'}`,
-        subtitle: `${customerName || customerEmail || 'Sin cliente'} • ${statusLabels[status as number] || 'Desconocido'} • ${total ? `$${total.toLocaleString('es-CL')} ${currency}` : 'Sin monto'}`,
+        title: `${orderId || 'Sin ID'}${isGift ? ' 🎁' : ''}`,
+        subtitle: `${customerName || customerEmail || 'Sin cliente'}${giftLabel} • ${statusLabels[status as number] || 'Desconocido'} • ${total ? `$${total.toLocaleString('es-CL')} ${currency}` : 'Sin monto'}`,
       };
     },
   },

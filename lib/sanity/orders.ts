@@ -47,6 +47,12 @@ export interface SanityOrder {
   paymentStatus: number;
   paymentDate?: string;
   emailSent?: boolean;
+  // Campos de Regalo
+  isGift?: boolean;
+  recipientEmail?: string;
+  recipientName?: string;
+  giftMessage?: string;
+  giftToken?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -63,6 +69,12 @@ export async function saveOrderToSanity(data: {
   items: CartItem[];
   total: number;
   currency: 'CLP' | 'USD';
+  // Campos de regalo
+  isGift?: boolean;
+  recipientEmail?: string;
+  recipientName?: string;
+  giftMessage?: string;
+  giftToken?: string;
 }): Promise<SanityOrder> {
   const now = new Date().toISOString();
 
@@ -103,6 +115,12 @@ export async function saveOrderToSanity(data: {
     total: data.total,
     currency: data.currency,
     paymentStatus: 1, // Pendiente
+    // Campos de regalo
+    isGift: data.isGift || false,
+    recipientEmail: data.recipientEmail,
+    recipientName: data.recipientName,
+    giftMessage: data.giftMessage,
+    giftToken: data.giftToken,
     createdAt: now,
     updatedAt: now,
   };
@@ -235,22 +253,25 @@ export async function linkOrdersToUser(
   for (const order of orders) {
     if (order.paymentStatus === 2 && order._id) {
       // Orden confirmada, crear accesos a cursos
-      for (const item of order.items) {
-        if (item.type === 'course') {
-          try {
-            // Verificar si ya existe el acceso (idempotencia)
-            const existingAccess = await client.fetch(
-              `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
-              { userId, courseId: item.id }
-            );
+      // Solo si NO es regalo (los regalos se manejan por recipientEmail)
+      if (!order.isGift) {
+        for (const item of order.items) {
+          if (item.type === 'course') {
+            try {
+              // Verificar si ya existe el acceso (idempotencia)
+              const existingAccess = await client.fetch(
+                `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
+                { userId, courseId: item.id }
+              );
 
-            if (!existingAccess) {
-              await createCourseAccess(userId, item.id, order._id);
-              console.log(`✅ Acceso a curso ${item.id} creado al vincular orden ${order.orderId}`);
+              if (!existingAccess) {
+                await createCourseAccess(userId, item.id, order._id);
+                console.log(`✅ Acceso a curso ${item.id} creado al vincular orden ${order.orderId}`);
+              }
+            } catch (error) {
+              console.error(`Error creando acceso a curso ${item.id} al vincular orden:`, error);
+              // No fallar la vinculación si hay error creando acceso
             }
-          } catch (error) {
-            console.error(`Error creando acceso a curso ${item.id} al vincular orden:`, error);
-            // No fallar la vinculación si hay error creando acceso
           }
         }
       }

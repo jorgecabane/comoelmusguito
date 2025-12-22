@@ -9,7 +9,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui';
-import { CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, ArrowRight, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useCartStore } from '@/lib/store/useCartStore';
@@ -38,6 +38,11 @@ function CheckoutCallbackContent() {
   const [courseSlug, setCourseSlug] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string | null>(null);
+  // Información de regalo
+  const [isGift, setIsGift] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
+  const [recipientName, setRecipientName] = useState<string | null>(null);
+  const [giftMessage, setGiftMessage] = useState<string | null>(null);
   
   const isLoggedIn = sessionStatus === 'authenticated' && session?.user;
 
@@ -104,8 +109,8 @@ function CheckoutCallbackContent() {
         } else {
           setStatus('pending');
           setMessage('Tu pago está siendo procesado. Esto puede tomar unos minutos. Te notificaremos por email cuando se confirme.');
-          // Vaciar carrito cuando el pago está pendiente (para evitar compras duplicadas)
-          clearCart();
+          // NO vaciar carrito cuando el pago está pendiente - esperar confirmación
+          // El carrito se limpiará cuando el pago se confirme (status 2)
         }
       } catch (error) {
         console.error('Error consultando estado:', error);
@@ -146,6 +151,13 @@ function CheckoutCallbackContent() {
         if (data.customerName) {
           setCustomerName(data.customerName);
         }
+        // Información de regalo
+        if (data.isGift) {
+          setIsGift(true);
+          setRecipientEmail(data.recipientEmail || null);
+          setRecipientName(data.recipientName || null);
+          setGiftMessage(data.giftMessage || null);
+        }
       }
     } catch (error) {
       console.error('Error obteniendo detalles de la orden:', error);
@@ -185,9 +197,22 @@ function CheckoutCallbackContent() {
                 </div>
               </motion.div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-forest mb-4">
-                ¡Tu Compra Fue Exitosa! 🌿
+                {isGift ? '¡Regalo Enviado Exitosamente! 🎁' : '¡Tu Compra Fue Exitosa! 🌿'}
               </h1>
               <p className="text-gray text-lg mb-6 leading-relaxed">{message}</p>
+              
+              {/* Badge de Regalo */}
+              {isGift && (
+                <div className="bg-cream border-2 border-musgo/30 rounded-xl p-4 mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Gift className="text-musgo" size={20} />
+                    <p className="font-semibold text-forest">Este pedido es un regalo</p>
+                  </div>
+                  <p className="text-xs text-gray mt-3">
+                    El destinatario recibirá un email con los detalles del regalo y un código para canjearlo.
+                  </p>
+                </div>
+              )}
               
               {orderId && (
                 <div className="bg-cream rounded-xl p-4 mb-6">
@@ -237,8 +262,8 @@ function CheckoutCallbackContent() {
                   📧 Revisa tu email para ver los detalles completos de tu compra
                 </p>
                 
-                {/* Mensaje especial para cursos */}
-                {hasCourses && (
+                {/* Mensaje especial para cursos - Solo si NO es regalo */}
+                {hasCourses && !isGift && (
                   <div className="bg-musgo/10 border border-musgo/20 rounded-lg p-4">
                     <p className="text-sm font-semibold text-forest mb-2">
                       🎓 Para acceder a tu curso online:
@@ -263,7 +288,7 @@ function CheckoutCallbackContent() {
                     )}
                     <div className="flex flex-col sm:flex-row gap-2 justify-center">
                       {isLoggedIn ? (
-                        <Link href="/mi-cuenta?tab=cursos">
+                        <Link href="/mi-cuenta?filter=courses">
                           <Button variant="primary" size="sm" className="w-full sm:w-auto">
                             Ver mi Curso
                           </Button>

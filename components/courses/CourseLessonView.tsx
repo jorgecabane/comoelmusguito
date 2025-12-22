@@ -76,7 +76,7 @@ export function CourseLessonView({
         <div className="container py-4">
           <div className="flex items-center justify-between">
             <Link
-              href={`/mi-cuenta?tab=cursos`}
+              href="/mi-cuenta?filter=courses"
               className="flex items-center gap-2 text-gray hover:text-musgo transition-colors"
             >
               <ChevronLeft size={20} />

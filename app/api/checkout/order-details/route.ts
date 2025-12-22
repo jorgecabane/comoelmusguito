@@ -42,6 +42,11 @@ export async function GET(request: NextRequest) {
       })),
       customerEmail: order.customerEmail,
       customerName: order.customerName,
+      // Información de regalo
+      isGift: order.isGift || false,
+      recipientEmail: order.recipientEmail,
+      recipientName: order.recipientName,
+      giftMessage: order.giftMessage,
     });
   } catch (error) {
     console.error('Error obteniendo detalles de la orden:', error);

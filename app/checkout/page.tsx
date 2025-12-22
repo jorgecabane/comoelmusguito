@@ -12,7 +12,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useCartStore } from '@/lib/store/useCartStore';
 import { Button, Input } from '@/components/ui';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -29,6 +29,11 @@ export default function CheckoutPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  // Estados de Regalo
+  const [isGift, setIsGift] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipientName, setRecipientName] = useState('');
+  const [giftMessage, setGiftMessage] = useState('');
   
   // Verificar si reCAPTCHA está configurado
   const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
@@ -81,6 +86,27 @@ export default function CheckoutPage() {
       }
       if (password !== confirmPassword) {
         setError('Las contraseñas no coinciden');
+        return;
+      }
+    }
+
+    // Validaciones de regalo
+    if (isGift) {
+      if (!recipientEmail || !recipientEmail.includes('@')) {
+        setError('Por favor ingresa un email válido del destinatario');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(recipientEmail)) {
+        setError('El email del destinatario no es válido');
+        return;
+      }
+      if (recipientEmail.toLowerCase() === email.toLowerCase()) {
+        setError('No puedes regalarte algo a ti mismo');
+        return;
+      }
+      if (giftMessage && giftMessage.length > 500) {
+        setError('El mensaje personalizado no puede exceder 500 caracteres');
         return;
       }
     }
@@ -194,6 +220,11 @@ export default function CheckoutPage() {
           email,
           customerName: customerName || undefined,
           userId: finalUserId,
+          // Campos de regalo
+          isGift: isGift || undefined,
+          recipientEmail: isGift ? recipientEmail : undefined,
+          recipientName: isGift ? recipientName : undefined,
+          giftMessage: isGift ? giftMessage : undefined,
         }),
       });
 
@@ -470,6 +501,115 @@ export default function CheckoutPage() {
               )}
             </AnimatePresence>
 
+          {/* Sección de Regalo */}
+          <div className="pt-4 border-t border-gray/20">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={isGift}
+                onChange={(e) => {
+                  setIsGift(e.target.checked);
+                  if (!e.target.checked) {
+                    // Limpiar campos si se desmarca
+                    setRecipientEmail('');
+                    setRecipientName('');
+                    setGiftMessage('');
+                  }
+                }}
+                className="mt-1 w-5 h-5 text-musgo border-gray/30 rounded focus:ring-musgo focus:ring-2"
+                disabled={loading}
+              />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Gift size={18} className="text-musgo" />
+                  <span className="block text-sm font-semibold text-forest group-hover:text-musgo transition-colors">
+                    Comprar como regalo
+                  </span>
+                </div>
+                <span className="block text-xs text-gray mt-1">
+                  Envía este pedido como regalo a otra persona
+                </span>
+              </div>
+            </label>
+          </div>
+
+          {/* Campos de Regalo */}
+          <AnimatePresence>
+            {isGift && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-4 pt-4 border-t border-gray/20 bg-cream/30 rounded-lg p-4"
+              >
+                <div>
+                  <label
+                    htmlFor="recipientEmail"
+                    className="block text-sm font-semibold text-forest mb-2"
+                  >
+                    Email del Destinatario *
+                  </label>
+                  <Input
+                    id="recipientEmail"
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="destinatario@email.com"
+                    required={isGift}
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-gray mt-1">
+                    El destinatario recibirá un email con los detalles del regalo
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="recipientName"
+                    className="block text-sm font-semibold text-forest mb-2"
+                  >
+                    Nombre del Destinatario (Opcional)
+                  </label>
+                  <Input
+                    id="recipientName"
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="María González"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="giftMessage"
+                    className="block text-sm font-semibold text-forest mb-2"
+                  >
+                    Mensaje Personalizado (Opcional)
+                  </label>
+                  <textarea
+                    id="giftMessage"
+                    value={giftMessage}
+                    onChange={(e) => setGiftMessage(e.target.value)}
+                    placeholder="¡Feliz cumpleaños! Espero que disfrutes este regalo..."
+                    maxLength={500}
+                    rows={4}
+                    disabled={loading}
+                    className="w-full px-4 py-2 border border-gray/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-musgo focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xs text-gray">
+                      El mensaje aparecerá en el email del destinatario
+                    </p>
+                    <span className={`text-xs ${giftMessage.length >= 450 ? 'text-error' : 'text-gray'}`}>
+                      {giftMessage.length}/500
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {error && (
             <div className="bg-error/10 border border-error/20 rounded-lg p-4">
               <p className="text-sm text-error">{error}</p>
@@ -481,7 +621,12 @@ export default function CheckoutPage() {
             variant="primary"
             size="lg"
             className="w-full"
-            disabled={loading || !email || !email.includes('@')}
+            disabled={
+              loading ||
+              !email ||
+              !email.includes('@') ||
+              (isGift && (!recipientEmail || !recipientEmail.includes('@')))
+            }
           >
             {loading ? (
               <>

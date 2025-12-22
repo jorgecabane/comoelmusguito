@@ -112,6 +112,19 @@ export const resendVerificationRateLimit = redis
   : null;
 
 /**
+ * Rate limiter para canjear regalos
+ * 5 intentos por 15 minutos por IP
+ */
+export const redeemGiftRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(5, '15 m'),
+      analytics: true,
+      prefix: '@upstash/ratelimit/redeem-gift',
+    })
+  : null;
+
+/**
  * Rate limiter genérico para endpoints API
  * 100 requests por minuto por IP
  */
