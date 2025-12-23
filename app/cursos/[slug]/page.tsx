@@ -9,7 +9,16 @@ import { getUserCurrency } from '@/lib/utils/geolocation';
 import { getSession } from '@/lib/auth/get-session';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 import { hasCourseAccess } from '@/lib/sanity/course-access';
-import { Badge, Button, VideoPlayer } from '@/components/ui';
+import { Badge, Button } from '@/components/ui';
+import nextDynamic from 'next/dynamic';
+
+// Lazy load VideoPlayer para mejorar FCP (solo se carga si hay video)
+// VideoPlayer ya es un client component, así que no necesita ssr: false
+const VideoPlayer = nextDynamic(() => import('@/components/ui/VideoPlayer').then(mod => ({ default: mod.VideoPlayer })), {
+  loading: () => (
+    <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream shadow-natural-xl animate-pulse" />
+  ),
+});
 import { Play, Clock, BookOpen, Award, CheckCircle2, Download, Lock, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
@@ -131,6 +140,8 @@ export default async function CoursePage({
         currency={coursePricing.currency}
         duration={course.duration || 0}
         level={course.level === 'beginner' ? 'Beginner' : course.level === 'intermediate' ? 'Intermediate' : 'Advanced'}
+        url={`${baseUrl}/cursos/${courseSlug}`}
+        inStock={true} // Los cursos siempre están disponibles
       />
       <BreadcrumbSchema
         items={[
@@ -250,13 +261,26 @@ export default async function CoursePage({
 
           {/* Video Player o Thumbnail */}
           {course.promoVideo?.url ? (
-            <VideoPlayer
-              src={course.promoVideo.url}
-              poster={getImageUrl(course.thumbnail, { width: 1200, height: 675 })}
-              className="aspect-video"
-              autoplay={false}
-              controls={true}
-            />
+            <Suspense fallback={
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream shadow-natural-xl">
+                <Image
+                  src={getImageUrl(course.thumbnail, { width: 1200, height: 675 })}
+                  alt={course.thumbnail?.alt || course.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+              </div>
+            }>
+              <VideoPlayer
+                src={course.promoVideo.url}
+                poster={getImageUrl(course.thumbnail, { width: 1200, height: 675 })}
+                className="aspect-video"
+                autoplay={false}
+                controls={true}
+              />
+            </Suspense>
           ) : (
             <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream shadow-natural-xl">
               <Image

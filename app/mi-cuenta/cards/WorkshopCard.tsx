@@ -6,7 +6,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, ArrowRight, Gift } from 'lucide-react';
 import { Card } from '@/components/ui';
 import { formatDateShort } from '@/lib/sanity/utils';
 
@@ -22,6 +22,9 @@ interface WorkshopCardProps {
     orderId: string;
     orderDate: string;
     paymentDate?: string;
+    isGift?: boolean;
+    giftSenderName?: string;
+    giftSenderEmail?: string;
   };
 }
 
@@ -48,11 +51,21 @@ export function WorkshopCard({ item }: WorkshopCardProps) {
         <div className="space-y-4 flex flex-col flex-1">
           {/* Header */}
           <div>
-            <h3 className="font-display text-xl font-bold text-forest mb-2 group-hover:text-musgo transition-colors">
-              {item.name}
-            </h3>
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="font-display text-xl font-bold text-forest group-hover:text-musgo transition-colors">
+                {item.name}
+              </h3>
+              {item.isGift && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cream border border-musgo/30 text-musgo text-xs font-medium">
+                  <Gift size={12} />
+                  Regalo
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray">
-              Reservado el {formatDateShort(item.orderDate)}
+              {item.isGift && item.giftSenderName
+                ? `Regalo de ${item.giftSenderName} • ${formatDateShort(item.orderDate)}`
+                : `Reservado el ${formatDateShort(item.orderDate)}`}
             </p>
           </div>
 

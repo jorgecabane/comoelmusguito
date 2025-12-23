@@ -48,6 +48,9 @@ interface AccountFeedProps {
     orderId: string;
     orderDate: string;
     terrarium: any;
+    isGift?: boolean;
+    giftSenderName?: string;
+    giftSenderEmail?: string;
   }>;
   workshopItems: Array<{
     id: string;
@@ -60,9 +63,11 @@ interface AccountFeedProps {
     orderId: string;
     orderDate: string;
     paymentDate?: string;
+    isGift?: boolean;
+    giftSenderName?: string;
+    giftSenderEmail?: string;
   }>;
   giftsSent: SanityOrder[];
-  giftsReceived: SanityOrder[];
 }
 
 export function AccountFeed({
@@ -73,7 +78,6 @@ export function AccountFeed({
   terrariumsWithDetails,
   workshopItems,
   giftsSent,
-  giftsReceived,
 }: AccountFeedProps) {
   const searchParams = useSearchParams();
   const router = useRouter();

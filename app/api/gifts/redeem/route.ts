@@ -98,11 +98,16 @@ export async function POST(request: NextRequest) {
     // Por ahora, permitimos canje si el token es válido, independiente del email
     // (el usuario puede haberse registrado con otro email)
 
-    // Crear accesos a cursos para el usuario actual
+    // Procesar todos los tipos de items del regalo
     const courseItems = order.items.filter((item: any) => item.type === 'course');
+    const workshopItems = order.items.filter((item: any) => item.type === 'workshop');
+    const terrariumItems = order.items.filter((item: any) => item.type === 'terrarium');
+    
     const createdAccesses: string[] = [];
     const errors: string[] = [];
+    let hasProcessedItems = false;
 
+    // 1. Crear accesos a cursos para el usuario actual
     for (const item of courseItems) {
       try {
         // Verificar si ya tiene acceso (evitar duplicados)
@@ -125,15 +130,34 @@ export async function POST(request: NextRequest) {
           item.id,
           order._id
         );
-        createdAccesses.push(item.name);
+        createdAccesses.push(`Curso: ${item.name}`);
+        hasProcessedItems = true;
       } catch (error) {
         console.error(`Error creando acceso a curso ${item.name}:`, error);
         errors.push(`Error al crear acceso a "${item.name}"`);
       }
     }
 
-    // 🔒 MARCAR EL REGALO COMO CANJEADO (solo si se creó al menos un acceso)
-    if (createdAccesses.length > 0) {
+    // 2. Para talleres y terrarios, no necesitamos crear documentos de acceso
+    // porque se mostrarán desde los regalos recibidos (giftsReceived) en "Mi Cuenta"
+    // La orden se mantiene con el userId del comprador (no se cambia)
+    // El destinatario verá sus regalos a través de getGiftsReceivedByEmail
+    if (workshopItems.length > 0 || terrariumItems.length > 0) {
+      // Agregar items procesados al mensaje
+      if (workshopItems.length > 0) {
+        createdAccesses.push(`Taller(es): ${workshopItems.map((i: any) => i.name).join(', ')}`);
+        hasProcessedItems = true;
+      }
+      if (terrariumItems.length > 0) {
+        createdAccesses.push(`Terrario(s): ${terrariumItems.map((i: any) => i.name).join(', ')}`);
+        hasProcessedItems = true;
+      }
+
+      console.log(`✅ Regalo ${order.orderId} canjeado - talleres/terrarios disponibles para ${currentUser._id}`);
+    }
+
+    // 🔒 MARCAR EL REGALO COMO CANJEADO (si se procesó al menos un item)
+    if (hasProcessedItems) {
       try {
         await markGiftAsRedeemed(order.orderId, currentUser._id);
         console.log(`✅ Regalo ${order.orderId} marcado como canjeado por usuario ${currentUser._id}`);

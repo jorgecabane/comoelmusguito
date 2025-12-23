@@ -10,7 +10,7 @@ import { getOrdersByUserId } from '@/lib/sanity/orders';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 import { getUserCoursesWithProgress } from '@/lib/sanity/course-access';
 import { getTerrariumById } from '@/lib/sanity/fetch';
-import { getGiftsSentByUser, getGiftsReceivedByEmail } from '@/lib/sanity/gifts';
+import { getGiftsSentByUser, getGiftsRedeemedByUser } from '@/lib/sanity/gifts';
 import { AccountFeed } from './AccountFeed';
 import type { SanityOrder } from '@/lib/sanity/orders';
 
@@ -40,19 +40,42 @@ export default async function MiCuentaPage() {
   // Obtener regalos enviados
   const giftsSent = await getGiftsSentByUser(user._id);
 
-  // Obtener regalos recibidos
-  const giftsReceived = await getGiftsReceivedByEmail(session.user.email);
+  // Obtener regalos canjeados por este usuario (usa giftRedeemedBy para evitar duplicados)
+  const giftsRedeemed = await getGiftsRedeemedByUser(user._id);
 
   // Obtener cursos con progreso
   const userCourses = await getUserCoursesWithProgress(user._id);
 
-  // Extraer terrarios de órdenes confirmadas y obtener sus datos completos
-  const terrariumItems = confirmedOrders
+  // Extraer terrarios de órdenes confirmadas
+  const terrariumItemsFromOrders = confirmedOrders
     .flatMap((order) => 
       order.items
         .filter((item) => item.type === 'terrarium')
-        .map((item) => ({ ...item, orderId: order.orderId, orderDate: order.createdAt }))
+        .map((item) => ({ 
+          ...item, 
+          orderId: order.orderId, 
+          orderDate: order.createdAt,
+          isGift: false,
+        }))
     );
+
+  // Extraer terrarios de regalos canjeados por este usuario
+  const terrariumItemsFromGifts = giftsRedeemed
+    .flatMap((gift) =>
+      gift.items
+        .filter((item) => item.type === 'terrarium')
+        .map((item) => ({
+          ...item,
+          orderId: gift.orderId,
+          orderDate: gift.createdAt,
+          isGift: true,
+          giftSenderName: gift.customerName,
+          giftSenderEmail: gift.customerEmail,
+        }))
+    );
+
+  // Combinar terrarios de órdenes y regalos
+  const terrariumItems = [...terrariumItemsFromOrders, ...terrariumItemsFromGifts];
 
   // Obtener datos completos de terrarios
   const terrariumsWithDetails = await Promise.all(
@@ -66,7 +89,7 @@ export default async function MiCuentaPage() {
   );
 
   // Extraer talleres de órdenes confirmadas
-  const workshopItems = confirmedOrders
+  const workshopItemsFromOrders = confirmedOrders
     .flatMap((order) =>
       order.items
         .filter((item) => item.type === 'workshop')
@@ -74,9 +97,29 @@ export default async function MiCuentaPage() {
           ...item, 
           orderId: order.orderId, 
           orderDate: order.createdAt,
-          paymentDate: order.paymentDate 
+          paymentDate: order.paymentDate,
+          isGift: false,
         }))
     );
+
+  // Extraer talleres de regalos canjeados por este usuario
+  const workshopItemsFromGifts = giftsRedeemed
+    .flatMap((gift) =>
+      gift.items
+        .filter((item) => item.type === 'workshop')
+        .map((item) => ({
+          ...item,
+          orderId: gift.orderId,
+          orderDate: gift.createdAt,
+          paymentDate: gift.paymentDate,
+          isGift: true,
+          giftSenderName: gift.customerName,
+          giftSenderEmail: gift.customerEmail,
+        }))
+    );
+
+  // Combinar talleres de órdenes y regalos
+  const workshopItems = [...workshopItemsFromOrders, ...workshopItemsFromGifts];
 
   return (
     <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white">
@@ -90,7 +133,6 @@ export default async function MiCuentaPage() {
             terrariumsWithDetails={terrariumsWithDetails}
             workshopItems={workshopItems}
             giftsSent={giftsSent}
-            giftsReceived={giftsReceived}
           />
         </Suspense>
       </div>

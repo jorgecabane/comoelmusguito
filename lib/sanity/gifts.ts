@@ -17,11 +17,22 @@ export async function getGiftsSentByUser(userId: string): Promise<SanityOrder[]>
 
 /**
  * Obtener regalos recibidos por un usuario (por email)
+ * @deprecated Usar getGiftsRedeemedByUser en su lugar para mejor rendimiento
  */
 export async function getGiftsReceivedByEmail(email: string): Promise<SanityOrder[]> {
   const emailLower = email.toLowerCase();
   const query = `*[_type == "order" && recipientEmail == $email && isGift == true && paymentStatus == 2] | order(createdAt desc)`;
   const orders = await client.fetch<SanityOrder[]>(query, { email: emailLower });
+  return orders;
+}
+
+/**
+ * Obtener regalos canjeados por un usuario (por userId)
+ * Más eficiente que buscar por email, ya que usa la referencia directa
+ */
+export async function getGiftsRedeemedByUser(userId: string): Promise<SanityOrder[]> {
+  const query = `*[_type == "order" && giftRedeemedBy._ref == $userId && isGift == true && paymentStatus == 2] | order(createdAt desc)`;
+  const orders = await client.fetch<SanityOrder[]>(query, { userId });
   return orders;
 }
 
@@ -71,6 +82,10 @@ export async function getOrderByGiftToken(giftToken: string): Promise<{
     _type: 'reference';
     _ref: string;
   } | null;
+  userId?: {
+    _type: 'reference';
+    _ref: string;
+  } | null;
 } | null> {
   // Usar nombre de parámetro diferente para evitar conflictos de inferencia de tipos
   const query = `*[_type == "order" && giftToken == $giftToken && paymentStatus == 2][0] {
@@ -80,7 +95,8 @@ export async function getOrderByGiftToken(giftToken: string): Promise<{
     recipientEmail,
     recipientName,
     giftRedeemedAt,
-    giftRedeemedBy
+    giftRedeemedBy,
+    userId
   }`;
   const order = await client.fetch<{
     _id: string;
@@ -90,6 +106,10 @@ export async function getOrderByGiftToken(giftToken: string): Promise<{
     recipientName?: string;
     giftRedeemedAt?: string;
     giftRedeemedBy?: {
+      _type: 'reference';
+      _ref: string;
+    } | null;
+    userId?: {
       _type: 'reference';
       _ref: string;
     } | null;

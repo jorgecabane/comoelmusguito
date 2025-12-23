@@ -125,6 +125,7 @@ export function ProductSchema({
 
 /**
  * Schema de Curso
+ * Usa tanto Course como Product para que Google muestre precio y disponibilidad en rich snippets
  */
 export function CourseSchema({
   name,
@@ -134,6 +135,8 @@ export function CourseSchema({
   currency = 'CLP',
   duration,
   level = 'Beginner',
+  url,
+  inStock = true,
 }: {
   name: string;
   description: string;
@@ -142,8 +145,14 @@ export function CourseSchema({
   currency?: string;
   duration: number; // en horas
   level?: 'Beginner' | 'Intermediate' | 'Advanced';
+  url?: string;
+  inStock?: boolean;
 }) {
-  const schema = {
+  const baseUrl = SITE_CONFIG.url;
+  const courseUrl = url || baseUrl;
+
+  // Schema principal como Course (para información educativa)
+  const courseSchema = {
     '@context': 'https://schema.org',
     '@type': 'Course',
     name,
@@ -159,6 +168,14 @@ export function CourseSchema({
       category: 'Online',
       priceCurrency: currency,
       price: price.toString(),
+      availability: inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      url: courseUrl,
+      seller: {
+        '@type': 'Organization',
+        name: SITE_CONFIG.name,
+      },
     },
     hasCourseInstance: {
       '@type': 'CourseInstance',
@@ -169,11 +186,46 @@ export function CourseSchema({
     educationalLevel: level,
   };
 
+  // Schema adicional como Product (para que Google muestre precio y disponibilidad en rich snippets)
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name,
+    description,
+    image: thumbnail,
+    brand: {
+      '@type': 'Brand',
+      name: SITE_CONFIG.name,
+    },
+    category: 'Curso Online',
+    offers: {
+      '@type': 'Offer',
+      url: courseUrl,
+      priceCurrency: currency,
+      price: price.toString(),
+      availability: inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Válido por 1 año
+      seller: {
+        '@type': 'Organization',
+        name: SITE_CONFIG.name,
+        url: SITE_CONFIG.url,
+      },
+    },
+  };
+
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+    </>
   );
 }
 
