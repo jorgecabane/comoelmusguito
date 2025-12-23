@@ -240,6 +240,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                 </div>
               </div>
 
+              ${!data.isGift ? `
               <!-- Próximos Pasos -->
               <div style="margin: 30px 0;">
                 <h3 style="margin: 0 0 16px 0; color: #2d3e2d; font-size: 18px; font-weight: 600;">
@@ -253,13 +254,13 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                   </p>
                   <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
                     ${terrarios.some((t) => t.selectedDate) 
-                      ? 'Te contactaremos pronto para coordinar el retiro o envío de tu terrario.'
-                      : 'Te contactaremos en las próximas 24 horas para coordinar el retiro o envío de tu terrario. Si tienes alguna pregunta, puedes escribirnos directamente.'}
+                      ? 'Te contactaremos pronto para coordinar el retiro de tu terrario.'
+                      : 'Te contactaremos en las próximas 24 horas para coordinar el retiro de tu terrario. Si tienes alguna pregunta, puedes escribirnos directamente.'}
                   </p>
                 </div>
                 ` : ''}
                 
-                ${cursos.length > 0 && !data.isGift ? `
+                ${cursos.length > 0 ? `
                 <div style="background-color: #f0f7f2; border-left: 4px solid #4a7c59; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
                   <p style="margin: 0 0 8px 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">
                     🎓 Para tus Cursos Online:
@@ -311,6 +312,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                 </div>
                 ` : ''}
               </div>
+              ` : ''}
 
               ${data.flowInvoiceUrl ? `
               <!-- Link a Boleta -->
@@ -908,6 +910,58 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                    style="display: inline-block; background-color: #2D5016; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                   Canjear mi Regalo →
                 </a>
+              </div>
+
+              <!-- Próximos Pasos (para el destinatario después de canjear) -->
+              <div style="margin: 30px 0;">
+                <h3 style="margin: 0 0 16px 0; color: #2d3e2d; font-size: 18px; font-weight: 600;">
+                  Próximos Pasos
+                </h3>
+                
+                ${terrarios.length > 0 ? `
+                <div style="background-color: #f0f7f2; border-left: 4px solid #4a7c59; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">
+                    🌿 Para tus Terrarios:
+                  </p>
+                  <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                    ${terrarios.some((t) => t.selectedDate) 
+                      ? 'Te contactaremos pronto para coordinar el retiro de tu terrario.'
+                      : 'Te contactaremos en las próximas 24 horas para coordinar el retiro de tu terrario. Si tienes alguna pregunta, puedes escribirnos directamente.'}
+                  </p>
+                </div>
+                ` : ''}
+                
+                ${cursos.length > 0 ? `
+                <div style="background-color: #f0f7f2; border-left: 4px solid #4a7c59; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">
+                    🎓 Para tus Cursos Online:
+                  </p>
+                  <p style="margin: 0 0 12px 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                    Una vez que canjees tu regalo, tu acceso al curso estará activo. Podrás acceder a tus cursos desde tu cuenta y ver tu progreso, descargar materiales y acceder desde cualquier dispositivo.
+                  </p>
+                  <div style="text-align: center; margin: 16px 0 0 0;">
+                    <a href="${baseUrl}/mi-cuenta?filter=courses" 
+                       style="display: inline-block; background-color: #4a7c59; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                      Ir a Mis Cursos →
+                    </a>
+                  </div>
+                </div>
+                ` : ''}
+                
+                ${talleres.length > 0 ? `
+                <div style="background-color: #f0f7f2; border-left: 4px solid #4a7c59; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">
+                    🤝 Para tus Talleres:
+                  </p>
+                  <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                    Tu cupo está confirmado. Te esperamos en el taller en la fecha y hora seleccionada. 
+                    ${talleres[0].selectedDate ? `Recuerda: ${new Date(talleres[0].selectedDate.date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })} a las ${talleres[0].selectedDate.time}.` : ''}
+                  </p>
+                  <p style="margin: 12px 0 0 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                    <strong>Ubicación:</strong> Santa Isabel 676, Providencia, Santiago
+                  </p>
+                </div>
+                ` : ''}
               </div>
 
               <!-- Footer -->
