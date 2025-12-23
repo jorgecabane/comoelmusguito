@@ -10,10 +10,15 @@ import { getSession } from '@/lib/auth/get-session';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 import { client, writeClient } from '@/sanity/lib/client';
 import { createCourseAccess } from '@/lib/sanity/orders';
+import { getOrderByGiftToken, markGiftAsRedeemed } from '@/lib/sanity/gifts';
 import { isValidGiftToken } from '@/lib/utils/gift-token';
 import { redeemGiftRateLimit, getClientIP, applyRateLimit } from '@/lib/rate-limit/upstash';
 
 export const dynamic = 'force-dynamic';
+
+interface RedeemGiftRequest {
+  token: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,10 +44,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { token } = body;
+    const body: RedeemGiftRequest = await request.json();
+    const { token: rawToken } = body;
 
-    if (!token || typeof token !== 'string') {
+    // Validar y tipar token explícitamente
+    if (!rawToken || typeof rawToken !== 'string') {
       return NextResponse.json(
         { error: 'Token de regalo requerido' },
         { status: 400 }
@@ -50,16 +56,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar formato del token
-    if (!isValidGiftToken(token)) {
+    if (!isValidGiftToken(rawToken)) {
       return NextResponse.json(
         { error: 'Token de regalo inválido' },
         { status: 400 }
       );
     }
 
-    // Buscar orden con ese token
-    const orderQuery = `*[_type == "order" && giftToken == $token && paymentStatus == 2][0]`;
-    const order = await client.fetch(orderQuery, { token });
+    // Extraer token como string tipado explícitamente
+    const token: string = rawToken;
+
+    // Buscar orden con ese token usando función helper (mismo patrón que otras funciones en lib/sanity/gifts.ts)
+    const order = await getOrderByGiftToken(token);
 
     if (!order) {
       return NextResponse.json(
@@ -68,29 +76,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el regalo no haya sido ya canjeado
-    // Si el destinatario ya tiene cuenta y se creó el acceso, el regalo ya fue "consumido"
-    if (order.recipientEmail) {
-      const recipientUser = await getUserByEmail(order.recipientEmail);
-      if (recipientUser?._id) {
-        // Verificar si ya tiene acceso a los cursos de esta orden
-        const hasAccess = await client.fetch(
-          `*[_type == "courseAccess" && user._ref == $userId && course._ref in $courseIds][0]`,
-          {
-            userId: recipientUser._id,
-            courseIds: order.items
-              .filter((item: any) => item.type === 'course')
-              .map((item: any) => item.id),
-          }
-        );
-
-        if (hasAccess) {
-          return NextResponse.json(
-            { error: 'Este regalo ya fue canjeado' },
-            { status: 400 }
-          );
-        }
-      }
+    // 🔒 VERIFICAR SI EL REGALO YA FUE CANJEADO
+    if (order.giftRedeemedAt || order.giftRedeemedBy) {
+      return NextResponse.json(
+        { error: 'Este regalo ya fue canjeado anteriormente' },
+        { status: 400 }
+      );
     }
 
     // Obtener usuario actual
@@ -141,9 +132,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Marcar el token como usado (opcional - podemos agregar un campo "redeemedBy" a la orden)
-    // Por ahora, no marcamos como usado para permitir múltiples canjes si es necesario
-    // (aunque ya verificamos que no haya acceso duplicado)
+    // 🔒 MARCAR EL REGALO COMO CANJEADO (solo si se creó al menos un acceso)
+    if (createdAccesses.length > 0) {
+      try {
+        await markGiftAsRedeemed(order.orderId, currentUser._id);
+        console.log(`✅ Regalo ${order.orderId} marcado como canjeado por usuario ${currentUser._id}`);
+      } catch (error) {
+        console.error('Error marcando regalo como canjeado:', error);
+        // No fallar el canje si hay error marcando, pero loguear el error
+      }
+    }
 
     return NextResponse.json({
       success: true,

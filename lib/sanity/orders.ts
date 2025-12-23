@@ -53,6 +53,11 @@ export interface SanityOrder {
   recipientName?: string;
   giftMessage?: string;
   giftToken?: string;
+  giftRedeemedAt?: string;
+  giftRedeemedBy?: {
+    _type: 'reference';
+    _ref: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

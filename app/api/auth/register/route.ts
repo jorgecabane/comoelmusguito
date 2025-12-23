@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createUser, emailExists } from '@/lib/auth/sanity-adapter';
 import { linkOrdersToUser } from '@/lib/sanity/orders';
-import { getGiftsReceivedByEmail } from '@/lib/sanity/gifts';
+import { getGiftsReceivedByEmail, markGiftAsRedeemed } from '@/lib/sanity/gifts';
 import { createCourseAccess } from '@/lib/sanity/orders';
 import { client } from '@/sanity/lib/client';
 import { sendVerificationEmail } from '@/lib/resend/client';
@@ -153,12 +153,21 @@ export async function POST(request: NextRequest) {
       // Vincular regalos recibidos por email
       const giftsReceived = await getGiftsReceivedByEmail(sanitizedEmail);
       let giftsLinked = 0;
+      const redeemedGiftOrders: string[] = [];
       
       for (const giftOrder of giftsReceived) {
         if (giftOrder.paymentStatus === 2 && giftOrder._id) {
+          // Verificar si el regalo ya fue canjeado (no debería pasar, pero por seguridad)
+          if (giftOrder.giftRedeemedAt || giftOrder.giftRedeemedBy) {
+            console.log(`⚠️ Regalo ${giftOrder.orderId} ya fue canjeado, saltando autovinculación`);
+            continue;
+          }
+
+          let orderHasCourses = false;
           // Crear accesos a cursos de regalos recibidos
           for (const item of giftOrder.items) {
             if (item.type === 'course') {
+              orderHasCourses = true;
               try {
                 // Verificar si ya existe el acceso (idempotencia)
                 const existingAccess = await client.fetch(
@@ -176,11 +185,26 @@ export async function POST(request: NextRequest) {
               }
             }
           }
+
+          // 🔒 Marcar el regalo como canjeado si se crearon accesos a cursos
+          if (orderHasCourses && giftsLinked > 0) {
+            try {
+              await markGiftAsRedeemed(giftOrder.orderId, user._id);
+              redeemedGiftOrders.push(giftOrder.orderId);
+              console.log(`✅ Regalo ${giftOrder.orderId} marcado como canjeado al vincular automáticamente`);
+            } catch (error) {
+              console.error(`Error marcando regalo ${giftOrder.orderId} como canjeado:`, error);
+              // No fallar el registro si hay error marcando, pero loguear
+            }
+          }
         }
       }
       
       if (giftsLinked > 0) {
         console.log(`✅ ${giftsLinked} regalo(s) vinculado(s) al usuario ${user._id}`);
+        if (redeemedGiftOrders.length > 0) {
+          console.log(`✅ ${redeemedGiftOrders.length} regalo(s) marcado(s) como canjeado(s): ${redeemedGiftOrders.join(', ')}`);
+        }
       }
     }
 

@@ -3,7 +3,7 @@
  */
 
 import 'server-only';
-import { client } from '@/sanity/lib/client';
+import { client, writeClient } from '@/sanity/lib/client';
 import type { SanityOrder } from './orders';
 
 /**
@@ -53,4 +53,73 @@ export async function isCourseReceivedAsGift(
   }
 
   return { isGift: false };
+}
+
+/**
+ * Obtener orden por token de regalo
+ * Nota: TypeScript tiene problemas de inferencia con queries que usan parámetros con nombres específicos
+ * como "token". Usamos el mismo patrón que otras funciones pero con type assertion cuando es necesario.
+ */
+export async function getOrderByGiftToken(giftToken: string): Promise<{
+  _id: string;
+  orderId: string;
+  items: Array<{ id: string; type: string; name: string; quantity: number }>;
+  recipientEmail?: string;
+  recipientName?: string;
+  giftRedeemedAt?: string;
+  giftRedeemedBy?: {
+    _type: 'reference';
+    _ref: string;
+  } | null;
+} | null> {
+  // Usar nombre de parámetro diferente para evitar conflictos de inferencia de tipos
+  const query = `*[_type == "order" && giftToken == $giftToken && paymentStatus == 2][0] {
+    _id,
+    orderId,
+    items,
+    recipientEmail,
+    recipientName,
+    giftRedeemedAt,
+    giftRedeemedBy
+  }`;
+  const order = await client.fetch<{
+    _id: string;
+    orderId: string;
+    items: Array<{ id: string; type: string; name: string; quantity: number }>;
+    recipientEmail?: string;
+    recipientName?: string;
+    giftRedeemedAt?: string;
+    giftRedeemedBy?: {
+      _type: 'reference';
+      _ref: string;
+    } | null;
+  } | null>(query, { giftToken });
+  return order;
+}
+
+/**
+ * Marcar regalo como canjeado
+ */
+export async function markGiftAsRedeemed(
+  orderId: string,
+  userId: string
+): Promise<void> {
+  const query = `*[_type == "order" && orderId == $orderId][0]._id`;
+  const orderSanityId = await client.fetch<string>(query, { orderId });
+
+  if (!orderSanityId) {
+    throw new Error(`Orden ${orderId} no encontrada`);
+  }
+
+  await writeClient
+    .patch(orderSanityId)
+    .set({
+      giftRedeemedAt: new Date().toISOString(),
+      giftRedeemedBy: {
+        _type: 'reference',
+        _ref: userId,
+      },
+      updatedAt: new Date().toISOString(),
+    })
+    .commit();
 }

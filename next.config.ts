@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   turbopack: {},
   
   // Excluir jsdom del bundle de producción para evitar errores ESM
+  // Nota: webpack config se mantiene para compatibilidad, pero Turbopack es el bundler por defecto
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Excluir jsdom del bundle del servidor
@@ -13,6 +14,12 @@ const nextConfig: NextConfig = {
       config.externals.push('jsdom');
     }
     return config;
+  },
+  
+  // Optimizaciones para mejorar el tiempo de build
+  experimental: {
+    // Optimizar imports de Sanity Studio y otras dependencias pesadas
+    optimizePackageImports: ['@sanity/vision', 'sanity', 'react-player', 'framer-motion'],
   },
   
   images: {

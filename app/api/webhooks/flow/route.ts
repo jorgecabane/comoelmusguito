@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPaymentStatus } from '@/lib/flow';
 import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
+import { markGiftAsRedeemed } from '@/lib/sanity/gifts';
 import {
   getOrderByOrderId,
   updateOrderPaymentStatus,
@@ -265,6 +266,7 @@ export async function POST(request: NextRequest) {
         if (recipientUser?._id && savedOrder._id) {
           // Destinatario tiene cuenta → crear acceso inmediatamente
           console.log(`[Webhook] Destinatario tiene cuenta, creando accesos inmediatamente`);
+          let coursesCreated = 0;
           for (const item of savedOrder.items) {
             if (item.type === 'course') {
               try {
@@ -283,6 +285,7 @@ export async function POST(request: NextRequest) {
                     item.id,
                     savedOrder._id
                   );
+                  coursesCreated++;
                   console.log(`✅ Acceso a curso ${item.id} creado para destinatario ${savedOrder.recipientEmail}`);
                 } else {
                   console.log(`⚠️ Destinatario ya tiene acceso a curso ${item.id}`);
@@ -290,6 +293,17 @@ export async function POST(request: NextRequest) {
               } catch (error) {
                 console.error(`Error creando acceso a curso ${item.id} para destinatario:`, error);
               }
+            }
+          }
+
+          // 🔒 Marcar el regalo como canjeado si se crearon accesos
+          if (coursesCreated > 0) {
+            try {
+              await markGiftAsRedeemed(savedOrder.orderId, recipientUser._id);
+              console.log(`✅ Regalo ${savedOrder.orderId} marcado como canjeado automáticamente para destinatario ${savedOrder.recipientEmail}`);
+            } catch (error) {
+              console.error(`Error marcando regalo como canjeado en webhook:`, error);
+              // No fallar el webhook si hay error marcando
             }
           }
         } else {

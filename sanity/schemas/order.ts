@@ -242,6 +242,23 @@ export default defineType({
       description: 'Token único para canjeo si el destinatario no tiene cuenta',
       readOnly: true,
     }),
+    defineField({
+      name: 'giftRedeemedAt',
+      title: 'Fecha de Canje',
+      type: 'datetime',
+      description: 'Fecha y hora en que el regalo fue canjeado',
+      hidden: ({ parent }) => !parent?.isGift,
+      readOnly: true,
+    }),
+    defineField({
+      name: 'giftRedeemedBy',
+      title: 'Canjeado Por',
+      type: 'reference',
+      to: [{ type: 'user' }],
+      description: 'Usuario que canjeó el regalo',
+      hidden: ({ parent }) => !parent?.isGift,
+      readOnly: true,
+    }),
   ],
   preview: {
     select: {
