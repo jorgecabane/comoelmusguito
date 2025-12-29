@@ -79,7 +79,8 @@ export function VideoBackground({
           fill
           className="object-cover"
           priority
-          quality={90}
+          quality={75}
+          sizes="100vw"
         />
         {overlay !== 'none' && (
           <div className={`absolute inset-0 ${overlayClasses[overlay]}`} />
@@ -98,7 +99,8 @@ export function VideoBackground({
           fill
           className="object-cover"
           priority
-          quality={90}
+          quality={80}
+          sizes="100vw"
         />
       )}
 

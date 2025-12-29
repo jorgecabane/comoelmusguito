@@ -86,7 +86,7 @@ import { Header, Footer } from "@/components/shared";
 import { PrefetchLinks } from "@/components/shared/PrefetchLinks";
 import { AddToCartModal } from "@/components/cart/AddToCartModal";
 import { SessionProvider } from "@/components/auth/SessionProvider";
-import { RecaptchaProvider } from "@/components/auth/RecaptchaProvider";
+import { LazyRecaptchaProvider } from "@/components/auth/LazyRecaptchaProvider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -98,13 +98,26 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${playfair.variable} ${inter.variable}`}>
       <head>
+        {/* Preconnect a CDNs críticos para mejorar FCP */}
+        <link rel="preconnect" href="https://cdn.sanity.io" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        
+        {/* Preload imagen hero crítica para mejorar LCP */}
+        <link
+          rel="preload"
+          href="/images/hero/hero-fallback.jpg"
+          as="image"
+          type="image/jpeg"
+        />
+        
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <OrganizationSchema />
       </head>
       <body className="antialiased">
-        <RecaptchaProvider>
+        <LazyRecaptchaProvider>
           <SessionProvider>
             <PrefetchLinks />
             <Header />
@@ -116,7 +129,8 @@ export default function RootLayout({
             {/* Modal global del carrito */}
             <AddToCartModal />
           </SessionProvider>
-        </RecaptchaProvider>
+        </LazyRecaptchaProvider>
+        {/* Analytics y Speed Insights al final para no bloquear render */}
         <Analytics />
         <SpeedInsights />
       </body>
