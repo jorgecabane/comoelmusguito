@@ -96,7 +96,7 @@ export async function saveOrderToSanity(data: {
           _type: 'reference',
           _ref: data.userId,
         }
-      : null,
+      : undefined, // Usar undefined en lugar de null para campos reference opcionales
     items: data.items.map((item, index) => ({
       _key: `${item.id}-${index}-${Date.now()}`, // _key único requerido por Sanity para arrays
       id: item.id,

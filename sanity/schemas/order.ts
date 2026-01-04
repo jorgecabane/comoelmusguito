@@ -56,6 +56,7 @@ export default defineType({
       options: {
         disableNew: true,
       },
+      // Los campos reference pueden ser null por defecto si no tienen required()
     }),
     defineField({
       name: 'items',
@@ -258,6 +259,7 @@ export default defineType({
       description: 'Usuario que canjeó el regalo',
       hidden: ({ parent }) => !parent?.isGift,
       readOnly: true,
+      // Los campos reference pueden ser null por defecto si no tienen required()
     }),
   ],
   preview: {

@@ -298,7 +298,8 @@ function CartItemCard({
           {item.selectedDate && (
             <p className="text-sm text-gray mb-3">
               📅 {(() => {
-                const { date, time } = formatWorkshopDateTime(item.selectedDate.date);
+                // Usar el campo time si está disponible (ya formateado), sino calcularlo
+                const time = item.selectedDate.time || formatWorkshopDateTime(item.selectedDate.date).time;
                 const fullDate = new Date(item.selectedDate.date).toLocaleDateString('es-CL', {
                   day: 'numeric',
                   month: 'long',
