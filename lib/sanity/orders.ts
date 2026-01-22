@@ -20,7 +20,7 @@ export interface SanityOrder {
   } | null;
   items: Array<{
     id: string;
-    type: 'terrarium' | 'course' | 'workshop';
+    type: 'terrarium' | 'course' | 'workshop' | 'supply';
     name: string;
     slug: string;
     price: number;
@@ -37,10 +37,11 @@ export interface SanityOrder {
       longDescription?: any[]; // Descripción completa (rich text)
       // Información adicional según tipo
       size?: string; // Para terrarios
-      category?: string; // Para terrarios
+      category?: string; // Para terrarios e insumos
       duration?: number; // Para cursos (horas)
       level?: string; // Para cursos
       location?: string; // Para talleres
+      weight?: number; // Para insumos
     };
   }>;
   total: number;

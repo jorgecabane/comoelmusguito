@@ -18,9 +18,14 @@ import {
   featuredWorkshopsQuery,
   workshopBySlugQuery,
   workshopByIdQuery,
+  suppliesQuery,
+  featuredSuppliesQuery,
+  supplyBySlugQuery,
+  supplyByIdQuery,
+  suppliesByCategoryQuery,
   allFeaturedQuery,
 } from '@/sanity/lib/queries';
-import type { Terrarium, Course, Workshop } from '@/types/sanity';
+import type { Terrarium, Course, Workshop, Supply, SupplyCategory } from '@/types/sanity';
 
 // ============ TERRARIOS ============
 
@@ -189,6 +194,88 @@ export async function getWorkshopById(id: string): Promise<Workshop | null> {
   } catch (error) {
     console.error('Error fetching workshop by id:', error);
     return null;
+  }
+}
+
+// ============ INSUMOS ============
+
+export async function getAllSupplies(): Promise<Supply[]> {
+  try {
+    return await client.fetch(suppliesQuery);
+  } catch (error) {
+    console.error('Error fetching supplies:', error);
+    return [];
+  }
+}
+
+export async function getFeaturedSupplies(): Promise<Supply[]> {
+  try {
+    // Primero intentar obtener insumos destacados
+    const featuredResult = await client.fetch(featuredSuppliesQuery);
+    
+    // Si hay insumos destacados, retornarlos
+    if (featuredResult && featuredResult.length > 0) {
+      return featuredResult;
+    }
+    
+    // Si no hay destacados, obtener insumos disponibles (fallback)
+    const fallbackQuery = groq`
+      *[_type == "supply" && inStock == true] | order(order asc, _createdAt desc) [0...6] {
+        _id,
+        name,
+        slug,
+        description,
+        images,
+        price,
+        currency,
+        inStock,
+        stock,
+        category,
+        brand
+      }
+    `;
+    const fallbackResult = await client.fetch(fallbackQuery);
+    return fallbackResult || [];
+  } catch (error) {
+    console.error('Error fetching featured supplies:', error);
+    return [];
+  }
+}
+
+export async function getSupplyBySlug(slug: string): Promise<Supply | null> {
+  try {
+    if (!slug) {
+      console.error('Slug is required');
+      return null;
+    }
+    console.log('Fetching supply with slug:', slug);
+    const result = await client.fetch<Supply | null>(supplyBySlugQuery, { slug });
+    console.log('Supply result:', result);
+    return result;
+  } catch (error) {
+    console.error('Error fetching supply by slug:', error);
+    return null;
+  }
+}
+
+export async function getSupplyById(id: string): Promise<Supply | null> {
+  try {
+    if (!id) {
+      return null;
+    }
+    return await client.fetch<Supply | null>(supplyByIdQuery, { id });
+  } catch (error) {
+    console.error('Error fetching supply by id:', error);
+    return null;
+  }
+}
+
+export async function getSuppliesByCategory(category: SupplyCategory): Promise<Supply[]> {
+  try {
+    return await client.fetch(suppliesByCategoryQuery, { category });
+  } catch (error) {
+    console.error(`Error fetching supplies by category ${category}:`, error);
+    return [];
   }
 }
 

@@ -17,6 +17,7 @@ import { client } from '@/sanity/lib/client';
 import {
   decreaseTerrariumStock,
   decreaseWorkshopSpots,
+  decreaseSupplyStock,
 } from '@/lib/sanity/inventory';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 import type { EmailOrderData, EmailOrderItem, GiftEmailData } from '@/lib/resend/client';
@@ -336,6 +337,18 @@ export async function POST(request: NextRequest) {
             await decreaseTerrariumStock(item.id, item.quantity);
           } catch (error) {
             console.error(`Error descontando stock de terrario ${item.id}:`, error);
+            // No fallar el webhook si hay error descontando stock
+          }
+        }
+      }
+
+      // Descontar stock de insumos
+      for (const item of savedOrder.items) {
+        if (item.type === 'supply') {
+          try {
+            await decreaseSupplyStock(item.id, item.quantity);
+          } catch (error) {
+            console.error(`Error descontando stock de insumo ${item.id}:`, error);
             // No fallar el webhook si hay error descontando stock
           }
         }

@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import { getOrdersByUserId } from '@/lib/sanity/orders';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 import { getUserCoursesWithProgress } from '@/lib/sanity/course-access';
-import { getTerrariumById } from '@/lib/sanity/fetch';
+import { getTerrariumById, getSupplyById } from '@/lib/sanity/fetch';
 import { getGiftsSentByUser, getGiftsRedeemedByUser } from '@/lib/sanity/gifts';
 import { AccountFeed } from './AccountFeed';
 import type { SanityOrder } from '@/lib/sanity/orders';
@@ -121,6 +121,48 @@ export default async function MiCuentaPage() {
   // Combinar talleres de órdenes y regalos
   const workshopItems = [...workshopItemsFromOrders, ...workshopItemsFromGifts];
 
+  // Extraer insumos de órdenes confirmadas
+  const supplyItemsFromOrders = confirmedOrders
+    .flatMap((order) => 
+      order.items
+        .filter((item) => item.type === 'supply')
+        .map((item) => ({ 
+          ...item, 
+          orderId: order.orderId, 
+          orderDate: order.createdAt,
+          isGift: false,
+        }))
+    );
+
+  // Extraer insumos de regalos canjeados por este usuario
+  const supplyItemsFromGifts = giftsRedeemed
+    .flatMap((gift) =>
+      gift.items
+        .filter((item) => item.type === 'supply')
+        .map((item) => ({
+          ...item,
+          orderId: gift.orderId,
+          orderDate: gift.createdAt,
+          isGift: true,
+          giftSenderName: gift.customerName,
+          giftSenderEmail: gift.customerEmail,
+        }))
+    );
+
+  // Combinar insumos de órdenes y regalos
+  const supplyItems = [...supplyItemsFromOrders, ...supplyItemsFromGifts];
+
+  // Obtener datos completos de insumos
+  const suppliesWithDetails = await Promise.all(
+    supplyItems.map(async (item) => {
+      const supply = await getSupplyById(item.id);
+      return {
+        ...item,
+        supply,
+      };
+    })
+  );
+
   return (
     <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white">
       <div className="container max-w-7xl">
@@ -132,6 +174,7 @@ export default async function MiCuentaPage() {
             userCourses={userCourses}
             terrariumsWithDetails={terrariumsWithDetails}
             workshopItems={workshopItems}
+            suppliesWithDetails={suppliesWithDetails}
             giftsSent={giftsSent}
           />
         </Suspense>

@@ -9,7 +9,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui';
-import { ExternalLink, Package, BookOpen, Calendar } from 'lucide-react';
+import { ExternalLink, Package, BookOpen, Calendar, Wrench } from 'lucide-react';
 import { formatCurrency } from '@/lib/sanity/utils';
 import type { SanityOrder } from '@/lib/sanity/orders';
 
@@ -35,6 +35,8 @@ export function OrderItemDetail({ item, orderId }: OrderItemDetailProps) {
         return <BookOpen size={20} className="text-musgo" />;
       case 'workshop':
         return <Calendar size={20} className="text-musgo" />;
+      case 'supply':
+        return <Wrench size={20} className="text-musgo" />;
       default:
         return null;
     }
@@ -46,7 +48,11 @@ export function OrderItemDetail({ item, orderId }: OrderItemDetailProps) {
       ? `/terrarios/${item.slug}`
       : item.type === 'course'
       ? `/cursos/${item.slug}`
-      : `/talleres/${item.slug}`;
+      : item.type === 'workshop'
+      ? `/talleres/${item.slug}`
+      : item.type === 'supply'
+      ? `/insumos/${item.slug}`
+      : '#';
 
   return (
     <div className="group">
@@ -62,6 +68,7 @@ export function OrderItemDetail({ item, orderId }: OrderItemDetailProps) {
               {item.type === 'terrarium' && '🌿 Terrario'}
               {item.type === 'course' && '🎓 Curso Online'}
               {item.type === 'workshop' && '🤝 Taller Presencial'}
+              {item.type === 'supply' && '🛠️ Insumo'}
               {' · '}
               Cantidad: {item.quantity}
             </p>

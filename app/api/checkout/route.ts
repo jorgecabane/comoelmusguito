@@ -8,8 +8,8 @@ import { createPaymentOrder } from '@/lib/flow/client';
 import { getUserCurrency, getUserCountry } from '@/lib/utils/geolocation';
 import { convertUSDToCLP } from '@/lib/utils/currency';
 import { saveOrderToSanity } from '@/lib/sanity/orders';
-import { checkTerrariumStock, checkWorkshopSpots } from '@/lib/sanity/inventory';
-import { getTerrariumById, getCourseById, getWorkshopById } from '@/lib/sanity/fetch';
+import { checkTerrariumStock, checkWorkshopSpots, checkSupplyStock } from '@/lib/sanity/inventory';
+import { getTerrariumById, getCourseById, getWorkshopById, getSupplyById } from '@/lib/sanity/fetch';
 import { getCoursePrice } from '@/lib/sanity/utils';
 import { generateGiftToken } from '@/lib/utils/gift-token';
 import { sanitizeEmail, sanitizeString } from '@/lib/utils/sanitize';
@@ -229,6 +229,37 @@ export async function POST(request: NextRequest) {
         } else {
           return NextResponse.json(
             { error: `Debes seleccionar una fecha para el taller "${item.name}"` },
+            { status: 400 }
+          );
+        }
+      } else if (item.type === 'supply') {
+        product = await getSupplyById(item.id);
+        if (!product) {
+          return NextResponse.json(
+            { error: `Insumo "${item.name}" no encontrado` },
+            { status: 400 }
+          );
+        }
+        // Los insumos no tienen campo "published", pero verificamos inStock
+        if (!product.inStock) {
+          return NextResponse.json(
+            { error: `Insumo "${item.name}" no está disponible` },
+            { status: 400 }
+          );
+        }
+        validatedPrice = product.price;
+        validatedCurrency = product.currency;
+
+        // Validar stock
+        const stockCheck = await checkSupplyStock(item.id, item.quantity);
+        if (!stockCheck.available) {
+          return NextResponse.json(
+            {
+              error: `Lo sentimos, "${item.name}" ya no está disponible. Solo quedan ${stockCheck.currentStock} unidades.`,
+              outOfStock: true,
+              itemId: item.id,
+              itemName: item.name,
+            },
             { status: 400 }
           );
         }

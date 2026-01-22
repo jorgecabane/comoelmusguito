@@ -174,9 +174,54 @@ export interface Workshop {
   };
 }
 
+// ============ SUPPLY ============
+
+export type SupplyCategory = 
+  | 'sustrato' 
+  | 'herramienta' 
+  | 'kit' 
+  | 'frasco' 
+  | 'urna' 
+  | 'accesorio' 
+  | 'material';
+
+export interface Supply {
+  _id: string;
+  name: string;
+  slug: Slug;
+  description: string;
+  longDescription?: any[]; // Rich text blocks
+  images: SanityImage[];
+  price: number; // Solo CLP (productos físicos solo para Chile)
+  currency: 'CLP';
+  inStock: boolean;
+  stock: number;
+  category: SupplyCategory;
+  brand?: string;
+  weight?: number; // gramos
+  dimensions?: {
+    length?: number; // cm
+    width?: number; // cm
+    height?: number; // cm
+  };
+  shippingAvailable?: boolean;
+  shippingRegions?: string[];
+  localPickupOnly?: boolean;
+  instructions?: any[]; // Rich text blocks
+  compatibility?: string[];
+  warranty?: string;
+  featured?: boolean;
+  order?: number;
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string[];
+  };
+}
+
 // ============ HELPERS ============
 
-export type Product = Terrarium | Course | Workshop;
+export type Product = Terrarium | Course | Workshop | Supply;
 
 // Para tipo seguro de nivel
 export const levelLabels = {
@@ -203,3 +248,13 @@ export const categoryLabels = {
   paisaje: 'Paisaje',
 } as const;
 
+// Para tipo seguro de categoría de insumos
+export const supplyCategoryLabels = {
+  sustrato: '🌱 Sustrato',
+  herramienta: '🔧 Herramienta',
+  kit: '📦 Kit',
+  frasco: '🍶 Frasco',
+  urna: '🏺 Urna',
+  accesorio: '✨ Accesorio',
+  material: '🧱 Material',
+} as const;

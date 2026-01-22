@@ -14,6 +14,7 @@ import { NewsletterForm } from './NewsletterForm';
 const footerLinks = {
   shop: [
     { name: 'Todos los Terrarios', href: '/terrarios' },
+    { name: 'Insumos', href: '/insumos' },
   ],
   learn: [
     { name: 'Cursos Online', href: '/cursos' },

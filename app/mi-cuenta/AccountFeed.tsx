@@ -8,16 +8,17 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { LogOut, Package, BookOpen, Calendar, Sprout, Filter, Gift } from 'lucide-react';
+import { LogOut, Package, BookOpen, Calendar, Sprout, Filter, Gift, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { OrderHistoryModal } from './OrderHistoryModal';
 import { RedeemGiftModal } from './RedeemGiftModal';
 import { CourseCard } from './cards/CourseCard';
 import { TerrariumCard } from './cards/TerrariumCard';
 import { WorkshopCard } from './cards/WorkshopCard';
+import { SupplyCard } from './cards/SupplyCard';
 import type { SanityOrder } from '@/lib/sanity/orders';
 
-type FilterType = 'all' | 'courses' | 'workshops' | 'terrariums';
+type FilterType = 'all' | 'courses' | 'workshops' | 'terrariums' | 'supplies';
 
 interface AccountFeedProps {
   userName: string;
@@ -67,6 +68,18 @@ interface AccountFeedProps {
     giftSenderName?: string;
     giftSenderEmail?: string;
   }>;
+  suppliesWithDetails: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    quantity: number;
+    orderId: string;
+    orderDate: string;
+    supply: any;
+    isGift?: boolean;
+    giftSenderName?: string;
+    giftSenderEmail?: string;
+  }>;
   giftsSent: SanityOrder[];
 }
 
@@ -77,6 +90,7 @@ export function AccountFeed({
   userCourses,
   terrariumsWithDetails,
   workshopItems,
+  suppliesWithDetails,
   giftsSent,
 }: AccountFeedProps) {
   const searchParams = useSearchParams();
@@ -101,6 +115,8 @@ export function AccountFeed({
         'workshops': 'workshops',
         'terrarios': 'terrariums',
         'terrariums': 'terrariums',
+        'insumos': 'supplies',
+        'supplies': 'supplies',
         'all': 'all',
       };
       
@@ -114,7 +130,7 @@ export function AccountFeed({
   // Combinar todos los items en un timeline ordenado por fecha
   const timelineItems = useMemo(() => {
     const items: Array<{
-      type: 'course' | 'workshop' | 'terrarium';
+      type: 'course' | 'workshop' | 'terrarium' | 'supply';
       date: string;
       data: any;
     }> = [];
@@ -146,9 +162,18 @@ export function AccountFeed({
       });
     });
 
+    // Agregar insumos
+    suppliesWithDetails.forEach((item) => {
+      items.push({
+        type: 'supply',
+        date: item.orderDate,
+        data: item,
+      });
+    });
+
     // Ordenar por fecha (más recientes primero)
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [userCourses, terrariumsWithDetails, workshopItems]);
+  }, [userCourses, terrariumsWithDetails, workshopItems, suppliesWithDetails]);
 
   // Filtrar items según el filtro activo
   const filteredItems = useMemo(() => {
@@ -157,6 +182,7 @@ export function AccountFeed({
       if (activeFilter === 'courses') return item.type === 'course';
       if (activeFilter === 'workshops') return item.type === 'workshop';
       if (activeFilter === 'terrariums') return item.type === 'terrarium';
+      if (activeFilter === 'supplies') return item.type === 'supply';
       return true;
     });
   }, [timelineItems, activeFilter]);
@@ -170,6 +196,7 @@ export function AccountFeed({
     { value: 'courses', label: 'Cursos', icon: BookOpen, count: userCourses.length },
     { value: 'workshops', label: 'Talleres', icon: Calendar, count: workshopItems.length },
     { value: 'terrariums', label: 'Terrarios', icon: Sprout, count: terrariumsWithDetails.length },
+    { value: 'supplies', label: 'Insumos', icon: Wrench, count: suppliesWithDetails.length },
   ];
 
   return (
@@ -296,6 +323,14 @@ export function AccountFeed({
               return (
                 <WorkshopCard
                   key={`workshop-${item.data.id}-${index}`}
+                  item={item.data}
+                />
+              );
+            }
+            if (item.type === 'supply') {
+              return (
+                <SupplyCard
+                  key={`supply-${item.data.id}-${index}`}
                   item={item.data}
                 />
               );

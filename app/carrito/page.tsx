@@ -58,6 +58,7 @@ export default function CarritoPage() {
   const terrarios = items.filter((item) => item.type === 'terrarium');
   const cursos = items.filter((item) => item.type === 'course');
   const talleres = items.filter((item) => item.type === 'workshop');
+  const insumos = items.filter((item) => item.type === 'supply');
 
   // Calcular totales por moneda
   const totalesPorMoneda = items.reduce((acc, item) => {
@@ -154,6 +155,25 @@ export default function CarritoPage() {
                 </h2>
                 <div className="space-y-4">
                   {talleres.map((item) => (
+                    <CartItemCard
+                      key={`${item.id}-${item.type}`}
+                      item={item}
+                      onUpdateQuantity={updateQuantity}
+                      onRemove={removeItem}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Insumos */}
+            {insumos.length > 0 && (
+              <div>
+                <h2 className="font-display text-xl font-semibold text-forest mb-4">
+                  Insumos
+                </h2>
+                <div className="space-y-4">
+                  {insumos.map((item) => (
                     <CartItemCard
                       key={`${item.id}-${item.type}`}
                       item={item}
@@ -352,6 +372,7 @@ function getTypeUrl(type: string) {
     terrarium: 'terrarios',
     course: 'cursos',
     workshop: 'talleres',
+    supply: 'insumos',
   };
   return urls[type] || 'terrarios';
 }

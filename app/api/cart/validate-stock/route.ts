@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { checkTerrariumStock } from '@/lib/sanity/inventory';
-import { getTerrariumById } from '@/lib/sanity/fetch';
+import { checkTerrariumStock, checkSupplyStock } from '@/lib/sanity/inventory';
+import { getTerrariumById, getSupplyById } from '@/lib/sanity/fetch';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Solo validar stock para terrarios
+    // Validar stock para terrarios e insumos
     if (sanitizedItemType === 'terrarium') {
       const terrarium = await getTerrariumById(sanitizedItemId);
       
@@ -54,6 +54,37 @@ export async function POST(request: NextRequest) {
       }
 
       const stockCheck = await checkTerrariumStock(sanitizedItemId, sanitizedQuantity);
+      
+      return NextResponse.json({
+        available: stockCheck.available,
+        inStock: stockCheck.inStock,
+        currentStock: stockCheck.currentStock,
+        message: stockCheck.available
+          ? 'Stock disponible'
+          : `Solo quedan ${stockCheck.currentStock} unidades disponibles`,
+      });
+    }
+
+    if (sanitizedItemType === 'supply') {
+      const supply = await getSupplyById(sanitizedItemId);
+      
+      if (!supply) {
+        return NextResponse.json(
+          { error: 'Insumo no encontrado', available: false },
+          { status: 404 }
+        );
+      }
+
+      if (!supply.inStock) {
+        return NextResponse.json({
+          available: false,
+          inStock: false,
+          currentStock: 0,
+          message: 'Este insumo está agotado',
+        });
+      }
+
+      const stockCheck = await checkSupplyStock(sanitizedItemId, sanitizedQuantity);
       
       return NextResponse.json({
         available: stockCheck.available,

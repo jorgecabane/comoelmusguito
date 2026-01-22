@@ -295,6 +295,102 @@ export const workshopByIdQuery = groq`
   }
 `;
 
+// ============ INSUMOS ============
+
+export const suppliesQuery = groq`
+  *[_type == "supply" && inStock == true] | order(order asc, _createdAt desc) {
+    _id,
+    name,
+    slug,
+    description,
+    images,
+    price,
+    currency,
+    inStock,
+    stock,
+    category,
+    brand,
+    weight,
+    dimensions,
+    shippingAvailable,
+    shippingRegions,
+    localPickupOnly,
+    featured,
+    order
+  }
+`;
+
+export const featuredSuppliesQuery = groq`
+  *[_type == "supply" && featured == true && inStock == true] | order(order asc) [0...6] {
+    _id,
+    name,
+    slug,
+    description,
+    images,
+    price,
+    currency,
+    inStock,
+    stock,
+    category,
+    brand
+  }
+`;
+
+export const supplyBySlugQuery = groq`
+  *[_type == "supply" && slug.current == $slug][0] {
+    _id,
+    name,
+    slug,
+    description,
+    longDescription,
+    images,
+    price,
+    currency,
+    inStock,
+    stock,
+    category,
+    brand,
+    weight,
+    dimensions,
+    shippingAvailable,
+    shippingRegions,
+    localPickupOnly,
+    instructions,
+    compatibility,
+    warranty,
+    seo
+  }
+`;
+
+export const supplyByIdQuery = groq`
+  *[_type == "supply" && _id == $id][0] {
+    _id,
+    name,
+    slug,
+    price,
+    currency,
+    inStock,
+    stock,
+    category
+  }
+`;
+
+export const suppliesByCategoryQuery = groq`
+  *[_type == "supply" && category == $category && inStock == true] | order(order asc, _createdAt desc) {
+    _id,
+    name,
+    slug,
+    description,
+    images,
+    price,
+    currency,
+    inStock,
+    stock,
+    category,
+    brand
+  }
+`;
+
 // ============ HELPERS ============
 
 // Obtener todos los productos destacados (terrarios + cursos)

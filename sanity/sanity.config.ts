@@ -60,6 +60,16 @@ export default defineConfig({
                           .title('Talleres Presenciales')
                           .filter('_type == "workshop"')
                       ),
+
+                    // Insumos
+                    S.listItem()
+                      .title('🛠️ Insumos')
+                      .icon(() => '🛠️')
+                      .child(
+                        S.documentTypeList('supply')
+                          .title('Insumos')
+                          .filter('_type == "supply"')
+                      ),
                   ])
               ),
 
@@ -111,7 +121,7 @@ export default defineConfig({
             // Resto de documentos (si hay otros schemas no categorizados)
             ...S.documentTypeListItems().filter(
               (listItem) =>
-                !['terrarium', 'course', 'workshop', 'user', 'order', 'courseAccess'].includes(
+                !['terrarium', 'course', 'workshop', 'supply', 'user', 'order', 'courseAccess'].includes(
                   listItem.getId() || ''
                 )
             ),

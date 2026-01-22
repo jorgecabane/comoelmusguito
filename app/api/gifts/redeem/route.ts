@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
     const courseItems = order.items.filter((item: any) => item.type === 'course');
     const workshopItems = order.items.filter((item: any) => item.type === 'workshop');
     const terrariumItems = order.items.filter((item: any) => item.type === 'terrarium');
+    const supplyItems = order.items.filter((item: any) => item.type === 'supply');
     
     const createdAccesses: string[] = [];
     const errors: string[] = [];
@@ -138,11 +139,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. Para talleres y terrarios, no necesitamos crear documentos de acceso
+    // 2. Para talleres, terrarios e insumos, no necesitamos crear documentos de acceso
     // porque se mostrarán desde los regalos recibidos (giftsReceived) en "Mi Cuenta"
     // La orden se mantiene con el userId del comprador (no se cambia)
     // El destinatario verá sus regalos a través de getGiftsReceivedByEmail
-    if (workshopItems.length > 0 || terrariumItems.length > 0) {
+    if (workshopItems.length > 0 || terrariumItems.length > 0 || supplyItems.length > 0) {
       // Agregar items procesados al mensaje
       if (workshopItems.length > 0) {
         createdAccesses.push(`Taller(es): ${workshopItems.map((i: any) => i.name).join(', ')}`);
@@ -152,8 +153,12 @@ export async function POST(request: NextRequest) {
         createdAccesses.push(`Terrario(s): ${terrariumItems.map((i: any) => i.name).join(', ')}`);
         hasProcessedItems = true;
       }
+      if (supplyItems.length > 0) {
+        createdAccesses.push(`Insumo(s): ${supplyItems.map((i: any) => i.name).join(', ')}`);
+        hasProcessedItems = true;
+      }
 
-      console.log(`✅ Regalo ${order.orderId} canjeado - talleres/terrarios disponibles para ${currentUser._id}`);
+      console.log(`✅ Regalo ${order.orderId} canjeado - talleres/terrarios/insumos disponibles para ${currentUser._id}`);
     }
 
     // 🔒 MARCAR EL REGALO COMO CANJEADO (si se procesó al menos un item)

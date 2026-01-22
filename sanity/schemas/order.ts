@@ -83,6 +83,7 @@ export default defineType({
                   { title: 'Terrario', value: 'terrarium' },
                   { title: 'Curso Online', value: 'course' },
                   { title: 'Taller Presencial', value: 'workshop' },
+                  { title: 'Insumo', value: 'supply' },
                 ],
               },
             },

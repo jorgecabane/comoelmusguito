@@ -291,3 +291,12 @@ export const categoryLabels = {
   paisaje: 'Paisaje',
 } as const;
 
+export const supplyCategoryLabels = {
+  sustrato: '🌱 Sustrato',
+  herramienta: '🔧 Herramienta',
+  kit: '📦 Kit',
+  frasco: '🍶 Frasco',
+  urna: '🏺 Urna',
+  accesorio: '✨ Accesorio',
+  material: '🧱 Material',
+} as const;

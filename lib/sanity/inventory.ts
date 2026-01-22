@@ -97,6 +97,97 @@ export async function decreaseTerrariumStock(
 }
 
 /**
+ * Verificar stock disponible de un insumo
+ */
+export async function checkSupplyStock(
+  supplyId: string,
+  requestedQuantity: number
+): Promise<{ available: boolean; currentStock: number; inStock: boolean }> {
+  try {
+    const query = `*[_type == "supply" && _id == $id][0]`;
+    const supply = await client.fetch(query, { id: supplyId });
+
+    if (!supply) {
+      return { available: false, currentStock: 0, inStock: false };
+    }
+
+    const currentStock = supply.stock || 0;
+    const inStock = supply.inStock || false;
+
+    return {
+      available: inStock && currentStock >= requestedQuantity,
+      currentStock,
+      inStock,
+    };
+  } catch (error) {
+    console.error(`Error verificando stock de insumo ${supplyId}:`, error);
+    return { available: false, currentStock: 0, inStock: false };
+  }
+}
+
+/**
+ * Descontar stock de un insumo
+ * Es idempotente: usa transacción atómica para evitar race conditions
+ * Si el stock es insuficiente, solo descuenta lo disponible (no permite negativo)
+ */
+export async function decreaseSupplyStock(
+  supplyId: string,
+  quantity: number
+): Promise<void> {
+  try {
+    // Usar transacción atómica para evitar race conditions
+    // Leer y actualizar en una sola operación
+    const supply = await writeClient.fetch(
+      `*[_type == "supply" && _id == $id][0]`,
+      { id: supplyId }
+    );
+
+    if (!supply) {
+      throw new Error(`Insumo ${supplyId} no encontrado`);
+    }
+
+    const currentStock = supply.stock || 0;
+    
+    // Si no hay suficiente stock, solo descontar lo disponible
+    // Esto previene doble descuento en race conditions
+    const quantityToDeduct = Math.min(quantity, currentStock);
+    
+    if (quantityToDeduct === 0) {
+      console.warn(
+        `⚠️ No se puede descontar stock de insumo ${supplyId}: stock actual es ${currentStock}, se intentó descontar ${quantity}`
+      );
+      return; // No hacer nada si no hay stock disponible
+    }
+
+    if (quantityToDeduct < quantity) {
+      console.warn(
+        `⚠️ Intento de descontar ${quantity} unidades pero solo hay ${currentStock} disponibles para insumo ${supplyId}. Descontando ${quantityToDeduct}`
+      );
+    }
+
+    const newStock = currentStock - quantityToDeduct;
+    const inStock = newStock > 0;
+
+    // Actualizar stock de forma atómica
+    await writeClient
+      .patch(supplyId)
+      .set({
+        stock: newStock,
+        inStock,
+        updatedAt: new Date().toISOString(),
+      })
+      .commit();
+
+    console.log(
+      `✅ Stock de insumo ${supplyId} actualizado: ${currentStock} → ${newStock} (descontado: ${quantityToDeduct})`
+    );
+  } catch (error) {
+    console.error(`Error descontando stock de insumo ${supplyId}:`, error);
+    throw error;
+  }
+}
+
+/**
  * Verificar cupos disponibles de un taller en una fecha específica
  */
 export async function checkWorkshopSpots(

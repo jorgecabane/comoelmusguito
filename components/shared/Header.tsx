@@ -20,6 +20,7 @@ const navigation = [
   { name: 'Terrarios', href: '/terrarios' },
   { name: 'Cursos Online', href: '/cursos' },
   { name: 'Talleres', href: '/talleres' },
+  { name: 'Insumos', href: '/insumos' },
   { name: 'Sobre el Musguito', href: '/sobre' },
 ];
 

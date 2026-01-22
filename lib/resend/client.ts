@@ -19,7 +19,7 @@ const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export interface EmailOrderItem {
   name: string;
-  type: 'terrarium' | 'course' | 'workshop';
+  type: 'terrarium' | 'course' | 'workshop' | 'supply';
   quantity: number;
   price: number;
   currency: string;
@@ -97,6 +97,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
   const terrarios = data.items.filter((item) => item.type === 'terrarium');
   const cursos = data.items.filter((item) => item.type === 'course');
   const talleres = data.items.filter((item) => item.type === 'workshop');
+  const insumos = data.items.filter((item) => item.type === 'supply');
 
   const formatPrice = (amount: number, currency: string) => {
     if (currency === 'CLP') {
@@ -214,7 +215,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                         <div style="flex: 1;">
                           <p style="margin: 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">${item.name}</p>
                           <p style="margin: 4px 0 0 0; color: #5a5a5a; font-size: 13px;">
-                            ${item.type === 'terrarium' ? '🌿 Terrario' : item.type === 'course' ? '🎓 Curso Online' : '🤝 Taller Presencial'}
+                            ${item.type === 'terrarium' ? '🌿 Terrario' : item.type === 'course' ? '🎓 Curso Online' : item.type === 'workshop' ? '🤝 Taller Presencial' : '🛠️ Insumo'}
                             ${item.quantity > 1 ? ` • Cantidad: ${item.quantity}` : ''}
                           </p>
                           ${item.selectedDate ? `
@@ -309,6 +310,17 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                   </p>
                   <p style="margin: 12px 0 0 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
                     <strong>Ubicación:</strong> Santa Isabel 676, Providencia, Santiago
+                  </p>
+                </div>
+                ` : ''}
+
+                ${insumos.length > 0 ? `
+                <div style="background-color: #f0f7f2; border-left: 4px solid #4a7c59; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">
+                    🛠️ Para tus Insumos:
+                  </p>
+                  <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                    Te contactaremos en las próximas 24 horas para coordinar el retiro o envío de tus insumos.
                   </p>
                 </div>
                 ` : ''}
@@ -800,6 +812,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
   const cursos = data.items.filter((item) => item.type === 'course');
   const talleres = data.items.filter((item) => item.type === 'workshop');
   const terrarios = data.items.filter((item) => item.type === 'terrarium');
+  const insumos = data.items.filter((item) => item.type === 'supply');
 
   const html = `
 <!DOCTYPE html>
@@ -872,6 +885,15 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 <div style="margin-bottom: 16px;">
                   <h4 style="margin: 0 0 8px 0; color: #2D5016; font-size: 16px; font-weight: 600;">🌿 Terrarios:</h4>
                   ${terrarios.map((item) => `
+                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                  `).join('')}
+                </div>
+                ` : ''}
+
+                ${insumos.length > 0 ? `
+                <div style="margin-bottom: 16px;">
+                  <h4 style="margin: 0 0 8px 0; color: #2D5016; font-size: 16px; font-weight: 600;">🛠️ Insumos:</h4>
+                  ${insumos.map((item) => `
                     <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
@@ -960,6 +982,17 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                   </p>
                   <p style="margin: 12px 0 0 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
                     <strong>Ubicación:</strong> Santa Isabel 676, Providencia, Santiago
+                  </p>
+                </div>
+                ` : ''}
+
+                ${insumos.length > 0 ? `
+                <div style="background-color: #f0f7f2; border-left: 4px solid #4a7c59; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">
+                    🛠️ Para tus Insumos:
+                  </p>
+                  <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                    Te contactaremos en las próximas 24 horas para coordinar el retiro o envío de tus insumos.
                   </p>
                 </div>
                 ` : ''}

@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { getAllTerrariums, getAllCourses, getAllWorkshops } from '@/lib/sanity/fetch';
+import { getAllTerrariums, getAllCourses, getAllWorkshops, getAllSupplies } from '@/lib/sanity/fetch';
 
 /**
  * Genera sitemap.xml dinámico
@@ -32,6 +32,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/talleres`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/insumos`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
       priority: 0.8,
     },
     {
@@ -83,6 +89,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const terrariums = await getAllTerrariums();
     const courses = await getAllCourses();
     const workshops = await getAllWorkshops();
+    const supplies = await getAllSupplies();
     
     const terrariumPages: MetadataRoute.Sitemap = terrariums.map((terrarium) => ({
       url: `${baseUrl}/terrarios/${terrarium.slug.current}`,
@@ -105,11 +112,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
   
+    const supplyPages: MetadataRoute.Sitemap = supplies.map((supply) => ({
+      url: `${baseUrl}/insumos/${supply.slug.current}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
+  
     return [
       ...staticPages,
       ...terrariumPages,
       ...coursePages,
       ...workshopPages,
+      ...supplyPages,
     ];
   } catch (error) {
     console.error('Error generando sitemap:', error);

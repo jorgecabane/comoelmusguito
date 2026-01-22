@@ -3,7 +3,7 @@
  */
 
 // Tipo de producto que se puede agregar al carrito
-export type CartItemType = 'terrarium' | 'course' | 'workshop';
+export type CartItemType = 'terrarium' | 'course' | 'workshop' | 'supply';
 
 // Información específica de taller (con fecha seleccionada)
 export interface WorkshopDateInfo {
@@ -27,6 +27,8 @@ export interface CartItem {
   size?: string; // Para terrarios
   selectedDate?: WorkshopDateInfo; // Para talleres
   duration?: number; // Para cursos (horas)
+  category?: string; // Para insumos (supply category)
+  weight?: number; // Para insumos (para cálculo de envío)
   
   // Validaciones
   maxQuantity?: number; // Stock máximo disponible

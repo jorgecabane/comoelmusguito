@@ -18,7 +18,7 @@ type PaymentStatus = 'loading' | 'success' | 'error' | 'pending';
 
 interface OrderItem {
   name: string;
-  type: 'terrarium' | 'course' | 'workshop';
+  type: 'terrarium' | 'course' | 'workshop' | 'supply';
   quantity: number;
   price: number;
   currency: 'CLP' | 'USD';
@@ -239,6 +239,7 @@ function CheckoutCallbackContent() {
                             {item.type === 'terrarium' && '🌿 Terrario'}
                             {item.type === 'course' && '🎓 Curso Online'}
                             {item.type === 'workshop' && '🤝 Taller Presencial'}
+                            {item.type === 'supply' && '🛠️ Insumo'}
                             {' · '}
                             Cantidad: {item.quantity}
                           </p>

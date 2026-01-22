@@ -29,8 +29,8 @@ export function AddToCartButton({
   const [error, setError] = useState<string | null>(null);
 
   const handleAddToCart = async () => {
-    // Validar stock antes de agregar (solo para terrarios)
-    if (item.type === 'terrarium') {
+    // Validar stock antes de agregar (para terrarios e insumos)
+    if (item.type === 'terrarium' || item.type === 'supply') {
       setIsValidating(true);
       setError(null);
 

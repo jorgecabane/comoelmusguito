@@ -65,6 +65,19 @@ export async function GET(request: NextRequest) {
           location: product.location?.address || 'Santa Isabel 676, Providencia, Santiago',
         };
       }
+    } else if (type === 'supply') {
+      const query = `*[_type == "supply" && _id == $id][0]`;
+      product = await client.fetch(query, { id });
+      
+      if (product) {
+        snapshot = {
+          image: getImageUrl(product.images?.[0], { width: 400, height: 400 }),
+          description: product.description,
+          longDescription: product.longDescription,
+          category: product.category,
+          weight: product.weight,
+        };
+      }
     }
 
     if (!product) {
