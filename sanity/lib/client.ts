@@ -41,4 +41,3 @@ export const getClient = (preview?: boolean) =>
 // Alias para compatibilidad: writeClient ahora es igual a client
 // (mantenemos esto para no romper código existente)
 export const writeClient = client;
-

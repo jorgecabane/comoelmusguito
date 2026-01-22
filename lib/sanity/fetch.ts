@@ -4,6 +4,7 @@
  */
 
 import { client } from '@/sanity/lib/client';
+import { groq } from 'next-sanity';
 import {
   terrariumsQuery,
   featuredTerrariumsQuery,
@@ -34,7 +35,33 @@ export async function getAllTerrariums(): Promise<Terrarium[]> {
 
 export async function getFeaturedTerrariums(): Promise<Terrarium[]> {
   try {
-    return await client.fetch(featuredTerrariumsQuery);
+    // Primero intentar obtener terrarios destacados
+    const featuredResult = await client.fetch(featuredTerrariumsQuery);
+    
+    // Si hay terrarios destacados, retornarlos
+    if (featuredResult && featuredResult.length > 0) {
+      return featuredResult;
+    }
+    
+    // Si no hay destacados, obtener terrarios disponibles (fallback)
+    const fallbackQuery = groq`
+      *[_type == "terrarium" && inStock == true] | order(order asc, _createdAt desc) [0...6] {
+        _id,
+        name,
+        slug,
+        description,
+        images,
+        price,
+        currency,
+        inStock,
+        stock,
+        size,
+        category,
+        plants
+      }
+    `;
+    const fallbackResult = await client.fetch(fallbackQuery);
+    return fallbackResult || [];
   } catch (error) {
     console.error('Error fetching featured terrariums:', error);
     return [];
