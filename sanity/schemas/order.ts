@@ -4,6 +4,31 @@
  */
 
 import { defineField, defineType } from 'sanity';
+import chileRegionsData from '../../lib/utils/chile-regions.json';
+
+interface Region {
+  name: string;
+  communes: string[];
+}
+
+// Validar que los datos se carguen correctamente
+const CHILE_REGIONS: Region[] = Array.isArray(chileRegionsData) 
+  ? (chileRegionsData as Region[])
+  : [];
+
+// Crear array de nombres de regiones de forma segura
+// Asegurarse de que siempre sea un array válido
+let ALL_REGIONS: string[] = [];
+try {
+  if (Array.isArray(CHILE_REGIONS) && CHILE_REGIONS.length > 0) {
+    ALL_REGIONS = CHILE_REGIONS
+      .map((r) => r?.name)
+      .filter((name): name is string => typeof name === 'string' && name.length > 0);
+  }
+} catch (error) {
+  console.error('Error inicializando ALL_REGIONS:', error);
+  ALL_REGIONS = [];
+}
 
 export default defineType({
   name: 'order',
@@ -135,6 +160,81 @@ export default defineType({
                 },
               ],
             },
+            {
+              name: 'shippingPreference',
+              title: 'Preferencia de Envío',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Retiro en Local', value: 'pickup' },
+                  { title: 'Envío a Domicilio', value: 'shipping' },
+                ],
+              },
+              description: 'Cómo el cliente quiere recibir este producto (solo para productos despachables)',
+            },
+            {
+              name: 'snapshot',
+              title: 'Snapshot del Producto',
+              type: 'object',
+              description: 'Información del producto al momento de la compra (por si se elimina después)',
+              fields: [
+                {
+                  name: 'image',
+                  title: 'Imagen',
+                  type: 'string',
+                  description: 'URL de la imagen principal',
+                },
+                {
+                  name: 'description',
+                  title: 'Descripción',
+                  type: 'text',
+                  description: 'Descripción corta del producto',
+                },
+                {
+                  name: 'longDescription',
+                  title: 'Descripción Completa',
+                  type: 'array',
+                  of: [{ type: 'block' }],
+                  description: 'Descripción completa en formato rich text',
+                },
+                {
+                  name: 'size',
+                  title: 'Tamaño',
+                  type: 'string',
+                  description: 'Tamaño del producto (para terrarios)',
+                },
+                {
+                  name: 'category',
+                  title: 'Categoría',
+                  type: 'string',
+                  description: 'Categoría del producto (para terrarios e insumos)',
+                },
+                {
+                  name: 'duration',
+                  title: 'Duración',
+                  type: 'number',
+                  description: 'Duración en horas (para cursos)',
+                },
+                {
+                  name: 'level',
+                  title: 'Nivel',
+                  type: 'string',
+                  description: 'Nivel del curso',
+                },
+                {
+                  name: 'location',
+                  title: 'Ubicación',
+                  type: 'string',
+                  description: 'Ubicación del taller',
+                },
+                {
+                  name: 'weight',
+                  title: 'Peso',
+                  type: 'number',
+                  description: 'Peso en gramos (para insumos)',
+                },
+              ],
+            },
           ],
         },
       ],
@@ -262,6 +362,108 @@ export default defineType({
       readOnly: true,
       // Los campos reference pueden ser null por defecto si no tienen required()
     }),
+    // Campos de Despacho
+    defineField({
+      name: 'requiresShipping',
+      title: 'Requiere Despacho',
+      type: 'boolean',
+      description: 'Indica si esta orden tiene productos que requieren despacho',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'shippingAddress',
+      title: 'Dirección de Despacho',
+      type: 'object',
+      description: 'Dirección para el despacho de productos (solo disponible dentro de Chile)',
+      hidden: ({ parent }) => !parent?.requiresShipping,
+      fields: [
+        {
+          name: 'region',
+          title: 'Región',
+          type: 'string',
+          options: {
+            // Array estático generado al cargar el schema
+            list: ALL_REGIONS.map((region) => ({
+              title: region,
+              value: region,
+            })),
+          },
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              const requiresShipping = (context.parent as any)?.requiresShipping;
+              if (requiresShipping && !value) {
+                return 'Región es requerida para despacho';
+              }
+              if (value && typeof value === 'string' && Array.isArray(ALL_REGIONS) && !ALL_REGIONS.includes(value)) {
+                return 'Región inválida';
+              }
+              return true;
+            }),
+        },
+        {
+          name: 'comuna',
+          title: 'Comuna',
+          type: 'string',
+          description: 'Ingrese la comuna de despacho',
+          // Nota: Sanity no soporta bien funciones en options.list para campos anidados,
+          // por lo que usamos un input de texto con validación
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              // Obtener el documento padre para acceder a requiresShipping
+              const document = context.document as any;
+              const requiresShipping = document?.requiresShipping;
+              
+              // Obtener la región del objeto shippingAddress (context.parent es shippingAddress)
+              const shippingAddress = context.parent as any;
+              const region = shippingAddress?.region;
+              
+              if (requiresShipping && !value) {
+                return 'Comuna es requerida para despacho';
+              }
+              if (value && typeof value === 'string' && region && typeof region === 'string' && Array.isArray(CHILE_REGIONS)) {
+                const regionData = CHILE_REGIONS.find((r) => r.name === region);
+                if (regionData && Array.isArray(regionData.communes) && !regionData.communes.includes(value)) {
+                  return `Comuna "${value}" no pertenece a la región "${region}". Comunas válidas: ${regionData.communes.slice(0, 5).join(', ')}...`;
+                }
+              }
+              return true;
+            }),
+        },
+        {
+          name: 'address',
+          title: 'Dirección',
+          type: 'string',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              const requiresShipping = (context.parent as any)?.requiresShipping;
+              if (requiresShipping && !value) {
+                return 'Dirección es requerida para despacho';
+              }
+              return true;
+            }),
+        },
+        {
+          name: 'number',
+          title: 'Número',
+          type: 'string',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              const requiresShipping = (context.parent as any)?.requiresShipping;
+              if (requiresShipping && !value) {
+                return 'Número es requerido para despacho';
+              }
+              return true;
+            }),
+        },
+        {
+          name: 'details',
+          title: 'Detalles Adicionales (Opcional)',
+          type: 'text',
+          rows: 3,
+          description: 'Referencias adicionales, departamento, etc.',
+        },
+      ],
+    }),
   ],
   preview: {
     select: {
@@ -274,8 +476,9 @@ export default defineType({
       isGift: 'isGift',
       recipientName: 'recipientName',
       recipientEmail: 'recipientEmail',
+      requiresShipping: 'requiresShipping',
     },
-    prepare({ orderId, customerName, customerEmail, total, currency, status, isGift, recipientName, recipientEmail }) {
+    prepare({ orderId, customerName, customerEmail, total, currency, status, isGift, recipientName, recipientEmail, requiresShipping }) {
       const statusLabels: Record<number, string> = {
         1: '⏳ Pendiente',
         2: '✅ Pagado',
@@ -284,9 +487,10 @@ export default defineType({
       };
 
       const giftLabel = isGift ? ` 🎁 Regalo para: ${recipientName || recipientEmail || 'Sin destinatario'}` : '';
+      const shippingLabel = requiresShipping ? ' 🚚 Despacho' : '';
 
       return {
-        title: `${orderId || 'Sin ID'}${isGift ? ' 🎁' : ''}`,
+        title: `${orderId || 'Sin ID'}${isGift ? ' 🎁' : ''}${shippingLabel}`,
         subtitle: `${customerName || customerEmail || 'Sin cliente'}${giftLabel} • ${statusLabels[status as number] || 'Desconocido'} • ${total ? `$${total.toLocaleString('es-CL')} ${currency}` : 'Sin monto'}`,
       };
     },

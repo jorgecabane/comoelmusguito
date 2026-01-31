@@ -46,6 +46,14 @@ export interface EmailOrderData {
   recipientName?: string; // Nombre del destinatario del regalo
   recipientEmail?: string; // Email del destinatario del regalo
   giftMessage?: string; // Mensaje personalizado del regalo
+  requiresShipping?: boolean; // Si el pedido requiere despacho
+  shippingAddress?: {
+    region: string;
+    comuna: string;
+    address: string;
+    number: string;
+    details?: string;
+  };
 }
 
 export interface GiftEmailData {
@@ -57,6 +65,14 @@ export interface GiftEmailData {
   giftMessage?: string;
   items: EmailOrderItem[];
   orderId: string;
+  requiresShipping?: boolean;
+  shippingAddress?: {
+    region: string;
+    comuna: string;
+    address: string;
+    number: string;
+    details?: string;
+  };
 }
 
 /**
@@ -320,7 +336,24 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                     🛠️ Para tus Insumos:
                   </p>
                   <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
-                    Te contactaremos en las próximas 24 horas para coordinar el retiro o envío de tus insumos.
+                    ${data.requiresShipping 
+                      ? 'Te contactaremos en las próximas 24 horas para coordinar el despacho de tus insumos.'
+                      : 'Te contactaremos en las próximas 24 horas para coordinar el retiro o envío de tus insumos.'}
+                  </p>
+                </div>
+                ` : ''}
+
+                ${data.requiresShipping && data.shippingAddress ? `
+                <div style="background-color: #fff9e6; border-left: 4px solid #ffd700; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 12px 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">
+                    🚚 Dirección de Despacho:
+                  </p>
+                  <p style="margin: 0 0 8px 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                    <strong>${data.shippingAddress.address} ${data.shippingAddress.number}</strong><br>
+                    ${data.shippingAddress.comuna}, ${data.shippingAddress.region}${data.shippingAddress.details ? `<br>${data.shippingAddress.details}` : ''}
+                  </p>
+                  <p style="margin: 12px 0 0 0; color: #856404; font-size: 13px; line-height: 1.6; font-weight: 500;">
+                    ⚠️ Comoelmusguito te contactará después de la compra para coordinar el costo y fecha de envío. El despacho solo está disponible dentro de Chile.
                   </p>
                 </div>
                 ` : ''}
@@ -899,6 +932,22 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 </div>
                 ` : ''}
               </div>
+
+              ${data.requiresShipping && data.shippingAddress ? `
+              <!-- Información de Despacho -->
+              <div style="background-color: #fff9e6; border-left: 4px solid #ffd700; padding: 16px; margin: 20px 0; border-radius: 8px;">
+                <p style="margin: 0 0 12px 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">
+                  🚚 Dirección de Despacho:
+                </p>
+                <p style="margin: 0 0 8px 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
+                  <strong>${data.shippingAddress.address} ${data.shippingAddress.number}</strong><br>
+                  ${data.shippingAddress.comuna}, ${data.shippingAddress.region}${data.shippingAddress.details ? `<br>${data.shippingAddress.details}` : ''}
+                </p>
+                <p style="margin: 12px 0 0 0; color: #856404; font-size: 13px; line-height: 1.6; font-weight: 500;">
+                  ⚠️ Comoelmusguito te contactará después de canjear tu regalo para coordinar el costo y fecha de envío.
+                </p>
+              </div>
+              ` : ''}
 
               <!-- Token de Canje -->
               <div style="background-color: #FDFAF6; border: 2px dashed #3D6B22; border-radius: 12px; padding: 24px; margin: 30px 0; text-align: center;">

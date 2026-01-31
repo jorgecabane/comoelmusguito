@@ -20,6 +20,8 @@ export function SupplyDetail({ supply }: SupplyDetailProps) {
   const categoryLabel = supply.category ? supplyCategoryLabels[supply.category] : 'N/A';
 
   // Preparar item para el carrito
+  // Solo considerar shippingAvailable si localPickupOnly es false
+  // Esto previene contradicciones donde ambos están en true
   const cartItem: CartItem = {
     id: supply._id,
     type: 'supply',
@@ -33,6 +35,8 @@ export function SupplyDetail({ supply }: SupplyDetailProps) {
     weight: supply.weight,
     maxQuantity: supply.stock,
     inStock: supply.inStock,
+    // Solo marcar como disponible para envío si shippingAvailable es true Y localPickupOnly es false
+    shippingAvailable: supply.shippingAvailable === true && supply.localPickupOnly !== true,
   };
 
   return (

@@ -43,6 +43,15 @@ function CheckoutCallbackContent() {
   const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
   const [recipientName, setRecipientName] = useState<string | null>(null);
   const [giftMessage, setGiftMessage] = useState<string | null>(null);
+  // Información de despacho
+  const [requiresShipping, setRequiresShipping] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState<{
+    region: string;
+    comuna: string;
+    address: string;
+    number: string;
+    details?: string;
+  } | null>(null);
   
   const isLoggedIn = sessionStatus === 'authenticated' && session?.user;
 
@@ -158,6 +167,11 @@ function CheckoutCallbackContent() {
           setRecipientName(data.recipientName || null);
           setGiftMessage(data.giftMessage || null);
         }
+        // Información de despacho
+        if (data.requiresShipping) {
+          setRequiresShipping(true);
+          setShippingAddress(data.shippingAddress || null);
+        }
       }
     } catch (error) {
       console.error('Error obteniendo detalles de la orden:', error);
@@ -210,6 +224,27 @@ function CheckoutCallbackContent() {
                   </div>
                   <p className="text-xs text-gray mt-3">
                     El destinatario recibirá un email con los detalles del regalo y un código para canjearlo.
+                  </p>
+                </div>
+              )}
+              
+              {/* Badge de Despacho */}
+              {requiresShipping && (
+                <div className="bg-amber-50 border-2 border-amber-300/50 rounded-xl p-4 mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">🚚</span>
+                    <p className="font-semibold text-forest">Este pedido incluye despacho</p>
+                  </div>
+                  {shippingAddress && (
+                    <div className="text-sm text-gray mt-2">
+                      <p className="font-medium text-forest mb-1">Dirección de envío:</p>
+                      <p>{shippingAddress.address} {shippingAddress.number}</p>
+                      <p>{shippingAddress.comuna}, {shippingAddress.region}</p>
+                      {shippingAddress.details && <p className="text-xs mt-1">{shippingAddress.details}</p>}
+                    </div>
+                  )}
+                  <p className="text-xs text-amber-700 mt-3 font-medium">
+                    ⚠️ Comoelmusguito te contactará para coordinar el costo y fecha de envío.
                   </p>
                 </div>
               )}

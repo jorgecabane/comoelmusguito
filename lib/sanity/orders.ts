@@ -30,6 +30,7 @@ export interface SanityOrder {
       date: string;
       time?: string;
     };
+    shippingPreference?: 'pickup' | 'shipping'; // Preferencia de envío del cliente
     // Snapshot del producto al momento de compra (por si se elimina después)
     snapshot?: {
       image?: string; // URL de la imagen principal
@@ -60,6 +61,15 @@ export interface SanityOrder {
     _type: 'reference';
     _ref: string;
   } | null;
+  // Campos de Despacho
+  requiresShipping?: boolean;
+  shippingAddress?: {
+    region: string;
+    comuna: string;
+    address: string;
+    number: string;
+    details?: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -82,6 +92,15 @@ export async function saveOrderToSanity(data: {
   recipientName?: string;
   giftMessage?: string;
   giftToken?: string;
+  // Campos de despacho
+  requiresShipping?: boolean;
+  shippingAddress?: {
+    region: string;
+    comuna: string;
+    address: string;
+    number: string;
+    details?: string;
+  };
 }): Promise<SanityOrder> {
   const now = new Date().toISOString();
 
@@ -116,6 +135,7 @@ export async function saveOrderToSanity(data: {
             time: formatTime(item.selectedDate.date),
           }
         : undefined,
+      shippingPreference: (item as any).shippingPreference,
       // Guardar snapshot del producto (se pasa desde el checkout)
       snapshot: (item as any).snapshot,
     })),
@@ -128,6 +148,9 @@ export async function saveOrderToSanity(data: {
     recipientName: data.recipientName,
     giftMessage: data.giftMessage,
     giftToken: data.giftToken,
+    // Campos de despacho
+    requiresShipping: data.requiresShipping || false,
+    shippingAddress: data.shippingAddress,
     createdAt: now,
     updatedAt: now,
   };

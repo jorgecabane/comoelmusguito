@@ -29,6 +29,8 @@ export interface CartItem {
   duration?: number; // Para cursos (horas)
   category?: string; // Para insumos (supply category)
   weight?: number; // Para insumos (para cálculo de envío)
+  shippingAvailable?: boolean; // Para insumos y terrarios
+  shippingPreference?: 'pickup' | 'shipping'; // Preferencia del cliente: retiro o envío
   
   // Validaciones
   maxQuantity?: number; // Stock máximo disponible

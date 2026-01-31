@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
         price: item.price,
         currency: item.currency,
         slug: item.slug, // Necesario para links a cursos
+        shippingPreference: item.shippingPreference, // Preferencia de envío del producto
       })),
       customerEmail: order.customerEmail,
       customerName: order.customerName,
@@ -47,6 +48,9 @@ export async function GET(request: NextRequest) {
       recipientEmail: order.recipientEmail,
       recipientName: order.recipientName,
       giftMessage: order.giftMessage,
+      // Información de despacho
+      requiresShipping: order.requiresShipping || false,
+      shippingAddress: order.shippingAddress,
     });
   } catch (error) {
     console.error('Error obteniendo detalles de la orden:', error);

@@ -22,6 +22,8 @@ export function TerrariumDetail({ terrarium }: TerrariumDetailProps) {
   const categoryLabel = terrarium.category ? categoryLabels[terrarium.category] : 'N/A';
 
   // Preparar item para el carrito
+  // Solo considerar shippingAvailable si localPickupOnly es false
+  // Esto previene contradicciones donde ambos están en true
   const cartItem: CartItem = {
     id: terrarium._id,
     type: 'terrarium',
@@ -34,6 +36,8 @@ export function TerrariumDetail({ terrarium }: TerrariumDetailProps) {
     size: sizeLabel,
     maxQuantity: terrarium.stock,
     inStock: terrarium.inStock,
+    // Solo marcar como disponible para envío si shippingAvailable es true Y localPickupOnly es false
+    shippingAvailable: terrarium.shippingAvailable === true && terrarium.localPickupOnly !== true,
   };
 
   return (
@@ -56,9 +60,14 @@ export function TerrariumDetail({ terrarium }: TerrariumDetailProps) {
           </button>
         </div>
 
-        {!terrarium.shippingAvailable && (
+        {terrarium.localPickupOnly && (
           <p className="text-sm text-gray mt-4">
             📍 Solo retiro en persona (Santiago, Chile)
+          </p>
+        )}
+        {terrarium.shippingAvailable && !terrarium.localPickupOnly && (
+          <p className="text-sm text-gray mt-4">
+            🚚 Envío disponible a todo Chile
           </p>
         )}
       </div>

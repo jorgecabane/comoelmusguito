@@ -173,7 +173,15 @@ export default defineType({
       title: 'Disponible para Envío',
       type: 'boolean',
       initialValue: false,
-      description: 'Si está marcado, el producto puede enviarse',
+      description: 'Si está marcado, el producto puede enviarse. ⚠️ No puede estar activo junto con "Solo Retiro en Tienda"',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const localPickupOnly = (context.parent as any)?.localPickupOnly;
+          if (value === true && localPickupOnly === true) {
+            return 'No puedes tener "Disponible para Envío" y "Solo Retiro en Tienda" activos al mismo tiempo. Por favor, desactiva uno de los dos.';
+          }
+          return true;
+        }),
     }),
     defineField({
       name: 'shippingRegions',
@@ -181,13 +189,22 @@ export default defineType({
       type: 'array',
       of: [{ type: 'string' }],
       description: 'Regiones donde se puede enviar (dejar vacío para todas)',
+      hidden: ({ parent }) => !parent?.shippingAvailable || parent?.localPickupOnly,
     }),
     defineField({
       name: 'localPickupOnly',
       title: 'Solo Retiro en Tienda',
       type: 'boolean',
       initialValue: true,
-      description: 'Si está marcado, solo se puede retirar en tienda',
+      description: 'Si está marcado, solo se puede retirar en tienda. ⚠️ No puede estar activo junto con "Disponible para Envío"',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const shippingAvailable = (context.parent as any)?.shippingAvailable;
+          if (value === true && shippingAvailable === true) {
+            return 'No puedes tener "Solo Retiro en Tienda" y "Disponible para Envío" activos al mismo tiempo. Por favor, desactiva uno de los dos.';
+          }
+          return true;
+        }),
     }),
 
     // Contenido Adicional

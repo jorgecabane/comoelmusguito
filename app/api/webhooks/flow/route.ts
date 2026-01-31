@@ -411,6 +411,8 @@ export async function POST(request: NextRequest) {
       recipientName: savedOrder.recipientName,
       recipientEmail: savedOrder.recipientEmail,
       giftMessage: savedOrder.giftMessage,
+      requiresShipping: savedOrder.requiresShipping || false,
+      shippingAddress: savedOrder.shippingAddress,
     };
 
     // Enviar emails
@@ -429,6 +431,8 @@ export async function POST(request: NextRequest) {
             giftMessage: savedOrder.giftMessage,
             items: orderItems,
             orderId: savedOrder.orderId,
+            requiresShipping: savedOrder.requiresShipping || false,
+            shippingAddress: savedOrder.shippingAddress,
           };
 
           try {

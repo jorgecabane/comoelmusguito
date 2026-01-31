@@ -32,12 +32,21 @@ interface CheckoutRequest {
   recipientEmail?: string;
   recipientName?: string;
   giftMessage?: string;
+  // Campos de Despacho
+  requiresShipping?: boolean;
+  shippingAddress?: {
+    region: string;
+    comuna: string;
+    address: string;
+    number: string;
+    details?: string;
+  };
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: CheckoutRequest = await request.json();
-    const { items, email, customerName, userId, isGift, recipientEmail, recipientName, giftMessage } = body;
+    const { items, email, customerName, userId, isGift, recipientEmail, recipientName, giftMessage, requiresShipping, shippingAddress } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -80,6 +89,29 @@ export async function POST(request: NextRequest) {
       if (recipientEmail.toLowerCase() === email.toLowerCase()) {
         return NextResponse.json(
           { error: 'No puedes regalarte algo a ti mismo' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validar datos de despacho si requiere despacho
+    if (requiresShipping) {
+      if (!shippingAddress) {
+        return NextResponse.json(
+          { error: 'Dirección de despacho es requerida' },
+          { status: 400 }
+        );
+      }
+      if (!shippingAddress.region || !shippingAddress.comuna || !shippingAddress.address || !shippingAddress.number) {
+        return NextResponse.json(
+          { error: 'Todos los campos de dirección son requeridos para despacho' },
+          { status: 400 }
+        );
+      }
+      // Validar que la dirección no esté vacía o solo espacios
+      if (shippingAddress.address.trim().length === 0 || shippingAddress.number.trim().length === 0) {
+        return NextResponse.json(
+          { error: 'Dirección y número no pueden estar vacíos' },
           { status: 400 }
         );
       }
@@ -401,6 +433,15 @@ export async function POST(request: NextRequest) {
       recipientName: sanitizedRecipientName,
       giftMessage: sanitizedGiftMessage,
       giftToken,
+      // Campos de despacho
+      requiresShipping: requiresShipping || false,
+      shippingAddress: requiresShipping && shippingAddress ? {
+        region: shippingAddress.region.trim(),
+        comuna: shippingAddress.comuna.trim(),
+        address: shippingAddress.address.trim(),
+        number: shippingAddress.number.trim(),
+        details: shippingAddress.details?.trim() || undefined,
+      } : undefined,
     });
 
     return NextResponse.json({

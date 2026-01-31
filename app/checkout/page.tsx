@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
@@ -15,6 +15,7 @@ import { Button, Input } from '@/components/ui';
 import { Loader2, ArrowLeft, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CHILE_REGIONS, getCommunesByRegion } from '@/lib/utils/chile-regions';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -34,6 +35,15 @@ export default function CheckoutPage() {
   const [recipientEmail, setRecipientEmail] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [giftMessage, setGiftMessage] = useState('');
+  // Estados de Despacho
+  // Preferencias de envío por producto: 'shipping' | 'pickup' | undefined
+  // Key: `${item.id}-${item.type}`
+  const [itemShippingPreferences, setItemShippingPreferences] = useState<Record<string, 'shipping' | 'pickup'>>({});
+  const [shippingRegion, setShippingRegion] = useState('');
+  const [shippingComuna, setShippingComuna] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [shippingNumber, setShippingNumber] = useState('');
+  const [shippingDetails, setShippingDetails] = useState('');
   
   // Verificar si reCAPTCHA está configurado
   const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
@@ -181,8 +191,12 @@ export default function CheckoutPage() {
       }
 
       // Enriquecer items con snapshot del producto (para guardar en la orden)
+      // También agregar preferencia de envío si aplica
       const itemsWithSnapshot = await Promise.all(
         items.map(async (item) => {
+          const itemKey = `${item.id}-${item.type}`;
+          const shippingPreference = itemShippingPreferences[itemKey];
+          
           try {
             // Obtener detalles del producto desde la API
             const productResponse = await fetch(
@@ -193,6 +207,8 @@ export default function CheckoutPage() {
               return {
                 ...item,
                 snapshot: snapshot.data,
+                // Agregar preferencia de envío si el producto es despachable
+                shippingPreference: item.shippingAvailable ? shippingPreference : undefined,
               };
             }
           } catch (error) {
@@ -205,6 +221,8 @@ export default function CheckoutPage() {
               image: item.image,
               description: item.name, // Fallback
             },
+            // Agregar preferencia de envío si el producto es despachable
+            shippingPreference: item.shippingAvailable ? shippingPreference : undefined,
           };
         })
       );
@@ -225,6 +243,15 @@ export default function CheckoutPage() {
           recipientEmail: isGift ? recipientEmail : undefined,
           recipientName: isGift ? recipientName : undefined,
           giftMessage: isGift ? giftMessage : undefined,
+          // Campos de despacho
+          requiresShipping: hasSelectedShipping || undefined,
+          shippingAddress: hasSelectedShipping ? {
+            region: shippingRegion,
+            comuna: shippingComuna,
+            address: shippingAddress,
+            number: shippingNumber,
+            details: shippingDetails || undefined,
+          } : undefined,
         }),
       });
 
@@ -282,6 +309,52 @@ export default function CheckoutPage() {
   // Calcular total
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const currency = items[0]?.currency || 'CLP';
+  
+  // Detectar productos que pueden enviarse (tienen shippingAvailable === true)
+  const shippableItems = items.filter((item) => item.shippingAvailable === true);
+  
+  // Detectar si hay productos con preferencia de envío seleccionada
+  const hasSelectedShipping = Object.values(itemShippingPreferences).some((pref) => pref === 'shipping');
+  
+  // Inicializar preferencias por defecto para productos despachables
+  useEffect(() => {
+    const newPreferences: Record<string, 'shipping' | 'pickup'> = {};
+    shippableItems.forEach((item) => {
+      const key = `${item.id}-${item.type}`;
+      // Si no tiene preferencia, usar 'pickup' por defecto (retiro en local)
+      if (!itemShippingPreferences[key]) {
+        newPreferences[key] = 'pickup';
+      }
+    });
+    if (Object.keys(newPreferences).length > 0) {
+      setItemShippingPreferences((prev) => ({ ...prev, ...newPreferences }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length]); // Solo cuando cambian los items
+
+  const availableCommunes = shippingRegion ? getCommunesByRegion(shippingRegion) : [];
+  
+  // Función para actualizar preferencia de envío de un producto
+  const updateItemShippingPreference = (itemId: string, itemType: string, preference: 'shipping' | 'pickup') => {
+    const key = `${itemId}-${itemType}`;
+    setItemShippingPreferences((prev) => ({
+      ...prev,
+      [key]: preference,
+    }));
+    // Si cambia a pickup, limpiar dirección si no hay otros productos con envío
+    if (preference === 'pickup') {
+      const otherHasShipping = Object.entries(itemShippingPreferences).some(
+        ([k, v]) => k !== key && v === 'shipping'
+      );
+      if (!otherHasShipping) {
+        setShippingRegion('');
+        setShippingComuna('');
+        setShippingAddress('');
+        setShippingNumber('');
+        setShippingDetails('');
+      }
+    }
+  };
 
   return (
     <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white">
@@ -312,21 +385,75 @@ export default function CheckoutPage() {
           <h2 className="font-display text-xl font-semibold text-forest mb-4">
             Resumen del Pedido
           </h2>
-          <div className="space-y-3 mb-4">
-            {items.map((item) => (
-              <div
-                key={`${item.id}-${item.type}`}
-                className="flex justify-between text-gray"
-              >
-                <span>
-                  {item.name} x{item.quantity}
-                </span>
-                <span className="font-semibold">
-                  ${(item.price * item.quantity).toLocaleString('es-CL')} {item.currency}
-                </span>
-              </div>
-            ))}
+          <div className="space-y-4 mb-4">
+            {items.map((item) => {
+              const itemKey = `${item.id}-${item.type}`;
+              const isShippable = item.shippingAvailable === true;
+              const shippingPreference = itemShippingPreferences[itemKey] || (isShippable ? 'pickup' : undefined);
+              
+              return (
+                <div
+                  key={itemKey}
+                  className="pb-3 border-b border-gray/10 last:border-0 last:pb-0"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <span className="text-gray font-medium">
+                        {item.name} x{item.quantity}
+                      </span>
+                    </div>
+                    <span className="font-semibold text-gray">
+                      ${(item.price * item.quantity).toLocaleString('es-CL')} {item.currency}
+                    </span>
+                  </div>
+                  
+                  {/* Selector de envío/retiro para productos despachables */}
+                  {isShippable && (
+                    <div className="mt-3 pt-3 border-t border-gray/10">
+                      <label className="block text-xs font-semibold text-forest mb-2">
+                        ¿Cómo quieres recibir este producto?
+                      </label>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => updateItemShippingPreference(item.id, item.type, 'pickup')}
+                          className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
+                            shippingPreference === 'pickup'
+                              ? 'border-musgo bg-musgo/10 text-forest'
+                              : 'border-gray/30 text-gray hover:border-musgo/50'
+                          }`}
+                        >
+                          📍 Retiro en local
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateItemShippingPreference(item.id, item.type, 'shipping')}
+                          className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
+                            shippingPreference === 'shipping'
+                              ? 'border-musgo bg-musgo/10 text-forest'
+                              : 'border-gray/30 text-gray hover:border-musgo/50'
+                          }`}
+                        >
+                          🚚 Envío a domicilio
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+          {hasSelectedShipping && (
+            <div className="pt-3 border-t border-gray/20 mb-3">
+              <div className="flex justify-between items-baseline text-gray">
+                <span className="text-sm">Costo delivery:</span>
+                <span className="text-sm font-semibold">Por coordinar</span>
+              </div>
+              <p className="text-xs text-gray mt-1">
+                Solo disponible para despacho dentro de Chile. Comoelmusguito te contactará después de la compra para coordinar el costo y fecha de envío.
+              </p>
+            </div>
+          )}
           <div className="pt-4 border-t border-gray/20 flex justify-between items-baseline">
             <span className="font-display text-xl font-semibold text-forest">
               Total
@@ -610,6 +737,134 @@ export default function CheckoutPage() {
             )}
           </AnimatePresence>
 
+          {/* Sección de Dirección de Despacho */}
+          <AnimatePresence>
+            {hasSelectedShipping && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="pt-4 border-t border-gray/20 space-y-4"
+              >
+                <div className="bg-musgo/10 border border-musgo/20 rounded-lg p-4 mb-4">
+                  <h3 className="font-display text-lg font-semibold text-forest mb-2">
+                    🚚 Dirección de Despacho
+                  </h3>
+                  <p className="text-sm text-gray">
+                    Los productos con despacho disponible solo se envían dentro de Chile. Comoelmusguito te contactará después de la compra para coordinar el costo y fecha de envío.
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="shippingRegion"
+                    className="block text-sm font-semibold text-forest mb-2"
+                  >
+                    Región *
+                  </label>
+                  <select
+                    id="shippingRegion"
+                    value={shippingRegion}
+                    onChange={(e) => {
+                      setShippingRegion(e.target.value);
+                      setShippingComuna(''); // Reset comuna cuando cambia región
+                    }}
+                    required={hasSelectedShipping}
+                    disabled={loading}
+                    className="w-full px-4 py-2 border border-gray/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-musgo focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Selecciona una región</option>
+                    {CHILE_REGIONS.map((region) => (
+                      <option key={region.name} value={region.name}>
+                        {region.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {shippingRegion && (
+                  <div>
+                    <label
+                      htmlFor="shippingComuna"
+                      className="block text-sm font-semibold text-forest mb-2"
+                    >
+                      Comuna *
+                    </label>
+                    <select
+                      id="shippingComuna"
+                      value={shippingComuna}
+                      onChange={(e) => setShippingComuna(e.target.value)}
+                      required={hasSelectedShipping}
+                      disabled={loading || !shippingRegion}
+                      className="w-full px-4 py-2 border border-gray/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-musgo focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Selecciona una comuna</option>
+                      {availableCommunes.map((comuna) => (
+                        <option key={comuna} value={comuna}>
+                          {comuna}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <label
+                    htmlFor="shippingAddress"
+                    className="block text-sm font-semibold text-forest mb-2"
+                  >
+                    Dirección *
+                  </label>
+                  <Input
+                    id="shippingAddress"
+                    type="text"
+                    value={shippingAddress}
+                    onChange={(e) => setShippingAddress(e.target.value)}
+                    placeholder="Calle, Avenida, Pasaje, etc."
+                    required={hasSelectedShipping}
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="shippingNumber"
+                    className="block text-sm font-semibold text-forest mb-2"
+                  >
+                    Número *
+                  </label>
+                  <Input
+                    id="shippingNumber"
+                    type="text"
+                    value={shippingNumber}
+                    onChange={(e) => setShippingNumber(e.target.value)}
+                    placeholder="123"
+                    required={hasSelectedShipping}
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="shippingDetails"
+                    className="block text-sm font-semibold text-forest mb-2"
+                  >
+                    Detalles Adicionales (Opcional)
+                  </label>
+                  <textarea
+                    id="shippingDetails"
+                    value={shippingDetails}
+                    onChange={(e) => setShippingDetails(e.target.value)}
+                    placeholder="Depto, casa, referencias, etc."
+                    rows={3}
+                    disabled={loading}
+                    className="w-full px-4 py-2 border border-gray/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-musgo focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {error && (
             <div className="bg-error/10 border border-error/20 rounded-lg p-4">
               <p className="text-sm text-error">{error}</p>
@@ -625,7 +880,8 @@ export default function CheckoutPage() {
               loading ||
               !email ||
               !email.includes('@') ||
-              (isGift && (!recipientEmail || !recipientEmail.includes('@')))
+              (isGift && (!recipientEmail || !recipientEmail.includes('@'))) ||
+              (hasSelectedShipping && (!shippingRegion || !shippingComuna || !shippingAddress || !shippingNumber))
             }
           >
             {loading ? (
