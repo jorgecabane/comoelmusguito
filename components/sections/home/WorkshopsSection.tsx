@@ -100,14 +100,12 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
                 })
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) || [];
               
-              // Buscar la primera fecha con cupos disponibles (no agotada)
-              const primeraFechaDisponible = fechasFuturas.find((f) => f.status !== 'sold_out');
+              // Próxima fecha (la más cercana, para mostrar la fecha)
+              const proximaFecha = fechasFuturas[0];
               
-              // Si no hay fecha disponible, usar la primera fecha (que estará agotada)
-              const proximaFecha = primeraFechaDisponible || fechasFuturas[0];
-              
-              // Verificar si hay alguna fecha disponible
-              const hayFechasDisponibles = fechasFuturas.some((f) => f.status !== 'sold_out');
+              // Sumar cupos disponibles de TODAS las fechas futuras
+              const totalCuposDisponibles = fechasFuturas.reduce((sum, f) => sum + (f.spotsAvailable || 0), 0);
+              const hayFechasDisponibles = totalCuposDisponibles > 0;
 
               return (
                 <StaggerItem key={workshop._id}>
@@ -119,20 +117,14 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
                       />
                       <div className="p-6 space-y-4 flex flex-col flex-1">
                         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                          {proximaFecha ? (
+                          {fechasFuturas.length > 0 ? (
                             <Badge
-                              variant={
-                                proximaFecha.status === 'available'
-                                  ? 'success'
-                                  : proximaFecha.status === 'limited'
-                                  ? 'warning'
-                                  : 'error'
-                              }
+                              variant={hayFechasDisponibles ? 'success' : 'error'}
                               size="sm"
                             >
-                              {proximaFecha.status === 'sold_out'
-                                ? 'Agotado'
-                                : `${proximaFecha.spotsAvailable} ${proximaFecha.spotsAvailable === 1 ? 'cupo' : 'cupos'}`}
+                              {hayFechasDisponibles
+                                ? 'Cupos disponibles'
+                                : 'Sin cupos'}
                             </Badge>
                           ) : (
                             <Badge variant="default" size="sm">

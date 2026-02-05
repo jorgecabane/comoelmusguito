@@ -31,8 +31,8 @@ export default async function TalleresPage() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 3);
 
-    // Verificar si hay alguna fecha futura con cupos disponibles
-    const hayCuposDisponibles = proximasFechas?.some((f) => f.status !== 'sold_out') || false;
+    // Verificar si hay alguna fecha futura con cupos disponibles (basado en spotsAvailable real)
+    const hayCuposDisponibles = proximasFechas?.some((f) => (f.spotsAvailable || 0) > 0) || false;
 
     return {
       ...taller,
@@ -119,10 +119,8 @@ export default async function TalleresPage() {
                 const levelLabel = taller.level && taller.level !== 'all' ? levelLabels[taller.level] : 'Todos los Niveles';
                 const proximaFecha = taller.proximasFechas[0];
                 
-                // Buscar la primera fecha con cupos disponibles (no agotada)
-                const fechaConCupos = taller.proximasFechas.find((f) => f.status !== 'sold_out');
-                // Si no hay ninguna con cupos, usar la primera fecha (que estará agotada)
-                const fechaParaBadge = fechaConCupos || proximaFecha;
+                // Sumar cupos disponibles de TODAS las fechas futuras
+                const totalCuposDisponibles = taller.proximasFechas.reduce((sum, f) => sum + (f.spotsAvailable || 0), 0);
 
                 return (
                   <Link key={taller._id} href={`/talleres/${slug}`}>
@@ -134,20 +132,14 @@ export default async function TalleresPage() {
                       <div className="p-6 space-y-4 flex flex-col flex-1">
                         <Card.Content>
                           <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                            {fechaParaBadge ? (
+                            {taller.proximasFechas.length > 0 ? (
                               <Badge
-                                variant={
-                                  fechaParaBadge.status === 'available'
-                                    ? 'success'
-                                    : fechaParaBadge.status === 'limited'
-                                    ? 'warning'
-                                    : 'error'
-                                }
+                                variant={totalCuposDisponibles > 0 ? 'success' : 'error'}
                                 size="sm"
                               >
-                                {fechaParaBadge.status === 'sold_out'
-                                  ? 'Agotado'
-                                  : `${fechaParaBadge.spotsAvailable} ${fechaParaBadge.spotsAvailable === 1 ? 'cupo' : 'cupos'}`}
+                                {totalCuposDisponibles > 0
+                                  ? 'Cupos disponibles'
+                                  : 'Sin cupos'}
                               </Badge>
                             ) : (
                               <Badge variant="default" size="sm">
