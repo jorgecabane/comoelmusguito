@@ -391,6 +391,53 @@ export const suppliesByCategoryQuery = groq`
   }
 `;
 
+// ============ BLOG POSTS ============
+
+export const blogPostsQuery = groq`
+  *[_type == "blogPost" && published == true] | order(projectDate desc, order asc, _createdAt desc) {
+    _id,
+    name,
+    slug,
+    excerpt,
+    featuredImage,
+    projectDate,
+    location,
+    tags,
+    featured,
+    order
+  }
+`;
+
+export const featuredBlogPostsQuery = groq`
+  *[_type == "blogPost" && featured == true && published == true] | order(projectDate desc, order asc) [0...3] {
+    _id,
+    name,
+    slug,
+    excerpt,
+    featuredImage,
+    projectDate,
+    location,
+    tags
+  }
+`;
+
+export const blogPostBySlugQuery = groq`
+  *[_type == "blogPost" && slug.current == $slug][0] {
+    _id,
+    name,
+    slug,
+    excerpt,
+    content,
+    featuredImage,
+    gallery,
+    featuredVideo,
+    projectDate,
+    location,
+    tags,
+    seo
+  }
+`;
+
 // ============ HELPERS ============
 
 // Obtener todos los productos destacados (terrarios + cursos)

@@ -19,6 +19,7 @@ const footerLinks = {
   learn: [
     { name: 'Cursos Online', href: '/cursos' },
     { name: 'Talleres Presenciales', href: '/talleres' },
+    { name: 'Proyectos', href: '/proyectos' },
   ],
   about: [
     { name: 'Sobre el Musguito', href: '/sobre' },

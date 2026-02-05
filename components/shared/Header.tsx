@@ -8,19 +8,40 @@
 import { cn } from '@/lib/utils/cn';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { Logo } from './Logo';
 import { UserMenu } from './UserMenu';
+import { NavigationDropdown } from './NavigationDropdown';
 import { useCartStore } from '@/lib/store/useCartStore';
 import { useSession } from 'next-auth/react';
 
-const navigation = [
+// Navegación principal (links directos)
+const mainNavigation = [
+  { name: 'Inicio', href: '/' },
+  { name: 'Proyectos', href: '/proyectos' },
+  { name: 'Sobre', href: '/sobre' },
+];
+
+// Dropdowns
+const tiendaItems = [
+  { name: 'Terrarios', href: '/terrarios' },
+  { name: 'Insumos', href: '/insumos' },
+];
+
+const aprenderItems = [
+  { name: 'Cursos Online', href: '/cursos' },
+  { name: 'Talleres', href: '/talleres' },
+];
+
+// Navegación completa para mobile (sin agrupar)
+const mobileNavigation = [
   { name: 'Inicio', href: '/' },
   { name: 'Terrarios', href: '/terrarios' },
   { name: 'Cursos Online', href: '/cursos' },
   { name: 'Talleres', href: '/talleres' },
   { name: 'Insumos', href: '/insumos' },
+  { name: 'Proyectos', href: '/proyectos' },
   { name: 'Sobre el Musguito', href: '/sobre' },
 ];
 
@@ -85,8 +106,9 @@ export function Header() {
           <Logo size="md" />
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
-            {navigation.map((item) => (
+          <div className="hidden lg:flex items-center gap-6">
+            {/* Links principales */}
+            {mainNavigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -96,6 +118,12 @@ export function Header() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-musgo group-hover:w-full transition-all duration-300" />
               </Link>
             ))}
+            
+            {/* Dropdown: Tienda */}
+            <NavigationDropdown label="Tienda" items={tiendaItems} />
+            
+            {/* Dropdown: Aprender */}
+            <NavigationDropdown label="Aprender" items={aprenderItems} />
           </div>
 
           {/* Cart, Auth & Mobile Menu Button */}
@@ -153,7 +181,8 @@ export function Header() {
             {!showAccountMenu ? (
               // Menú principal de navegación
               <>
-                {navigation.map((item) => (
+                {/* Links principales */}
+                {mainNavigation.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
@@ -163,6 +192,12 @@ export function Header() {
                     {item.name}
                   </Link>
                 ))}
+                
+                {/* Dropdown: Tienda (Mobile) */}
+                <MobileDropdown label="Tienda" items={tiendaItems} onItemClick={() => setMobileMenuOpen(false)} />
+                
+                {/* Dropdown: Aprender (Mobile) */}
+                <MobileDropdown label="Aprender" items={aprenderItems} onItemClick={() => setMobileMenuOpen(false)} />
                 <div className="pt-4 border-t border-gray/20">
                   {session?.user ? (
                     <button
@@ -208,3 +243,47 @@ export function Header() {
   );
 }
 
+// Componente para dropdown mobile (acordeón)
+function MobileDropdown({ 
+  label, 
+  items, 
+  onItemClick 
+}: { 
+  label: string; 
+  items: Array<{ name: string; href: string }>; 
+  onItemClick: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between text-forest hover:text-musgo font-medium transition-colors py-2"
+      >
+        <span>{label}</span>
+        <ChevronDown
+          size={18}
+          className={cn(
+            'transition-transform duration-200',
+            isOpen && 'rotate-180'
+          )}
+        />
+      </button>
+      {isOpen && (
+        <div className="pl-4 mt-2 space-y-2">
+          {items.map((item, index) => (
+            <Link
+              key={index}
+              href={item.href}
+              onClick={onItemClick}
+              className="block text-gray hover:text-musgo transition-colors py-1.5"
+            >
+              {item.name}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

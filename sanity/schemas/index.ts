@@ -7,6 +7,7 @@ import terrarium from './terrarium';
 import course from './course';
 import workshop from './workshop';
 import supply from './supply';
+import blogPost from './blogPost';
 import user from './user';
 import order from './order';
 import courseAccess from './courseAccess';
@@ -18,6 +19,7 @@ export const schemaTypes = [
   course,
   workshop,
   supply,
+  blogPost,
   // Gestión
   user,
   order,

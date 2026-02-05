@@ -219,6 +219,54 @@ export interface Supply {
   };
 }
 
+// ============ BLOG POST ============
+
+export interface VideoBlock {
+  _type: 'videoBlock';
+  _key: string;
+  url: string;
+  provider: 'vimeo' | 'youtube';
+  caption?: string;
+}
+
+export interface QuoteBlock {
+  _type: 'quoteBlock';
+  _key: string;
+  quote: string;
+  author?: string;
+}
+
+export interface SeparatorBlock {
+  _type: 'separatorBlock';
+  _key: string;
+  style?: 'line' | 'spaced';
+}
+
+export interface BlogPost {
+  _id: string;
+  name: string;
+  slug: Slug;
+  excerpt: string;
+  content: any[]; // Rich text blocks con bloques personalizados
+  featuredImage: SanityImage;
+  gallery?: SanityImage[];
+  featuredVideo?: {
+    url: string;
+    provider: 'vimeo' | 'youtube';
+  };
+  projectDate: string; // ISO date
+  location?: string;
+  tags?: string[];
+  published?: boolean;
+  featured?: boolean;
+  order?: number;
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string[];
+  };
+}
+
 // ============ HELPERS ============
 
 export type Product = Terrarium | Course | Workshop | Supply;

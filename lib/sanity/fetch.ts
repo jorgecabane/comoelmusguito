@@ -23,9 +23,12 @@ import {
   supplyBySlugQuery,
   supplyByIdQuery,
   suppliesByCategoryQuery,
+  blogPostsQuery,
+  featuredBlogPostsQuery,
+  blogPostBySlugQuery,
   allFeaturedQuery,
 } from '@/sanity/lib/queries';
-import type { Terrarium, Course, Workshop, Supply, SupplyCategory } from '@/types/sanity';
+import type { Terrarium, Course, Workshop, Supply, SupplyCategory, BlogPost } from '@/types/sanity';
 
 // ============ TERRARIOS ============
 
@@ -276,6 +279,54 @@ export async function getSuppliesByCategory(category: SupplyCategory): Promise<S
   } catch (error) {
     console.error(`Error fetching supplies by category ${category}:`, error);
     return [];
+  }
+}
+
+// ============ BLOG POSTS ============
+
+export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  try {
+    return await client.fetch(blogPostsQuery);
+  } catch (error) {
+    console.error('Error fetching blog posts:', error);
+    return [];
+  }
+}
+
+export async function getFeaturedBlogPosts(limit: number = 3): Promise<BlogPost[]> {
+  try {
+    const query = groq`
+      *[_type == "blogPost" && featured == true && published == true] | order(projectDate desc, order asc) [0...${limit}] {
+        _id,
+        name,
+        slug,
+        excerpt,
+        featuredImage,
+        projectDate,
+        location,
+        tags
+      }
+    `;
+    return await client.fetch(query);
+  } catch (error) {
+    console.error('Error fetching featured blog posts:', error);
+    return [];
+  }
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  try {
+    if (!slug) {
+      console.error('Slug is required');
+      return null;
+    }
+    console.log('Fetching blog post with slug:', slug);
+    const result = await client.fetch<BlogPost | null>(blogPostBySlugQuery, { slug });
+    console.log('Blog post result:', result);
+    return result;
+  } catch (error) {
+    console.error('Error fetching blog post by slug:', error);
+    return null;
   }
 }
 
