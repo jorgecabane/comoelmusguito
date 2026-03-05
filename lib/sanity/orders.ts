@@ -69,6 +69,9 @@ export interface SanityOrder {
     address: string;
     number: string;
     details?: string;
+    contactEmail: string;
+    phone: string;
+    rut: string;
   };
   createdAt: string;
   updatedAt: string;
@@ -100,6 +103,9 @@ export async function saveOrderToSanity(data: {
     address: string;
     number: string;
     details?: string;
+    contactEmail: string;
+    phone: string;
+    rut: string;
   };
 }): Promise<SanityOrder> {
   const now = new Date().toISOString();
@@ -318,6 +324,18 @@ export async function getOrdersByUserId(userId: string): Promise<SanityOrder[]> 
   const query = `*[_type == "order" && userId._ref == $userId] | order(createdAt desc)`;
   const orders = await client.fetch<SanityOrder[]>(query, { userId });
   return orders;
+}
+
+/**
+ * Obtener la última dirección de despacho usada por un usuario
+ * Retorna null si no hay órdenes anteriores con despacho
+ */
+export async function getLastShippingAddressByUserId(userId: string): Promise<SanityOrder['shippingAddress'] | null> {
+  const query = `*[_type == "order" && userId._ref == $userId && requiresShipping == true && defined(shippingAddress)] | order(createdAt desc)[0] {
+    shippingAddress
+  }`;
+  const result = await client.fetch<{ shippingAddress: SanityOrder['shippingAddress'] } | null>(query, { userId });
+  return result?.shippingAddress ?? null;
 }
 
 /**

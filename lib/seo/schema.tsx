@@ -5,6 +5,11 @@
 
 import { SITE_CONFIG } from './metadata';
 
+// Calculado a nivel de módulo para evitar llamar funciones impuras durante el render
+const PRICE_VALID_UNTIL = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+  .toISOString()
+  .split('T')[0];
+
 interface SchemaProps {
   children?: never;
 }
@@ -206,7 +211,7 @@ export function CourseSchema({
       availability: inStock
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
-      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Válido por 1 año
+      priceValidUntil: PRICE_VALID_UNTIL, // Válido por 1 año desde el inicio del servidor
       seller: {
         '@type': 'Organization',
         name: SITE_CONFIG.name,

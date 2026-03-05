@@ -40,6 +40,9 @@ interface CheckoutRequest {
     address: string;
     number: string;
     details?: string;
+    contactEmail: string;
+    phone: string;
+    rut: string;
   };
 }
 
@@ -112,6 +115,25 @@ export async function POST(request: NextRequest) {
       if (shippingAddress.address.trim().length === 0 || shippingAddress.number.trim().length === 0) {
         return NextResponse.json(
           { error: 'Dirección y número no pueden estar vacíos' },
+          { status: 400 }
+        );
+      }
+      // Validar datos de contacto para despacho
+      if (!shippingAddress.contactEmail || !shippingAddress.contactEmail.includes('@')) {
+        return NextResponse.json(
+          { error: 'Email de contacto válido es requerido para despacho' },
+          { status: 400 }
+        );
+      }
+      if (!shippingAddress.phone || shippingAddress.phone.trim().length === 0) {
+        return NextResponse.json(
+          { error: 'Teléfono de contacto es requerido para despacho' },
+          { status: 400 }
+        );
+      }
+      if (!shippingAddress.rut || shippingAddress.rut.trim().length === 0) {
+        return NextResponse.json(
+          { error: 'RUT es requerido para despacho' },
           { status: 400 }
         );
       }
@@ -441,6 +463,9 @@ export async function POST(request: NextRequest) {
         address: shippingAddress.address.trim(),
         number: shippingAddress.number.trim(),
         details: shippingAddress.details?.trim() || undefined,
+        contactEmail: shippingAddress.contactEmail.trim().toLowerCase(),
+        phone: shippingAddress.phone.trim(),
+        rut: shippingAddress.rut.trim(),
       } : undefined,
     });
 

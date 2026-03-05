@@ -28,6 +28,15 @@ export function ImageLightbox({
 }: ImageLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
+  // Declarar antes de los efectos que las usan
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
   // Reset index cuando se abre
   useEffect(() => {
     if (isOpen) {
@@ -51,15 +60,9 @@ export function ImageLightbox({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex]);
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
+  // goToPrevious y goToNext son estables (no dependen de estado externo)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, onClose]);
 
   if (!images || images.length === 0) return null;
 

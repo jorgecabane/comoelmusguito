@@ -462,6 +462,51 @@ export default defineType({
           rows: 3,
           description: 'Referencias adicionales, departamento, etc.',
         },
+        {
+          name: 'contactEmail',
+          title: 'Email de Contacto para Despacho',
+          type: 'string',
+          description: 'Email para coordinar el envío con Starken',
+          validation: (Rule: any) =>
+            Rule.custom((value: any, context: any) => {
+              const document = context.document as any;
+              if (document?.requiresShipping && !value) {
+                return 'Email de contacto es requerido para despacho';
+              }
+              if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                return 'Email inválido';
+              }
+              return true;
+            }),
+        },
+        {
+          name: 'phone',
+          title: 'Teléfono de Contacto',
+          type: 'string',
+          description: 'Número de teléfono para coordinar el despacho',
+          validation: (Rule: any) =>
+            Rule.custom((value: any, context: any) => {
+              const document = context.document as any;
+              if (document?.requiresShipping && !value) {
+                return 'Teléfono es requerido para despacho';
+              }
+              return true;
+            }),
+        },
+        {
+          name: 'rut',
+          title: 'RUT del Destinatario',
+          type: 'string',
+          description: 'RUT chileno del destinatario (requerido por Starken)',
+          validation: (Rule: any) =>
+            Rule.custom((value: any, context: any) => {
+              const document = context.document as any;
+              if (document?.requiresShipping && !value) {
+                return 'RUT es requerido para despacho';
+              }
+              return true;
+            }),
+        },
       ],
     }),
   ],

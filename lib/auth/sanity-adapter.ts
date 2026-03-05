@@ -197,7 +197,7 @@ export async function getUserByVerificationToken(
 ): Promise<SanityUser | null> {
   try {
     const query = `*[_type == "user" && emailVerificationToken == $token][0]`;
-    // @ts-ignore - Sanity type inference issue
+    // @ts-expect-error - Sanity type inference issue with generic fetch
     const user = await client.fetch<SanityUser | null>(query, { token });
     
     if (!user) return null;
@@ -265,7 +265,7 @@ export async function getUserByResetToken(
 ): Promise<SanityUser | null> {
   try {
     const query = `*[_type == "user" && passwordResetToken == $token][0]`;
-    // @ts-ignore - Sanity type inference issue
+    // @ts-expect-error - Sanity type inference issue with generic fetch
     const user = await client.fetch<SanityUser | null>(query, { token });
     
     if (!user) return null;
