@@ -139,6 +139,7 @@ export const apiRateLimit = redis
 
 /**
  * Aplicar rate limiting a un endpoint
+ * Si Redis/Upstash no está disponible (DNS, red, etc.), se permite la request y se loguea el error.
  */
 export async function applyRateLimit(
   rateLimiter: Ratelimit | null,
@@ -150,6 +151,11 @@ export async function applyRateLimit(
     return { success: true, limit: Infinity, remaining: Infinity, reset: Date.now() };
   }
 
-  const result = await rateLimiter.limit(identifier);
-  return result;
+  try {
+    const result = await rateLimiter.limit(identifier);
+    return result;
+  } catch (error) {
+    console.error('Rate limit (Upstash) no disponible, permitiendo request:', error instanceof Error ? error.message : error);
+    return { success: true, limit: Infinity, remaining: Infinity, reset: Date.now() };
+  }
 }

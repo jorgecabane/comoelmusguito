@@ -1,0 +1,6 @@
+{"sessionId":"35b6e3","runId":"run1","hypothesisId":"H0","location":"register/route.ts:POST:entry","message":"POST /api/auth/register entered","data":{"step":"entry"},"timestamp":1772937826894}
+{"sessionId":"35b6e3","runId":"run1","hypothesisId":"H1","location":"register/route.ts:POST:after_rate_limit","message":"After rate limit","data":{"step":"after_rate_limit","rateLimitSuccess":true},"timestamp":1772937831211}
+{"sessionId":"35b6e3","runId":"run1","hypothesisId":"H2","location":"register/route.ts:POST:after_parse","message":"After request.json","data":{"step":"after_parse","hasRecaptcha":true,"hasRecaptchaEnv":true},"timestamp":1772937831212}
+{"sessionId":"35b6e3","runId":"run1","hypothesisId":"H3","location":"register/route.ts:POST:after_email_exists","message":"After emailExists","data":{"step":"after_email_exists","exists":false},"timestamp":1772937832215}
+{"sessionId":"35b6e3","runId":"run1","hypothesisId":"H4","location":"register/route.ts:POST:after_create_user","message":"After createUser","data":{"step":"after_create_user","userId":"jI8fxKUnBFoPpwmJx03WZv"},"timestamp":1772937834304}
+{"sessionId":"35b6e3","runId":"run1","hypothesisId":"H5","location":"register/route.ts:POST:before_link_orders","message":"Before linkOrdersToUser","data":{"step":"before_link_orders","userId":"jI8fxKUnBFoPpwmJx03WZv"},"timestamp":1772937834304}
