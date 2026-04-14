@@ -103,7 +103,13 @@ const authOptions: NextAuthOptions = {
             if (!existingUser.emailVerified) {
               updates.emailVerified = true;
             }
-            
+            // Asegurar que 'google' esté en authMethods
+            const currentMethods = new Set<string>(existingUser.authMethods ?? []);
+            if (!currentMethods.has('google')) {
+              currentMethods.add('google');
+              updates.authMethods = Array.from(currentMethods);
+            }
+
             if (Object.keys(updates).length > 0) {
               await updateUser(existingUser._id, updates);
             }

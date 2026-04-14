@@ -546,7 +546,8 @@ function generateVerificationEmail(
 export async function sendPasswordResetEmail(
   email: string,
   name: string | undefined,
-  resetToken: string
+  resetToken: string,
+  isInitializing: boolean = false
 ): Promise<void> {
   if (!resend) {
     console.warn('Resend no está configurado. Email no enviado.');
@@ -557,7 +558,7 @@ export async function sendPasswordResetEmail(
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const resetUrl = `${siteUrl}/auth/reset-password?token=${resetToken}`;
 
-    const { html, subject } = generatePasswordResetEmail(name || email, resetUrl);
+    const { html, subject } = generatePasswordResetEmail(name || email, resetUrl, isInitializing);
 
     await resend.emails.send({
       from: `comoelmusguito <${RESEND_FROM_EMAIL}>`,
@@ -578,9 +579,25 @@ export async function sendPasswordResetEmail(
  */
 function generatePasswordResetEmail(
   name: string,
-  resetUrl: string
+  resetUrl: string,
+  isInitializing: boolean = false
 ): { html: string; subject: string } {
-  const subject = `Restablece tu contraseña - comoelmusguito 🌿`;
+  const subject = isInitializing
+    ? `Crea tu contraseña - comoelmusguito 🌿`
+    : `Restablece tu contraseña - comoelmusguito 🌿`;
+
+  const heading = isInitializing
+    ? 'Crea tu contraseña'
+    : 'Restablece tu contraseña';
+
+  const intro = isInitializing
+    ? 'Tu cuenta se creó iniciando sesión con Google. Estás a punto de crear una contraseña por primera vez para también poder iniciar sesión con tu email y contraseña. Podrás seguir usando Google si quieres.'
+    : 'Recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no fuiste tú, puedes ignorar este email de forma segura.';
+
+  const ctaLabel = isInitializing ? 'Crear Contraseña' : 'Restablecer Contraseña';
+  const footerNote = isInitializing
+    ? 'Este email fue enviado para crear la contraseña de tu cuenta'
+    : 'Este email fue enviado para restablecer tu contraseña';
 
   const html = `
 <!DOCTYPE html>
@@ -588,7 +605,7 @@ function generatePasswordResetEmail(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Restablece tu contraseña</title>
+  <title>${heading}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f0; color: #2d3e2d;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f0; padding: 40px 20px;">
@@ -610,22 +627,22 @@ function generatePasswordResetEmail(
             <td style="padding: 40px 30px;">
               
               <h2 style="margin: 0 0 20px 0; color: #2d3e2d; font-size: 24px; font-weight: 600;">
-                Restablece tu contraseña
+                ${heading}
               </h2>
-              
+
               <p style="margin: 0 0 20px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
                 Hola${name ? ` ${name}` : ''},
               </p>
-              
+
               <p style="margin: 0 0 30px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
-                Recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no fuiste tú, puedes ignorar este email de forma segura.
+                ${intro}
               </p>
 
               <!-- Botón de Reset -->
               <div style="text-align: center; margin: 40px 0;">
-                <a href="${resetUrl}" 
+                <a href="${resetUrl}"
                    style="display: inline-block; background-color: #4a7c59; color: #ffffff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-                  Restablecer Contraseña
+                  ${ctaLabel}
                 </a>
               </div>
 
@@ -659,7 +676,7 @@ function generatePasswordResetEmail(
           <tr>
             <td style="background-color: #f9f9f4; padding: 20px 30px; text-align: center;">
               <p style="margin: 0; color: #5a5a5a; font-size: 12px;">
-                Este email fue enviado para restablecer tu contraseña
+                ${footerNote}
               </p>
             </td>
           </tr>

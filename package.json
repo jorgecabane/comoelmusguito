@@ -11,7 +11,8 @@
     "script:associate-courses": "tsx scripts/associate-courses-to-users.ts",
     "script:fix-orders": "tsx scripts/fix-orders-keys.ts",
     "script:instagram-auth": "tsx scripts/get-instagram-token.ts",
-    "script:generate-favicons": "tsx scripts/generate-favicons.ts"
+    "script:generate-favicons": "tsx scripts/generate-favicons.ts",
+    "script:backfill-auth-methods": "tsx scripts/backfill-auth-methods.ts"
   },
   "dependencies": {
     "@portabletext/react": "^5.0.0",

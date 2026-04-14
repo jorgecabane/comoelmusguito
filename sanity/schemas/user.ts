@@ -43,17 +43,26 @@ export default defineType({
       hidden: true, // No mostrar en el Studio
     }),
     defineField({
-      name: 'provider',
-      title: 'Proveedor de Autenticación',
-      type: 'string',
+      name: 'authMethods',
+      title: 'Métodos de Autenticación',
+      description: 'Métodos con los que el usuario puede iniciar sesión. Un usuario puede tener varios activos a la vez.',
+      type: 'array',
+      of: [{ type: 'string' }],
       options: {
         list: [
           { title: 'Email/Contraseña', value: 'credentials' },
           { title: 'Google', value: 'google' },
-          { title: 'GitHub', value: 'github' },
         ],
+        layout: 'tags',
       },
-      initialValue: 'credentials',
+    }),
+    defineField({
+      name: 'provider',
+      title: 'Proveedor (legacy)',
+      description: 'Campo legacy mantenido para compatibilidad. La fuente de verdad es "authMethods".',
+      type: 'string',
+      readOnly: true,
+      hidden: true,
     }),
     defineField({
       name: 'emailVerified',
@@ -108,21 +117,24 @@ export default defineType({
     select: {
       title: 'name',
       subtitle: 'email',
-      imageUrl: 'image',
-      provider: 'provider',
+      authMethods: 'authMethods',
+      hasPasswordHash: 'passwordHash',
       emailVerified: 'emailVerified',
     },
-    prepare({ title, subtitle, imageUrl, provider, emailVerified }) {
-      // Agregar indicador de verificación
+    prepare({ title, subtitle, authMethods, hasPasswordHash, emailVerified }) {
       const verifiedIcon = emailVerified ? ' ✅' : '';
-      const providerText = provider === 'google' ? ' (Google)' : provider === 'github' ? ' (GitHub)' : ' (Email)';
 
-      // No usar media - Sanity usará el icono por defecto del schema (👤)
-      // Las URLs de imágenes externas no se pueden usar directamente como media en previews
+      const methods = new Set<string>(Array.isArray(authMethods) ? authMethods : []);
+      if (hasPasswordHash) methods.add('credentials');
+
+      const labels: string[] = [];
+      if (methods.has('google')) labels.push('Google');
+      if (methods.has('credentials')) labels.push('Email');
+      const providerText = labels.length > 0 ? ` (${labels.join(' + ')})` : '';
+
       return {
         title: title || subtitle || 'Usuario sin nombre',
         subtitle: `${subtitle || 'Sin email'}${providerText}${verifiedIcon}`,
-        // No incluir media - usar icono por defecto del schema
       };
     },
   },

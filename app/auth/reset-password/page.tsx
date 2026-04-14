@@ -22,14 +22,44 @@ function ResetPasswordContent() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tokenValid, setTokenValid] = useState<boolean | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      setTokenValid(false);
-      setError('Token de recuperación no válido');
-    } else {
-      setTokenValid(true);
+    let cancelled = false;
+
+    async function verifyToken() {
+      if (!token) {
+        setTokenValid(false);
+        setError('Token de recuperación no válido');
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `/api/auth/reset-password/verify?token=${encodeURIComponent(token)}`,
+          { cache: 'no-store' }
+        );
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (data?.valid) {
+          setTokenValid(true);
+          setIsInitializing(Boolean(data.isInitializing));
+        } else {
+          setTokenValid(false);
+          setError('El enlace es inválido o ha expirado');
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setTokenValid(false);
+        setError('No pudimos verificar el enlace. Intenta nuevamente.');
+      }
     }
+
+    verifyToken();
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,6 +111,21 @@ function ResetPasswordContent() {
     }
   };
 
+  if (tokenValid === null) {
+    return (
+      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+        <div className="container max-w-md">
+          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
+            <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={48} />
+            <h1 className="font-display text-2xl font-bold text-forest">
+              Verificando enlace...
+            </h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (tokenValid === false) {
     return (
       <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
@@ -126,10 +171,12 @@ function ResetPasswordContent() {
             </div>
 
             <h1 className="font-display text-3xl font-bold text-forest mb-4">
-              Contraseña Restablecida
+              {isInitializing ? 'Contraseña Creada' : 'Contraseña Restablecida'}
             </h1>
             <p className="text-gray mb-8">
-              Tu contraseña ha sido restablecida exitosamente. Serás redirigido al login en unos segundos.
+              {isInitializing
+                ? 'Tu contraseña se creó exitosamente. Ahora puedes iniciar sesión con tu email y contraseña, o seguir usando Google.'
+                : 'Tu contraseña ha sido restablecida exitosamente. Serás redirigido al login en unos segundos.'}
             </p>
 
             <Link href="/auth/login">
@@ -152,10 +199,12 @@ function ResetPasswordContent() {
           className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl"
         >
           <h1 className="font-display text-3xl font-bold text-forest mb-2">
-            Restablecer Contraseña
+            {isInitializing ? 'Crea tu Contraseña' : 'Restablecer Contraseña'}
           </h1>
           <p className="text-gray mb-8">
-            Ingresa tu nueva contraseña. Debe tener al menos 8 caracteres.
+            {isInitializing
+              ? 'Tu cuenta se creó con Google. Define una contraseña para también iniciar sesión con email y contraseña. Debe tener al menos 8 caracteres.'
+              : 'Ingresa tu nueva contraseña. Debe tener al menos 8 caracteres.'}
           </p>
 
           {error && (
@@ -207,10 +256,10 @@ function ResetPasswordContent() {
               {loading ? (
                 <>
                   <Loader2 className="animate-spin" size={20} />
-                  Restableciendo...
+                  {isInitializing ? 'Creando...' : 'Restableciendo...'}
                 </>
               ) : (
-                'Restablecer Contraseña'
+                isInitializing ? 'Crear Contraseña' : 'Restablecer Contraseña'
               )}
             </Button>
           </form>
