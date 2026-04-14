@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createPasswordResetToken, getUserByEmail } from '@/lib/auth/sanity-adapter';
+import { createPasswordResetToken, getUserByEmail, hasPassword } from '@/lib/auth/sanity-adapter';
 import { sendPasswordResetEmail } from '@/lib/resend/client';
 import { forgotPasswordRateLimit, getClientIP, applyRateLimit } from '@/lib/rate-limit/upstash';
 import { sanitizeEmail } from '@/lib/utils/sanitize';
@@ -38,20 +38,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar si el usuario existe y tiene contraseña
+    // Verificar si el usuario existe. Siempre devolvemos éxito para no revelar
+    // si el email existe. Permitimos reset para OAuth-only (inicializar contraseña).
     const user = await getUserByEmail(sanitizedEmail);
-    
-    // Siempre devolver éxito para no revelar si el email existe
-    // Pero solo enviar email si el usuario existe y tiene contraseña
-    if (user && user.passwordHash) {
+
+    if (user) {
       const resetToken = await createPasswordResetToken(sanitizedEmail);
-      
+
       if (resetToken) {
         try {
+          const isInitializing = !hasPassword(user);
           await sendPasswordResetEmail(
             user.email,
             user.name,
-            resetToken
+            resetToken,
+            isInitializing
           );
         } catch (emailError) {
           console.error('Error enviando email de reset:', emailError);

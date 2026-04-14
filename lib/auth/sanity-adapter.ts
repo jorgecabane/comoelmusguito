@@ -7,6 +7,8 @@ import 'server-only';
 import { client, writeClient } from '@/sanity/lib/client';
 import bcrypt from 'bcryptjs';
 
+export type AuthMethod = 'credentials' | 'google';
+
 export interface SanityUser {
   _id: string;
   _type: 'user';
@@ -14,6 +16,8 @@ export interface SanityUser {
   name?: string;
   image?: string;
   passwordHash?: string;
+  authMethods?: AuthMethod[];
+  /** @deprecated Usa authMethods. Campo legacy conservado para migración. */
   provider?: 'credentials' | 'google' | 'github';
   emailVerified?: boolean;
   emailVerificationToken?: string;
@@ -76,17 +80,21 @@ export async function createUser(data: {
   name?: string;
   image?: string;
   password?: string;
-  provider?: 'credentials' | 'google' | 'github';
+  provider?: 'credentials' | 'google';
   skipEmailVerification?: boolean; // Para OAuth (Google ya verifica)
 }): Promise<SanityUser> {
   const now = new Date().toISOString();
-  
+
+  const provider: AuthMethod = data.provider || 'credentials';
+  const authMethods: AuthMethod[] = [provider];
+
   const userDoc: Omit<SanityUser, '_id'> = {
     _type: 'user',
     email: data.email.toLowerCase(),
     name: data.name,
     image: data.image,
-    provider: data.provider || 'credentials',
+    provider,
+    authMethods,
     createdAt: now,
     updatedAt: now,
   };
@@ -232,10 +240,11 @@ function generateResetToken(): string {
 export async function createPasswordResetToken(email: string): Promise<string | null> {
   try {
     const user = await getUserByEmail(email);
-    if (!user || !user.passwordHash) {
-      // Usuario no existe o no tiene contraseña (solo OAuth)
+    if (!user) {
       return null;
     }
+    // Nota: usuarios OAuth sin passwordHash también pueden solicitar el token.
+    // El flujo de reset crea (inicializa) la contraseña en ese caso.
 
     const resetToken = generateResetToken();
     const expires = new Date();
@@ -294,17 +303,21 @@ export async function resetUserPassword(
 ): Promise<boolean> {
   try {
     const passwordHash = await hashPassword(newPassword);
-    
+    const existing = await getUserById(userId);
+    const currentMethods = new Set<AuthMethod>(existing?.authMethods ?? []);
+    currentMethods.add('credentials');
+
     await writeClient
       .patch(userId)
       .set({
         passwordHash,
+        authMethods: Array.from(currentMethods),
         passwordResetToken: null,
         passwordResetExpires: null,
         updatedAt: new Date().toISOString(),
       })
       .commit();
-    
+
     return true;
   } catch (error) {
     console.error('Error reseteando contraseña:', error);
