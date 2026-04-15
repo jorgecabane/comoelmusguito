@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { checkTerrariumStock, checkSupplyStock } from '@/lib/sanity/inventory';
+import { checkTerrariumStock, checkSupplyStock, checkWorkshopSpots } from '@/lib/sanity/inventory';
 import { getTerrariumById, getSupplyById } from '@/lib/sanity/fetch';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { itemId, itemType, quantity } = body;
+    const { itemId, itemType, quantity, selectedDate } = body;
 
     if (!itemId || !itemType || !quantity) {
       return NextResponse.json(
@@ -96,7 +96,33 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Para cursos y talleres, siempre disponible (no tienen stock)
+    if (sanitizedItemType === 'workshop') {
+      if (!selectedDate) {
+        return NextResponse.json(
+          { error: 'selectedDate es requerido para talleres', available: false },
+          { status: 400 }
+        );
+      }
+
+      const spotsCheck = await checkWorkshopSpots(
+        sanitizedItemId,
+        String(selectedDate),
+        sanitizedQuantity
+      );
+
+      return NextResponse.json({
+        available: spotsCheck.available,
+        inStock: spotsCheck.available,
+        currentStock: spotsCheck.currentSpots,
+        message: spotsCheck.available
+          ? 'Cupos disponibles'
+          : spotsCheck.currentSpots > 0
+          ? `Solo quedan ${spotsCheck.currentSpots} cupos para esta fecha`
+          : 'Esta fecha ya no tiene cupos disponibles',
+      });
+    }
+
+    // Cursos: siempre disponibles
     return NextResponse.json({
       available: true,
       inStock: true,

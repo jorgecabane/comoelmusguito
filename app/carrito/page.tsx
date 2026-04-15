@@ -5,16 +5,71 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useCartStore } from '@/lib/store/useCartStore';
 import { Button, Badge } from '@/components/ui';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { formatWorkshopDateTime } from '@/lib/sanity/utils';
 
+function unavailabilityKey(id: string, type: string, selectedDate?: string): string {
+  return `${type}|${id}|${selectedDate ?? ''}`;
+}
+
 export default function CarritoPage() {
   const { items, itemCount, subtotal, updateQuantity, removeItem, clearCart } = useCartStore();
+  const [unavailable, setUnavailable] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const workshopItems = items.filter((i) => i.type === 'workshop' && i.selectedDate?.date);
+    if (workshopItems.length === 0) {
+      setUnavailable({});
+      return;
+    }
+
+    let cancelled = false;
+
+    Promise.all(
+      workshopItems.map(async (item) => {
+        try {
+          const res = await fetch('/api/cart/validate-stock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              itemId: item.id,
+              itemType: 'workshop',
+              quantity: item.quantity,
+              selectedDate: item.selectedDate!.date,
+            }),
+          });
+          const data = await res.json();
+          return { item, data };
+        } catch {
+          return null;
+        }
+      })
+    ).then((results) => {
+      if (cancelled) return;
+      const next: Record<string, string> = {};
+      for (const result of results) {
+        if (!result) continue;
+        const { item, data } = result;
+        if (!data?.available) {
+          const key = unavailabilityKey(item.id, item.type, item.selectedDate?.date);
+          next[key] = data?.message ?? 'Esta fecha ya no tiene cupos disponibles';
+        }
+      }
+      setUnavailable(next);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
+
+  const hasUnavailable = Object.keys(unavailable).length > 0;
 
   // Carrito vacío
   if (items.length === 0) {
@@ -156,10 +211,13 @@ export default function CarritoPage() {
                 <div className="space-y-4">
                   {talleres.map((item) => (
                     <CartItemCard
-                      key={`${item.id}-${item.type}`}
+                      key={`${item.id}-${item.type}-${item.selectedDate?.date ?? ''}`}
                       item={item}
                       onUpdateQuantity={updateQuantity}
                       onRemove={removeItem}
+                      unavailableMessage={
+                        unavailable[unavailabilityKey(item.id, item.type, item.selectedDate?.date)]
+                      }
                     />
                   ))}
                 </div>
@@ -228,16 +286,37 @@ export default function CarritoPage() {
                 </div>
               </div>
 
-              <Link href="/checkout">
+              {hasUnavailable && (
+                <div className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/5 p-3 text-sm text-error">
+                  <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+                  <p>
+                    Algunos ítems ya no están disponibles. Elimínalos del carrito para continuar.
+                  </p>
+                </div>
+              )}
+
+              {hasUnavailable ? (
                 <Button
                   variant="primary"
                   size="lg"
                   className="w-full"
                   icon={<ShoppingBag size={20} />}
+                  disabled
                 >
                   Proceder al Pago
                 </Button>
-              </Link>
+              ) : (
+                <Link href="/checkout">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    icon={<ShoppingBag size={20} />}
+                  >
+                    Proceder al Pago
+                  </Button>
+                </Link>
+              )}
 
               <div className="text-center text-sm text-gray">
                 <p>Pago seguro con Flow</p>
@@ -256,13 +335,25 @@ function CartItemCard({
   item,
   onUpdateQuantity,
   onRemove,
+  unavailableMessage,
 }: {
   item: any;
   onUpdateQuantity: (id: string, type: any, quantity: number) => void;
   onRemove: (id: string, type: any) => void;
+  unavailableMessage?: string;
 }) {
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray/10">
+    <div
+      className={`bg-white rounded-xl p-4 shadow-sm border ${
+        unavailableMessage ? 'border-error/40' : 'border-gray/10'
+      }`}
+    >
+      {unavailableMessage && (
+        <div className="mb-3 flex items-start gap-2 rounded-lg bg-error/5 p-2 text-sm text-error">
+          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+          <p>{unavailableMessage}</p>
+        </div>
+      )}
       <div className="flex gap-4">
         {/* Imagen */}
         <Link href={`/${getTypeUrl(item.type)}/${item.slug}`} className="shrink-0">
