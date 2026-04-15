@@ -6,7 +6,7 @@
 import 'server-only';
 import { Resend } from 'resend';
 import { getTelLink, getFormattedPhoneNumber } from '@/lib/config/contact';
-import { formatTime } from '@/lib/sanity/utils';
+import { formatDateLong, formatWorkshopDateFull } from '@/lib/sanity/utils';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'hola@comoelmusguito.cl';
@@ -26,8 +26,8 @@ export interface EmailOrderItem {
   image?: string;
   slug?: string;
   selectedDate?: {
+    // Único ISO que necesitamos. La hora/fecha en zona Chile se computa en render.
     date: string;
-    time: string;
   };
 }
 
@@ -216,7 +216,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                   ` : ''}
                   <tr>
                     <td style="padding: 8px 0; color: #5a5a5a; font-size: 14px;">Fecha:</td>
-                    <td align="right" style="padding: 8px 0; color: #2d3e2d; font-weight: 600; font-size: 14px;">${new Date(data.paymentDate).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                    <td align="right" style="padding: 8px 0; color: #2d3e2d; font-weight: 600; font-size: 14px;">${formatDateLong(data.paymentDate)}</td>
                   </tr>
                 </table>
 
@@ -236,7 +236,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                           </p>
                           ${item.selectedDate ? `
                             <p style="margin: 4px 0 0 0; color: #4a7c59; font-size: 13px; font-weight: 500;">
-                              📅 ${new Date(item.selectedDate.date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })} a las ${item.selectedDate.time || formatTime(item.selectedDate.date)}
+                              📅 ${formatWorkshopDateFull(item.selectedDate.date)}
                             </p>
                           ` : ''}
                         </div>
@@ -322,7 +322,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                   </p>
                   <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
                     Tu cupo está confirmado. Te esperamos en el taller en la fecha y hora que seleccionaste. 
-                    ${talleres[0].selectedDate ? `Recuerda: ${new Date(talleres[0].selectedDate.date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })} a las ${talleres[0].selectedDate.time || formatTime(talleres[0].selectedDate.date)}.` : ''}
+                    ${talleres[0].selectedDate ? `Recuerda: ${formatWorkshopDateFull(talleres[0].selectedDate.date)}.` : ''}
                   </p>
                   <p style="margin: 12px 0 0 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
                     <strong>Ubicación:</strong> Santa Isabel 676, Providencia, Santiago
@@ -926,7 +926,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 <div style="margin-bottom: 16px;">
                   <h4 style="margin: 0 0 8px 0; color: #2D5016; font-size: 16px; font-weight: 600;">🎨 Talleres:</h4>
                   ${talleres.map((item) => `
-                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${item.name}${item.selectedDate ? ` - ${new Date(item.selectedDate.date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${item.name}${item.selectedDate ? ` - ${formatDateLong(item.selectedDate.date)}` : ''}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
@@ -1044,7 +1044,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                   </p>
                   <p style="margin: 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
                     Tu cupo está confirmado. Te esperamos en el taller en la fecha y hora seleccionada. 
-                    ${talleres[0].selectedDate ? `Recuerda: ${new Date(talleres[0].selectedDate.date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })} a las ${talleres[0].selectedDate.time || formatTime(talleres[0].selectedDate.date)}.` : ''}
+                    ${talleres[0].selectedDate ? `Recuerda: ${formatWorkshopDateFull(talleres[0].selectedDate.date)}.` : ''}
                   </p>
                   <p style="margin: 12px 0 0 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
                     <strong>Ubicación:</strong> Santa Isabel 676, Providencia, Santiago

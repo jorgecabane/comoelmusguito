@@ -116,13 +116,16 @@ export default defineType({
               status: 'status',
             },
             prepare({ date, available, total, status }) {
-              const dateStr = new Date(date).toLocaleDateString('es-CL', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              });
+              const dateStr = date
+                ? new Date(date).toLocaleString('es-CL', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'America/Santiago',
+                  })
+                : 'Sin fecha';
               const statusLabels = {
                 available: 'Disponible',
                 limited: 'Pocos Cupos',

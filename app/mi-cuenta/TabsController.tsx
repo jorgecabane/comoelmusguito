@@ -12,7 +12,7 @@ import { Package, BookOpen, Calendar } from 'lucide-react';
 import { Card, Button } from '@/components/ui';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { formatDateShort, formatCurrency } from '@/lib/sanity/utils';
+import { formatDateShort, formatDateLong, formatTime, formatCurrency } from '@/lib/sanity/utils';
 import { OrderItemDetail } from '@/components/orders/OrderItemDetail';
 import { CourseProgressCard } from '@/components/courses/CourseProgressCard';
 import type { SanityOrder } from '@/lib/sanity/orders';
@@ -207,20 +207,8 @@ export function TabsController({
                         </h3>
                         {item.selectedDate && (
                           <div className="space-y-1 text-sm text-gray">
-                            <p>
-                              📅{' '}
-                              {new Date(item.selectedDate.date).toLocaleDateString(
-                                'es-CL',
-                                {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric',
-                                }
-                              )}
-                            </p>
-                            {item.selectedDate.time && (
-                              <p>🕐 {item.selectedDate.time}</p>
-                            )}
+                            <p>📅 {formatDateLong(item.selectedDate.date)}</p>
+                            <p>🕐 {formatTime(item.selectedDate.date)}</p>
                           </div>
                         )}
                         <p className="text-sm text-gray mt-2">
