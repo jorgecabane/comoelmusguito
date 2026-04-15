@@ -213,7 +213,10 @@ export async function checkWorkshopSpots(
     }
 
     const currentSpots = dateObj.spotsAvailable || 0;
-    const isAvailable = dateObj.status === 'available' && currentSpots >= requestedQuantity;
+    const isAvailable =
+      dateObj.status !== 'sold_out' &&
+      dateObj.status !== 'cancelled' &&
+      currentSpots >= requestedQuantity;
 
     return {
       available: isAvailable,
