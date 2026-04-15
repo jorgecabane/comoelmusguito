@@ -8,13 +8,17 @@
 import { useState } from 'react';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { Badge } from '@/components/ui';
-import type { Workshop } from '@/types/sanity';
+import type { Workshop, WorkshopDate } from '@/types/sanity';
 import type { CartItem } from '@/types/cart';
 import { getImageUrl, formatPrice, formatWorkshopDateTime } from '@/lib/sanity/utils';
 import { Calendar } from 'lucide-react';
 
 interface WorkshopDetailProps {
   workshop: Workshop;
+}
+
+function isDateSoldOut(fecha: WorkshopDate): boolean {
+  return fecha.status === 'sold_out' || (fecha.spotsAvailable ?? 0) <= 0;
 }
 
 export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
@@ -26,15 +30,16 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+  const defaultIndex = fechasDisponibles?.findIndex((f) => !isDateSoldOut(f)) ?? -1;
   const [selectedDateIndex, setSelectedDateIndex] = useState<number | null>(
-    fechasDisponibles && fechasDisponibles.length > 0 ? 0 : null
+    defaultIndex >= 0 ? defaultIndex : null
   );
 
-  const selectedDate = selectedDateIndex !== null && fechasDisponibles 
-    ? fechasDisponibles[selectedDateIndex] 
+  const selectedDate = selectedDateIndex !== null && fechasDisponibles
+    ? fechasDisponibles[selectedDateIndex]
     : null;
 
-  const hayCuposDisponibles = fechasDisponibles?.some((f) => f.status !== 'sold_out');
+  const hayCuposDisponibles = fechasDisponibles?.some((f) => !isDateSoldOut(f));
 
   // Preparar item para el carrito (solo si hay fecha seleccionada)
   const cartItem: CartItem | null = selectedDate ? {
@@ -52,7 +57,7 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
       price: workshop.price,
     },
     maxQuantity: selectedDate.spotsAvailable,
-    inStock: selectedDate.status !== 'sold_out',
+    inStock: !isDateSoldOut(selectedDate),
   } : null;
 
   return (
@@ -72,16 +77,18 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
           </h3>
           {fechasDisponibles && fechasDisponibles.length > 0 ? (
             <div className="space-y-3 max-h-64 overflow-y-auto">
-              {fechasDisponibles.map((fecha, index) => (
+              {fechasDisponibles.map((fecha, index) => {
+                const soldOut = isDateSoldOut(fecha);
+                return (
                 <button
                   key={index}
                   onClick={() => setSelectedDateIndex(index)}
-                  disabled={fecha.status === 'sold_out'}
+                  disabled={soldOut}
                   className={`w-full border-2 rounded-lg p-3 flex items-center justify-between transition-all ${
                     selectedDateIndex === index
                       ? 'border-musgo bg-vida/5'
                       : 'border-gray/20 hover:border-gray/40'
-                  } ${fecha.status === 'sold_out' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  } ${soldOut ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="flex items-center gap-2 text-left">
                     <Calendar size={16} className="text-musgo" />
@@ -103,20 +110,21 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
                   </div>
                   <Badge
                     variant={
-                      fecha.status === 'available'
-                        ? 'success'
+                      soldOut
+                        ? 'error'
                         : fecha.status === 'limited'
                         ? 'warning'
-                        : 'error'
+                        : 'success'
                     }
                     size="sm"
                   >
-                    {fecha.status === 'sold_out'
+                    {soldOut
                       ? 'Agotado'
                       : `${fecha.spotsAvailable} ${fecha.spotsAvailable === 1 ? 'cupo' : 'cupos'}`}
                   </Badge>
                 </button>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-6 text-gray">
