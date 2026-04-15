@@ -4,7 +4,6 @@
 
 import 'server-only';
 import { client, writeClient } from '@/sanity/lib/client';
-import { formatTime } from '@/lib/sanity/utils';
 import type { CartItem } from '@/types/cart';
 
 export interface SanityOrder {
@@ -134,11 +133,9 @@ export async function saveOrderToSanity(data: {
       quantity: item.quantity,
       selectedDate: item.selectedDate
         ? {
+            // Guardamos sólo el ISO como fuente de verdad. La hora se computa
+            // en render con `formatTime` usando la zona horaria de Chile.
             date: item.selectedDate.date,
-            // Usar formatTime que extrae la hora de forma consistente
-            // La fecha viene en formato ISO desde Sanity, y formatTime usa getHours/getMinutes
-            // que devuelven la hora local, que es lo que queremos mostrar
-            time: formatTime(item.selectedDate.date),
           }
         : undefined,
       shippingPreference: (item as any).shippingPreference,

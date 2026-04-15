@@ -8,7 +8,7 @@
 import Link from 'next/link';
 import { Calendar, Clock, MapPin, ArrowRight, Gift } from 'lucide-react';
 import { Card } from '@/components/ui';
-import { formatDateShort } from '@/lib/sanity/utils';
+import { formatDateShort, formatDateLong, formatTime } from '@/lib/sanity/utils';
 
 interface WorkshopCardProps {
   item: {
@@ -32,18 +32,16 @@ export function WorkshopCard({ item }: WorkshopCardProps) {
   const workshopDate = item.selectedDate?.date
     ? new Date(item.selectedDate.date)
     : null;
-  
+
   const isUpcoming = workshopDate && workshopDate > new Date();
   const isPast = workshopDate && workshopDate < new Date();
 
-  const formatWorkshopDate = (date: Date) => {
-    return date.toLocaleDateString('es-CL', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
+  const workshopDateLong = item.selectedDate?.date
+    ? formatDateLong(item.selectedDate.date)
+    : '';
+  const workshopTime = item.selectedDate?.date
+    ? formatTime(item.selectedDate.date)
+    : '';
 
   return (
     <Link href={`/talleres/${item.slug}`}>
@@ -76,12 +74,12 @@ export function WorkshopCard({ item }: WorkshopCardProps) {
                 <Calendar className="text-musgo mt-0.5" size={20} />
                 <div>
                   <p className="font-semibold text-forest">
-                    {formatWorkshopDate(workshopDate)}
+                    {workshopDateLong}
                   </p>
-                  {item.selectedDate?.time && (
+                  {workshopTime && (
                     <div className="flex items-center gap-2 mt-1 text-sm text-gray">
                       <Clock size={16} />
-                      <span>{item.selectedDate.time}</span>
+                      <span>{workshopTime}</span>
                     </div>
                   )}
                 </div>

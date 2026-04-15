@@ -373,12 +373,11 @@ export async function POST(request: NextRequest) {
 
     // Convertir items de la orden al formato del email
     const orderItems: EmailOrderItem[] = savedOrder.items.map((item) => {
-      let selectedDate: { date: string; time: string } | undefined;
-      
+      let selectedDate: { date: string } | undefined;
+
       if (item.selectedDate) {
         selectedDate = {
           date: item.selectedDate.date,
-          time: item.selectedDate.time || '',
         };
       }
       

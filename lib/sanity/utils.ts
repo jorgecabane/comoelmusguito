@@ -178,62 +178,106 @@ export function getCoursePrice(
 }
 
 // ============ FECHAS ============
+// Todas las fechas se muestran en hora local chilena (America/Santiago),
+// sin importar el TZ del proceso. Las fechas vienen de Sanity como ISO UTC.
+
+const CHILE_TZ = 'America/Santiago';
+
+function toValidDate(dateString: string | undefined | null): Date | null {
+  if (!dateString) return null;
+  const d = new Date(dateString);
+  return isNaN(d.getTime()) ? null : d;
+}
 
 /**
- * Formatear fecha para talleres
+ * Fecha larga con hora: "lunes, 15 de mayo de 2025, 03:30 p. m."
  */
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-CL', {
+  const date = toValidDate(dateString);
+  if (!date) return '';
+  return date.toLocaleString('es-CL', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: CHILE_TZ,
   });
 }
 
 /**
- * Formatear fecha corta
+ * Fecha corta sin hora: "15 may 2025"
  */
 export function formatDateShort(dateString: string): string {
-  const date = new Date(dateString);
+  const date = toValidDate(dateString);
+  if (!date) return '';
   return date.toLocaleDateString('es-CL', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
+    timeZone: CHILE_TZ,
   });
 }
 
 /**
- * Formatear hora de forma consistente (evita errores de hidratación)
+ * Fecha larga sin hora: "15 de mayo de 2025"
  */
-export function formatTime(dateString: string): string {
-  const date = new Date(dateString);
-  // Usar formato manual para evitar diferencias servidor/cliente
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? 'p. m.' : 'a. m.';
-  const hours12 = hours % 12 || 12;
-  const minutesStr = minutes.toString().padStart(2, '0');
-  return `${hours12}:${minutesStr} ${ampm}`;
+export function formatDateLong(dateString: string): string {
+  const date = toValidDate(dateString);
+  if (!date) return '';
+  return date.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: CHILE_TZ,
+  });
 }
 
 /**
- * Formatear fecha y hora para talleres
+ * Hora en formato 12h chileno: "3:30 p. m."
+ */
+export function formatTime(dateString: string): string {
+  const date = toValidDate(dateString);
+  if (!date) return '';
+  // Intl en es-CL devuelve "p. m." con espacios NBSP; normalizamos a espacios regulares.
+  return date
+    .toLocaleTimeString('es-CL', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: CHILE_TZ,
+    })
+    .replace(/\u202F|\u00A0/g, ' ');
+}
+
+/**
+ * Fecha corta + hora separadas: { date: "15 may", time: "3:30 p. m." }
  */
 export function formatWorkshopDateTime(dateString: string): {
   date: string;
   time: string;
 } {
-  const date = new Date(dateString);
+  const date = toValidDate(dateString);
+  if (!date) return { date: '', time: '' };
   const dateStr = date.toLocaleDateString('es-CL', {
     day: 'numeric',
     month: 'short',
+    timeZone: CHILE_TZ,
   });
+  return { date: dateStr, time: formatTime(dateString) };
+}
+
+/**
+ * Fecha completa combinada: "15 de mayo de 2025 a las 3:30 p. m."
+ * Ideal para emails donde queremos un string único natural.
+ */
+export function formatWorkshopDateFull(dateString: string): string {
+  const dateStr = formatDateLong(dateString);
   const timeStr = formatTime(dateString);
-  return { date: dateStr, time: timeStr };
+  if (!dateStr) return '';
+  if (!timeStr) return dateStr;
+  return `${dateStr} a las ${timeStr}`;
 }
 
 // ============ SLUG ============
