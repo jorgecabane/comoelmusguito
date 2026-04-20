@@ -169,19 +169,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Solo procesar si el pago está confirmado (status = 2)
-    if (paymentStatusFromWebhook.status !== 2) {
-      console.log(`[Webhook Flow] ℹ️ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Pago no está confirmado (status: ${paymentStatusFromWebhook.status})`);
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Pago no confirmado, email no enviado' 
-      },
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
+    // Manejar pagos rechazados (status=3) o anulados (status=4)
+    if (paymentStatusFromWebhook.status === 3 || paymentStatusFromWebhook.status === 4) {
+      const statusLabel = paymentStatusFromWebhook.status === 3 ? 'Rechazado' : 'Anulado';
+      console.log(`[Webhook Flow] ℹ️ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Pago ${statusLabel} (status: ${paymentStatusFromWebhook.status})`);
+
+      const rejectedOrder = await getOrderByOrderId(paymentStatusFromWebhook.commerceOrder);
+
+      if (!rejectedOrder) {
+        console.warn(`[Webhook Flow] ⚠️ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Orden no encontrada en el sistema`);
+      } else if (rejectedOrder.paymentStatus !== paymentStatusFromWebhook.status) {
+        console.log(`[Webhook] Actualizando orden ${paymentStatusFromWebhook.commerceOrder} de estado ${rejectedOrder.paymentStatus} a ${paymentStatusFromWebhook.status} (${statusLabel})`);
+        try {
+          await updateOrderPaymentStatus(
+            paymentStatusFromWebhook.commerceOrder,
+            paymentStatusFromWebhook.status,
+            paymentDate,
+            paymentStatusFromWebhook.flowOrder
+          );
+        } catch (error) {
+          console.error(`Error actualizando estado de orden ${statusLabel}:`, error);
+          // No fallar el webhook si hay error actualizando
         }
-      });
+      } else {
+        console.log(`[Webhook] Orden ${paymentStatusFromWebhook.commerceOrder} ya tiene estado ${paymentStatusFromWebhook.status} (${statusLabel}), saltando actualización`);
+      }
+
+      return NextResponse.json(
+        { success: true, message: `Pago ${statusLabel} procesado` },
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Solo continuar si el pago está confirmado (status = 2)
+    if (paymentStatusFromWebhook.status !== 2) {
+      console.log(`[Webhook Flow] ℹ️ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Estado de pago desconocido (status: ${paymentStatusFromWebhook.status}), sin acción`);
+      return NextResponse.json(
+        { success: true, message: 'Estado de pago desconocido, sin acción' },
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
     // Obtener detalles de la orden desde Sanity
