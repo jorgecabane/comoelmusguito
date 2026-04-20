@@ -5,22 +5,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getPaymentStatus } from '@/lib/flow';
-import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
-import { markGiftAsRedeemed } from '@/lib/sanity/gifts';
 import {
   getOrderByOrderId,
   updateOrderPaymentStatus,
-  createCourseAccess,
-  markOrderEmailSent,
+  processSuccessfulPayment,
 } from '@/lib/sanity/orders';
-import { client } from '@/sanity/lib/client';
-import {
-  decreaseTerrariumStock,
-  decreaseWorkshopSpots,
-  decreaseSupplyStock,
-} from '@/lib/sanity/inventory';
-import { getUserByEmail } from '@/lib/auth/sanity-adapter';
-import type { EmailOrderData, EmailOrderItem, GiftEmailData } from '@/lib/resend/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -210,281 +199,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener detalles de la orden desde Sanity
-    const savedOrder = await getOrderByOrderId(paymentStatusFromWebhook.commerceOrder);
-    
-    if (!savedOrder) {
-      console.warn(`[Webhook Flow] ⚠️ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Orden no encontrada en el sistema`);
-      // Si no encontramos la orden, retornar éxito pero no enviar email
-      // IMPORTANTE: Retornar 200 siempre - Flow espera 200
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Orden no encontrada, email no enviado' 
-      },
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        }
+    // Procesar pago exitoso usando la función compartida
+    try {
+      const result = await processSuccessfulPayment({
+        orderId: paymentStatusFromWebhook.commerceOrder,
+        paymentDate,
+        providerOrderId: paymentStatusFromWebhook.flowOrder,
       });
-    }
 
-    // 🔒 EVITAR EMAILS DUPLICADOS: Verificar en Sanity si ya se envió el email
-    if (savedOrder.emailSent) {
-      console.log(`[Webhook Flow] ✅ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Email ya enviado previamente`);
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Email ya enviado' 
-      },
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-    }
-
-    // Actualizar estado de pago en la orden guardada
-    // Verificar estado actual para evitar actualizaciones duplicadas (idempotencia)
-    if (savedOrder.paymentStatus !== paymentStatusFromWebhook.status) {
-      console.log(`[Webhook] Actualizando orden ${paymentStatusFromWebhook.commerceOrder} de estado ${savedOrder.paymentStatus} a ${paymentStatusFromWebhook.status}`);
-      try {
-        await updateOrderPaymentStatus(
-          paymentStatusFromWebhook.commerceOrder,
-          paymentStatusFromWebhook.status,
-          paymentDate,
-          paymentStatusFromWebhook.flowOrder
-        );
-      } catch (error) {
-        console.error('Error actualizando estado de la orden:', error);
-        // No fallar el webhook si hay error actualizando
+      if (result.alreadyProcessed) {
+        console.log(`[Webhook Flow] ✅ ${timestamp} | CommerceOrder: ${paymentStatusFromWebhook.commerceOrder} | Ya procesado previamente`);
       }
-    } else {
-      // Si el estado ya es el mismo, verificar si falta paymentDate y actualizarlo
-      if (paymentStatusFromWebhook.status === 2 && paymentDate && !savedOrder.paymentDate) {
-        console.log(`[Webhook] Orden ${paymentStatusFromWebhook.commerceOrder} ya tiene estado confirmado, actualizando paymentDate`);
-        try {
-          await updateOrderPaymentStatus(
-            paymentStatusFromWebhook.commerceOrder,
-            paymentStatusFromWebhook.status,
-            paymentDate,
-            paymentStatusFromWebhook.flowOrder
-          );
-        } catch (error) {
-          console.error('Error actualizando paymentDate:', error);
-        }
-      } else {
-        console.log(`[Webhook] Orden ${paymentStatusFromWebhook.commerceOrder} ya tiene estado ${paymentStatusFromWebhook.status}, saltando actualización`);
-      }
-    }
-
-    // Si el pago está confirmado:
-    // 1. Crear accesos a cursos (si hay usuario o si es regalo)
-    // 2. Descontar stock de terrarios
-    // 3. Descontar cupos de talleres
-    if (paymentStatusFromWebhook.status === 2) {
-      // Manejar regalos
-      if (savedOrder.isGift && savedOrder.recipientEmail && savedOrder.giftToken) {
-        console.log(`[Webhook] Procesando regalo para ${savedOrder.recipientEmail}`);
-        
-        // Buscar si el destinatario tiene cuenta
-        const recipientUser = await getUserByEmail(savedOrder.recipientEmail);
-        
-        if (recipientUser?._id && savedOrder._id) {
-          // Destinatario tiene cuenta → crear acceso inmediatamente
-          console.log(`[Webhook] Destinatario tiene cuenta, creando accesos inmediatamente`);
-          let coursesCreated = 0;
-          for (const item of savedOrder.items) {
-            if (item.type === 'course') {
-              try {
-                // Verificar si ya tiene acceso (evitar duplicados)
-                const existingAccess = await client.fetch(
-                  `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
-                  {
-                    userId: recipientUser._id,
-                    courseId: item.id,
-                  }
-                );
-
-                if (!existingAccess) {
-                  await createCourseAccess(
-                    recipientUser._id,
-                    item.id,
-                    savedOrder._id
-                  );
-                  coursesCreated++;
-                  console.log(`✅ Acceso a curso ${item.id} creado para destinatario ${savedOrder.recipientEmail}`);
-                } else {
-                  console.log(`⚠️ Destinatario ya tiene acceso a curso ${item.id}`);
-                }
-              } catch (error) {
-                console.error(`Error creando acceso a curso ${item.id} para destinatario:`, error);
-              }
-            }
-          }
-
-          // 🔒 Marcar el regalo como canjeado si se crearon accesos
-          if (coursesCreated > 0) {
-            try {
-              await markGiftAsRedeemed(savedOrder.orderId, recipientUser._id);
-              console.log(`✅ Regalo ${savedOrder.orderId} marcado como canjeado automáticamente para destinatario ${savedOrder.recipientEmail}`);
-            } catch (error) {
-              console.error(`Error marcando regalo como canjeado en webhook:`, error);
-              // No fallar el webhook si hay error marcando
-            }
-          }
-        } else {
-          // Destinatario no tiene cuenta → se creará acceso cuando se registre o canjee el token
-          console.log(`[Webhook] Destinatario no tiene cuenta, acceso se creará al registrarse o canjear token`);
-        }
-      } else {
-        // No es regalo → crear accesos para el comprador (comportamiento normal)
-        if (savedOrder.userId?._ref && savedOrder._id) {
-          for (const item of savedOrder.items) {
-            if (item.type === 'course') {
-              try {
-                await createCourseAccess(
-                  savedOrder.userId._ref,
-                  item.id,
-                  savedOrder._id
-                );
-              } catch (error) {
-                console.error(`Error creando acceso a curso ${item.id}:`, error);
-              }
-            }
-          }
-        }
-      }
-
-      // Descontar stock de terrarios
-      for (const item of savedOrder.items) {
-        if (item.type === 'terrarium') {
-          try {
-            await decreaseTerrariumStock(item.id, item.quantity);
-          } catch (error) {
-            console.error(`Error descontando stock de terrario ${item.id}:`, error);
-            // No fallar el webhook si hay error descontando stock
-          }
-        }
-      }
-
-      // Descontar stock de insumos
-      for (const item of savedOrder.items) {
-        if (item.type === 'supply') {
-          try {
-            await decreaseSupplyStock(item.id, item.quantity);
-          } catch (error) {
-            console.error(`Error descontando stock de insumo ${item.id}:`, error);
-            // No fallar el webhook si hay error descontando stock
-          }
-        }
-      }
-
-      // Descontar cupos de talleres
-      for (const item of savedOrder.items) {
-        if (item.type === 'workshop' && item.selectedDate) {
-          try {
-            await decreaseWorkshopSpots(
-              item.id,
-              item.selectedDate.date,
-              item.quantity
-            );
-          } catch (error) {
-            console.error(`Error descontando cupos de taller ${item.id}:`, error);
-            // No fallar el webhook si hay error descontando cupos
-          }
-        }
-      }
-    }
-
-    // Convertir items de la orden al formato del email
-    const orderItems: EmailOrderItem[] = savedOrder.items.map((item) => {
-      let selectedDate: { date: string } | undefined;
-
-      if (item.selectedDate) {
-        selectedDate = {
-          date: item.selectedDate.date,
-        };
-      }
-      
-      return {
-        name: item.name,
-        type: item.type,
-        quantity: item.quantity,
-        price: item.price,
-        currency: item.currency,
-        slug: item.slug,
-        selectedDate,
-      };
-    });
-
-    // Verificar si el usuario tiene cuenta (si userId existe, tiene cuenta)
-    const hasAccount = !!savedOrder.userId?._ref;
-
-    const flowOrderValue = paymentStatusFromWebhook.flowOrder || savedOrder.flowOrder;
-    const emailData: EmailOrderData = {
-      orderId: savedOrder.orderId,
-      flowOrder: flowOrderValue ? String(flowOrderValue) : undefined,
-      customerEmail: savedOrder.customerEmail,
-      customerName: savedOrder.customerName,
-      items: orderItems,
-      total: savedOrder.total,
-      currency: savedOrder.currency,
-      paymentDate: paymentDate || new Date().toISOString(),
-      hasAccount,
-      isGift: savedOrder.isGift || false,
-      recipientName: savedOrder.recipientName,
-      recipientEmail: savedOrder.recipientEmail,
-      giftMessage: savedOrder.giftMessage,
-      requiresShipping: savedOrder.requiresShipping || false,
-      shippingAddress: savedOrder.shippingAddress,
-    };
-
-    // Enviar emails
-    if (emailData.customerEmail) {
-      try {
-        // Si es regalo, enviar email al destinatario
-        if (savedOrder.isGift && savedOrder.recipientEmail && savedOrder.giftToken) {
-          console.log(`[Webhook] Enviando email de regalo a ${savedOrder.recipientEmail}`);
-          
-          const giftEmailData: GiftEmailData = {
-            giftToken: savedOrder.giftToken,
-            recipientName: savedOrder.recipientName,
-            recipientEmail: savedOrder.recipientEmail,
-            senderName: savedOrder.customerName,
-            senderEmail: savedOrder.customerEmail,
-            giftMessage: savedOrder.giftMessage,
-            items: orderItems,
-            orderId: savedOrder.orderId,
-            requiresShipping: savedOrder.requiresShipping || false,
-            shippingAddress: savedOrder.shippingAddress,
-          };
-
-          try {
-            await sendGiftEmail(giftEmailData);
-            console.log(`✅ Email de regalo enviado a ${savedOrder.recipientEmail}`);
-          } catch (giftEmailError) {
-            console.error('Error enviando email de regalo:', giftEmailError);
-            // No fallar el webhook si hay error enviando email de regalo
-          }
-        }
-
-        // Enviar email de confirmación al comprador (siempre)
-        await sendOrderConfirmationEmail(emailData);
-        console.log(`✅ Email de confirmación enviado a ${emailData.customerEmail}`);
-        
-        // 🔒 MARCAR EMAIL COMO ENVIADO EN SANITY (idempotente)
-        try {
-          await markOrderEmailSent(paymentStatusFromWebhook.commerceOrder);
-          console.log(`✅ Email marcado como enviado para orden ${paymentStatusFromWebhook.commerceOrder}`);
-        } catch (error) {
-          console.error('Error marcando email como enviado:', error);
-          // No fallar el webhook si hay error marcando el email
-        }
-      } catch (emailError) {
-        console.error('Error enviando emails:', emailError);
-        // No fallar el webhook si hay error enviando email
-      }
+    } catch (error) {
+      console.error(`[Webhook Flow] ❌ ${timestamp} | Error procesando pago exitoso para orden ${paymentStatusFromWebhook.commerceOrder}:`, error);
+      // No fallar el webhook - retornar 200 de todas formas
     }
 
     // 📝 LOG FINAL: Registrar webhook procesado exitosamente
