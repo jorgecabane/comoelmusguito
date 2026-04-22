@@ -57,6 +57,12 @@ export interface SanityOrder {
   currency: 'CLP' | 'USD';
   paymentStatus: number;
   paymentDate?: string;
+  paymentProvider?: 'flow' | 'paypal';
+  providerTransactionId?: string;
+  paypalOrderId?: string;
+  refundedAt?: string;
+  refundReason?: string;
+  refundAmount?: number;
   emailSent?: boolean;
   // Campos de Regalo
   isGift?: boolean;
