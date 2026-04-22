@@ -14,7 +14,7 @@ import { useCartStore } from '@/lib/store/useCartStore';
 import { Button, Input } from '@/components/ui';
 import { PaymentMethodSelector, PayPalCheckoutButton, InternationalItemsModal } from '@/components/checkout';
 import { canPurchaseInternationally } from '@/lib/utils/cart-validation';
-import { getUserCountryClient } from '@/lib/utils/geolocation';
+import { getUserCountryClient } from '@/lib/utils/geolocation.client';
 import { Loader2, ArrowLeft, Gift, ChevronDown, MapPin, Truck, Package } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
