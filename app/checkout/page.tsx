@@ -12,10 +12,15 @@ import { signIn, useSession } from 'next-auth/react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useCartStore } from '@/lib/store/useCartStore';
 import { Button, Input } from '@/components/ui';
+import { PaymentMethodSelector, PayPalCheckoutButton, InternationalItemsModal } from '@/components/checkout';
+import { canPurchaseInternationally } from '@/lib/utils/cart-validation';
+import { getUserCountryClient } from '@/lib/utils/geolocation';
 import { Loader2, ArrowLeft, Gift, ChevronDown, MapPin, Truck, Package } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CHILE_REGIONS, getCommunesByRegion } from '@/lib/utils/chile-regions';
+
+const PAYPAL_ENABLED = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -53,6 +58,18 @@ export default function CheckoutPage() {
 
   // Mobile: resumen expandido
   const [summaryExpanded, setSummaryExpanded] = useState(false);
+
+  // Gateway selection
+  const [selectedGateway, setSelectedGateway] = useState<'flow' | 'paypal'>('flow');
+  const [checkoutState, setCheckoutState] = useState<
+    'idle' | 'creating_order' | 'paypal_processing' | 'flow_redirecting' | 'polling' | 'confirmed' | 'error'
+  >('idle');
+  const [commerceOrderId, setCommerceOrderId] = useState<string | null>(null);
+  const [paypalTotal, setPaypalTotal] = useState<number>(0);
+  const [paypalCurrency, setPaypalCurrency] = useState<string>('USD');
+
+  // International items modal
+  const [showIntlModal, setShowIntlModal] = useState(false);
 
   const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   const isRecaptchaConfigured = !!RECAPTCHA_SITE_KEY;
@@ -107,6 +124,24 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (items.length === 0) router.push('/carrito');
   }, [items, router]);
+
+  // Auto-detect country for default gateway
+  useEffect(() => {
+    if (!PAYPAL_ENABLED) return;
+    const country = getUserCountryClient();
+    if (country !== 'CL') {
+      setSelectedGateway('paypal');
+    }
+  }, []);
+
+  // International items check when PayPal selected
+  useEffect(() => {
+    if (selectedGateway !== 'paypal' || !PAYPAL_ENABLED) return;
+    const { ok } = canPurchaseInternationally(items);
+    if (!ok && !isGift) {
+      setShowIntlModal(true);
+    }
+  }, [selectedGateway, items, isGift]);
 
   if (items.length === 0) return null;
 
@@ -252,6 +287,7 @@ export default function CheckoutPage() {
           email,
           customerName: customerName || undefined,
           userId: finalUserId,
+          gateway: selectedGateway,
           isGift: isGift || undefined,
           recipientEmail: isGift ? recipientEmail : undefined,
           recipientName: isGift ? recipientName : undefined,
@@ -287,10 +323,23 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Error al procesar el pago');
       }
 
+      if (data.gateway === 'paypal') {
+        // PayPal: save order info, show PayPal button
+        setCommerceOrderId(data.commerceOrder);
+        setPaypalTotal(data.total);
+        setPaypalCurrency(data.currency);
+        setCheckoutState('idle');
+        setLoading(false);
+        return;
+      }
+
+      // Flow: existing redirect behavior
       if (data.paymentUrl && data.token) {
+        setCheckoutState('flow_redirecting');
         const sep = data.paymentUrl.includes('?') ? '&' : '?';
         window.location.href = `${data.paymentUrl}${sep}token=${data.token}`;
       } else if (data.paymentUrl) {
+        setCheckoutState('flow_redirecting');
         window.location.href = data.paymentUrl;
       } else {
         throw new Error('No se recibió URL de pago');
@@ -311,26 +360,69 @@ export default function CheckoutPage() {
     }
   };
 
+  // PayPal button callbacks
+  const handlePayPalProcessing = () => setCheckoutState('paypal_processing');
+
+  const handlePayPalSuccess = () => {
+    setCheckoutState('confirmed');
+    setTimeout(() => {
+      router.push(`/checkout/callback?order=${commerceOrderId}`);
+    }, 1500);
+  };
+
+  const handlePayPalCancel = () => {
+    setCheckoutState('idle');
+    setError(null);
+  };
+
+  const handlePayPalError = (errorMessage: string) => {
+    setCheckoutState('error');
+    setError(errorMessage);
+  };
+
   // Botón de pago — reutilizado en columna derecha (desktop) y sticky (mobile)
-  const PayButton = ({ className = '' }: { className?: string }) => (
-    <Button
-      type="submit"
-      form="checkout-form"
-      variant="primary"
-      size="lg"
-      className={`w-full ${className}`}
-      disabled={isSubmitDisabled}
-    >
-      {loading ? (
-        <>
-          <Loader2 className="animate-spin mr-2" size={18} />
-          Procesando...
-        </>
-      ) : (
-        `Pagar $${total.toLocaleString('es-CL')} ${currency}`
-      )}
-    </Button>
-  );
+  const PayButton = ({ className = '' }: { className?: string }) => {
+    // If PayPal is selected and order is created, show PayPal button instead
+    if (PAYPAL_ENABLED && selectedGateway === 'paypal' && commerceOrderId) {
+      return (
+        <div className={className}>
+          <PayPalCheckoutButton
+            orderId={commerceOrderId}
+            total={paypalTotal}
+            currency={paypalCurrency}
+            onProcessing={handlePayPalProcessing}
+            onSuccess={handlePayPalSuccess}
+            onCancel={handlePayPalCancel}
+            onError={handlePayPalError}
+            disabled={checkoutState === 'paypal_processing'}
+          />
+        </div>
+      );
+    }
+
+    // Flow button (or PayPal pre-order-creation button)
+    return (
+      <Button
+        type="submit"
+        form="checkout-form"
+        variant="primary"
+        size="lg"
+        className={`w-full ${className}`}
+        disabled={isSubmitDisabled || checkoutState !== 'idle'}
+      >
+        {loading ? (
+          <>
+            <Loader2 className="animate-spin mr-2" size={18} />
+            {selectedGateway === 'paypal' ? 'Preparando PayPal...' : 'Procesando...'}
+          </>
+        ) : selectedGateway === 'paypal' ? (
+          `Continuar con PayPal · $${total.toLocaleString('es-CL')} ${currency}`
+        ) : (
+          `Pagar $${total.toLocaleString('es-CL')} ${currency}`
+        )}
+      </Button>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-white pt-20">
@@ -914,10 +1006,25 @@ export default function CheckoutPage() {
                 </div>
               )}
 
+              {/* Selector de método de pago */}
+              {PAYPAL_ENABLED && (
+                <PaymentMethodSelector
+                  selectedGateway={selectedGateway}
+                  onGatewayChange={setSelectedGateway}
+                  flowAmount={`$${total.toLocaleString('es-CL')}`}
+                  flowCurrency="CLP"
+                  paypalAmount={`$${total.toLocaleString('en-US')}`}
+                  paypalCurrency="USD"
+                  disabled={loading || checkoutState !== 'idle'}
+                />
+              )}
+
               {/* Botón pagar desktop */}
               <PayButton />
 
-              <p className="text-center text-xs text-gray/60">🔒 Pago seguro con Flow.cl</p>
+              <p className="text-center text-xs text-gray/60">
+                {selectedGateway === 'paypal' ? 'Pago seguro con PayPal' : 'Pago seguro con Flow.cl'}
+              </p>
             </div>
           </div>
         </div>
@@ -925,8 +1032,63 @@ export default function CheckoutPage() {
 
       {/* Mobile: botón pagar sticky */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray/10 px-5 py-4">
+        {PAYPAL_ENABLED && (
+          <div className="mb-3">
+            <PaymentMethodSelector
+              selectedGateway={selectedGateway}
+              onGatewayChange={setSelectedGateway}
+              flowAmount={`$${total.toLocaleString('es-CL')}`}
+              flowCurrency="CLP"
+              paypalAmount={`$${total.toLocaleString('en-US')}`}
+              paypalCurrency="USD"
+              disabled={loading || checkoutState !== 'idle'}
+            />
+          </div>
+        )}
         <PayButton />
       </div>
+
+      {/* PayPal processing overlay */}
+      {checkoutState === 'paypal_processing' && (
+        <div className="fixed inset-0 z-40 bg-forest/30 backdrop-blur-[4px] flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-sm mx-4">
+            <Loader2 className="animate-spin mx-auto mb-4 text-musgo" size={32} />
+            <p className="font-display text-lg font-semibold text-forest">Procesando pago</p>
+            <p className="text-sm text-gray mt-2">Completa el pago en la ventana de PayPal...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Payment confirmed overlay */}
+      {checkoutState === 'confirmed' && (
+        <div className="fixed inset-0 z-40 bg-forest/30 backdrop-blur-[4px] flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-sm mx-4">
+            <div className="w-12 h-12 rounded-full bg-musgo/10 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-musgo" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="font-display text-lg font-semibold text-forest">Pago confirmado</p>
+            <p className="text-sm text-gray mt-2">Redirigiendo...</p>
+          </div>
+        </div>
+      )}
+
+      {/* International items modal */}
+      <InternationalItemsModal
+        open={showIntlModal}
+        onClose={() => setShowIntlModal(false)}
+        blockedItems={canPurchaseInternationally(items).blockedItems.map(i => ({ name: i.name, type: i.type }))}
+        onMarkAsGift={() => {
+          setIsGift(true);
+          setShowIntlModal(false);
+        }}
+        onRemoveItems={() => {
+          const { blockedItems } = canPurchaseInternationally(items);
+          blockedItems.forEach(item => removeItem(item.id, item.type));
+          setShowIntlModal(false);
+        }}
+      />
     </div>
   );
 }

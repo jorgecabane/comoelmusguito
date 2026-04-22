@@ -92,7 +92,7 @@ export function PayPalCheckoutButton({
           createOrder={createOrder}
           onApprove={handleApprove}
           onCancel={handleCancel}
-          onError={(err) => onError(err?.message ?? 'Error desconocido de PayPal')}
+          onError={(err) => onError(typeof err === 'object' && err !== null && 'message' in err ? String((err as { message: unknown }).message) : 'Error desconocido de PayPal')}
         />
       </PayPalScriptProvider>
     </div>
