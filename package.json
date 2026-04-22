@@ -16,6 +16,7 @@
     "script:backfill-auth-methods": "tsx scripts/backfill-auth-methods.ts"
   },
   "dependencies": {
+    "@paypal/react-paypal-js": "^9.1.1",
     "@portabletext/react": "^5.0.0",
     "@react-spring/web": "^10.0.3",
     "@sanity/client": "^7.13.1",
