@@ -1,5 +1,5 @@
 /**
- * API Route: Crear orden de pago en Flow
+ * API Route: Crear orden de pago (Flow o PayPal)
  * POST /api/checkout
  */
 
@@ -27,6 +27,7 @@ interface CheckoutRequest {
   email: string;
   customerName?: string;
   userId?: string; // ID del usuario si está registrado
+  gateway?: 'flow' | 'paypal'; // Pasarela de pago (default: 'flow')
   // Campos de Regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -49,7 +50,7 @@ interface CheckoutRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: CheckoutRequest = await request.json();
-    const { items, email, customerName, userId, isGift, recipientEmail, recipientName, giftMessage, requiresShipping, shippingAddress } = body;
+    const { items, email, customerName, userId, gateway = 'flow', isGift, recipientEmail, recipientName, giftMessage, requiresShipping, shippingAddress } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -348,6 +349,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Validar que PayPal solo se use para cursos (items digitales)
+    if (gateway === 'paypal') {
+      const hasPhysicalItems = validatedItems.some(item => item.type !== 'course');
+      if (hasPhysicalItems && !isGift) {
+        return NextResponse.json(
+          { error: 'PayPal solo está disponible para cursos online. Los productos físicos requieren Flow.' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Calcular totales por moneda usando precios validados
     const totalsByCurrency: Record<string, number> = {};
     validatedItems.forEach((item) => {
@@ -358,30 +370,36 @@ export async function POST(request: NextRequest) {
       totalsByCurrency[currency] += item.price * item.quantity;
     });
 
-    // Si hay items en USD y el usuario está en Chile, convertir a CLP
-    // Si hay items en USD y el usuario está fuera, mantener USD pero convertir a CLP para Flow
+    // Calcular monto final según gateway
     let finalAmount = 0;
     let finalCurrency: 'CLP' | 'USD' = 'CLP';
 
-    if (userCountry === 'CL') {
-      // Usuario en Chile: todo en CLP
+    if (gateway === 'paypal') {
+      // PayPal: preferir USD para usuarios internacionales
+      if (totalsByCurrency['USD'] && !totalsByCurrency['CLP']) {
+        // Todos los items son USD (típico: cursos para usuario internacional)
+        finalAmount = totalsByCurrency['USD'];
+        finalCurrency = 'USD';
+      } else if (totalsByCurrency['CLP'] && !totalsByCurrency['USD']) {
+        // Todos los items son CLP
+        finalAmount = totalsByCurrency['CLP'];
+        finalCurrency = 'CLP';
+      } else {
+        // Monedas mixtas — convertir todo a USD para PayPal
+        finalAmount = totalsByCurrency['USD'] || 0;
+        if (totalsByCurrency['CLP']) {
+          const { convertCLPToUSD } = await import('@/lib/utils/currency');
+          finalAmount += await convertCLPToUSD(totalsByCurrency['CLP']);
+        }
+        finalCurrency = 'USD';
+      }
+    } else {
+      // Flow: siempre CLP (comportamiento existente, sin cambios)
       finalAmount = totalsByCurrency['CLP'] || 0;
       if (totalsByCurrency['USD']) {
-        // Convertir USD a CLP
-        const usdAmount = totalsByCurrency['USD'];
-        const clpAmount = await convertUSDToCLP(usdAmount);
-        finalAmount += clpAmount;
+        finalAmount += await convertUSDToCLP(totalsByCurrency['USD']);
       }
       finalCurrency = 'CLP';
-    } else {
-      // Usuario fuera de Chile: convertir todo a CLP para Flow
-      finalAmount = totalsByCurrency['CLP'] || 0;
-      if (totalsByCurrency['USD']) {
-        const usdAmount = totalsByCurrency['USD'];
-        const clpAmount = await convertUSDToCLP(usdAmount);
-        finalAmount += clpAmount;
-      }
-      finalCurrency = 'CLP'; // Flow siempre procesa en CLP
     }
 
     if (finalAmount <= 0) {
@@ -407,30 +425,6 @@ export async function POST(request: NextRequest) {
     // URL de confirmación (webhook - opcional)
     const urlConfirmation = `${baseUrl}/api/webhooks/flow`;
 
-    // Crear orden en Flow
-    const paymentResponse = await createPaymentOrder({
-      commerceOrder,
-      subject,
-      currency: finalCurrency,
-      amount: Math.round(finalAmount), // Flow requiere números enteros
-      email,
-      urlReturn,
-      urlConfirmation,
-      paymentMethod: 9, // 9 = Todos los métodos disponibles
-      items: validatedItems.map((item) => ({
-        name: item.name,
-        amount: item.price, // Precio validado del servidor
-        quantity: item.quantity,
-      })),
-    });
-
-    if (!paymentResponse.url) {
-      return NextResponse.json(
-        { error: 'No se pudo generar la URL de pago' },
-        { status: 500 }
-      );
-    }
-
     // Generar token de regalo si es regalo
     const giftToken = isGift ? generateGiftToken() : undefined;
 
@@ -439,16 +433,16 @@ export async function POST(request: NextRequest) {
     const sanitizedRecipientName = recipientName ? (sanitizeString(recipientName) || undefined) : undefined;
     const sanitizedGiftMessage = giftMessage ? (sanitizeString(giftMessage).substring(0, 500) || undefined) : undefined;
 
-    // Guardar orden en Sanity con items validados
-    await saveOrderToSanity({
+    // Datos comunes para guardar la orden en Sanity
+    const orderData = {
       orderId: commerceOrder,
-      flowOrder: paymentResponse.flowOrder,
       customerEmail: email,
       customerName: customerName,
-      userId: userId, // Si el usuario está registrado, vincular desde el inicio
-      items: validatedItems, // Usar items validados con precios correctos
+      userId: userId,
+      items: validatedItems,
       total: finalAmount,
       currency: finalCurrency,
+      paymentProvider: gateway,
       // Campos de regalo
       isGift: isGift || false,
       recipientEmail: sanitizedRecipientEmail,
@@ -467,10 +461,54 @@ export async function POST(request: NextRequest) {
         phone: shippingAddress.phone.trim(),
         rut: shippingAddress.rut.trim(),
       } : undefined,
+    };
+
+    if (gateway === 'paypal') {
+      // PayPal: no llamar a Flow, guardar orden y devolver orderId para el SDK de PayPal
+      await saveOrderToSanity(orderData);
+
+      return NextResponse.json({
+        success: true,
+        gateway: 'paypal',
+        commerceOrder,
+        total: finalAmount,
+        currency: finalCurrency,
+      });
+    }
+
+    // Flow path (existente, sin cambios)
+    const paymentResponse = await createPaymentOrder({
+      commerceOrder,
+      subject,
+      currency: finalCurrency,
+      amount: Math.round(finalAmount), // Flow requiere números enteros
+      email,
+      urlReturn,
+      urlConfirmation,
+      paymentMethod: 9, // 9 = Todos los métodos disponibles
+      items: validatedItems.map((item) => ({
+        name: item.name,
+        amount: item.price,
+        quantity: item.quantity,
+      })),
+    });
+
+    if (!paymentResponse.url) {
+      return NextResponse.json(
+        { error: 'No se pudo generar la URL de pago' },
+        { status: 500 }
+      );
+    }
+
+    // Guardar orden en Sanity con flowOrder
+    await saveOrderToSanity({
+      ...orderData,
+      flowOrder: paymentResponse.flowOrder,
     });
 
     return NextResponse.json({
       success: true,
+      gateway: 'flow',
       paymentUrl: paymentResponse.url,
       token: paymentResponse.token,
       flowOrder: paymentResponse.flowOrder,

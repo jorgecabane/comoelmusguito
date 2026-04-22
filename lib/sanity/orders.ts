@@ -103,6 +103,7 @@ export async function saveOrderToSanity(data: {
   items: CartItem[];
   total: number;
   currency: 'CLP' | 'USD';
+  paymentProvider?: 'flow' | 'paypal';
   // Campos de regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -160,6 +161,7 @@ export async function saveOrderToSanity(data: {
     total: data.total,
     currency: data.currency,
     paymentStatus: 1, // Pendiente
+    paymentProvider: data.paymentProvider ?? 'flow',
     // Campos de regalo
     isGift: data.isGift || false,
     recipientEmail: data.recipientEmail,
