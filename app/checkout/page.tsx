@@ -12,7 +12,13 @@ import { signIn, useSession } from 'next-auth/react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useCartStore } from '@/lib/store/useCartStore';
 import { Button, Input } from '@/components/ui';
-import { PaymentMethodSelector, PayPalCheckoutButton, InternationalItemsModal } from '@/components/checkout';
+import {
+  PaymentMethodSelector,
+  PayPalCheckoutButton,
+  InternationalItemsModal,
+  AvailabilityErrorModal,
+  type AvailabilityIssue,
+} from '@/components/checkout';
 import { canPurchaseInternationally } from '@/lib/utils/cart-validation';
 import { getUserCountryClient } from '@/lib/utils/geolocation.client';
 import { Loader2, ArrowLeft, Gift, ChevronDown, MapPin, Truck, Package } from 'lucide-react';
@@ -67,9 +73,12 @@ export default function CheckoutPage() {
   const [commerceOrderId, setCommerceOrderId] = useState<string | null>(null);
   const [paypalTotal, setPaypalTotal] = useState<number>(0);
   const [paypalCurrency, setPaypalCurrency] = useState<string>('USD');
+  const [paypalQuoteLoading, setPaypalQuoteLoading] = useState(false);
 
   // International items modal
   const [showIntlModal, setShowIntlModal] = useState(false);
+  // Availability error modal (item con problema de stock/fecha/disponibilidad)
+  const [availabilityIssue, setAvailabilityIssue] = useState<AvailabilityIssue | null>(null);
 
   const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   const isRecaptchaConfigured = !!RECAPTCHA_SITE_KEY;
@@ -143,6 +152,47 @@ export default function CheckoutPage() {
     }
   }, [selectedGateway, items, isGift]);
 
+  // Cotizar total real para PayPal (refleja conversión CLP→USD del servidor)
+  const paypalQuoteSignature = useMemo(
+    () =>
+      JSON.stringify(
+        items.map((it) => ({ id: it.id, type: it.type, q: it.quantity, p: it.price, c: it.currency })),
+      ),
+    [items],
+  );
+
+  useEffect(() => {
+    if (!PAYPAL_ENABLED || selectedGateway !== 'paypal' || items.length === 0) return;
+
+    const controller = new AbortController();
+    setPaypalQuoteLoading(true);
+    const timer = setTimeout(() => {
+      fetch('/api/checkout/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, gateway: 'paypal', isGift }),
+        signal: controller.signal,
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!data) return;
+          setPaypalTotal(data.total);
+          setPaypalCurrency(data.currency);
+        })
+        .catch((err) => {
+          if (err.name !== 'AbortError') console.error('quote error:', err);
+        })
+        .finally(() => setPaypalQuoteLoading(false));
+    }, 300);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+      setPaypalQuoteLoading(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paypalQuoteSignature, selectedGateway, isGift]);
+
   if (items.length === 0) return null;
 
   const isSubmitDisabled =
@@ -161,191 +211,185 @@ export default function CheckoutPage() {
         !shippingPhone ||
         !shippingRut));
 
-  const handleCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!email || !email.includes('@')) {
-      setError('Por favor ingresa un email válido');
-      return;
-    }
-    if (status !== 'authenticated' && !customerName.trim()) {
-      setError('Por favor ingresa tu nombre completo');
-      return;
-    }
+  /** Sync form validation. Returns error message or null if valid. */
+  const validateForm = (): string | null => {
+    if (!email || !email.includes('@')) return 'Por favor ingresa un email válido';
+    if (status !== 'authenticated' && !customerName.trim()) return 'Por favor ingresa tu nombre completo';
     if (createAccount) {
-      if (!password || password.length < 6) {
-        setError('La contraseña debe tener al menos 6 caracteres');
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('Las contraseñas no coinciden');
-        return;
-      }
+      if (!password || password.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+      if (password !== confirmPassword) return 'Las contraseñas no coinciden';
     }
     if (isGift) {
-      if (!recipientEmail || !recipientEmail.includes('@')) {
-        setError('Por favor ingresa un email válido del destinatario');
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-        setError('El email del destinatario no es válido');
-        return;
-      }
-      if (recipientEmail.toLowerCase() === email.toLowerCase()) {
-        setError('No puedes regalarte algo a ti mismo');
-        return;
-      }
-      if (giftMessage && giftMessage.length > 500) {
-        setError('El mensaje personalizado no puede exceder 500 caracteres');
-        return;
-      }
+      if (!recipientEmail || !recipientEmail.includes('@')) return 'Por favor ingresa un email válido del destinatario';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) return 'El email del destinatario no es válido';
+      if (recipientEmail.toLowerCase() === email.toLowerCase()) return 'No puedes regalarte algo a ti mismo';
+      if (giftMessage && giftMessage.length > 500) return 'El mensaje personalizado no puede exceder 500 caracteres';
     }
     if (hasSelectedShipping) {
-      if (!shippingContactEmail || !shippingContactEmail.includes('@')) {
-        setError('Por favor ingresa un email de contacto válido para el despacho');
-        return;
+      if (!shippingContactEmail || !shippingContactEmail.includes('@'))
+        return 'Por favor ingresa un email de contacto válido para el despacho';
+      if (!shippingPhone.trim()) return 'Por favor ingresa un número de teléfono para el despacho';
+      if (!shippingRut.trim()) return 'Por favor ingresa el RUT para el despacho';
+    }
+    return null;
+  };
+
+  /**
+   * Async: registra cuenta si corresponde y crea la orden vía POST /api/checkout
+   * con el gateway dado. Devuelve el commerceOrderId.
+   * Lanza si algo falla; el caller (botón PayPal o submit Flow) maneja el error.
+   */
+  const createCheckoutOrder = async (
+    gateway: 'flow' | 'paypal',
+  ): Promise<{ data: Record<string, unknown> }> => {
+    let finalUserId: string | undefined = userId;
+
+    if (!finalUserId && createAccount && password) {
+      let recaptchaToken: string | undefined;
+      if (isRecaptchaConfigured) {
+        if (!executeRecaptcha) throw new Error('reCAPTCHA no está listo. Por favor recarga la página.');
+        recaptchaToken = await executeRecaptcha('register');
+        if (!recaptchaToken) throw new Error('Error generando verificación de seguridad. Intenta nuevamente.');
       }
-      if (!shippingPhone.trim()) {
-        setError('Por favor ingresa un número de teléfono para el despacho');
-        return;
+      const registerResponse = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: customerName || undefined, password, recaptchaToken }),
+      });
+      const registerData = await registerResponse.json();
+      if (!registerResponse.ok) throw new Error(registerData.error || 'Error al crear cuenta');
+      finalUserId = registerData.userId;
+      await signIn('credentials', { email, password, redirect: false });
+    }
+
+    const itemsWithSnapshot = await Promise.all(
+      items.map(async (item) => {
+        const itemShippingPref = item.shippingAvailable ? shippingGroupPreference : undefined;
+        try {
+          const res = await fetch(`/api/products/snapshot?id=${item.id}&type=${item.type}`);
+          if (res.ok) {
+            const snapshot = await res.json();
+            return { ...item, snapshot: snapshot.data, shippingPreference: itemShippingPref };
+          }
+        } catch {
+          // fallback below
+        }
+        return {
+          ...item,
+          snapshot: { image: item.image, description: item.name },
+          shippingPreference: itemShippingPref,
+        };
+      }),
+    );
+
+    const response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: itemsWithSnapshot,
+        email,
+        customerName: customerName || undefined,
+        userId: finalUserId,
+        gateway,
+        isGift: isGift || undefined,
+        recipientEmail: isGift ? recipientEmail : undefined,
+        recipientName: isGift ? recipientName : undefined,
+        giftMessage: isGift ? giftMessage : undefined,
+        requiresShipping: hasSelectedShipping || undefined,
+        shippingAddress: hasSelectedShipping
+          ? {
+              region: shippingRegion,
+              comuna: shippingComuna,
+              address: shippingAddress,
+              number: shippingNumber,
+              details: shippingDetails || undefined,
+              contactEmail: shippingContactEmail,
+              phone: shippingPhone,
+              rut: shippingRut,
+            }
+          : undefined,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      const message = data.error || 'Error al procesar el pago';
+      if (data.availabilityIssue) {
+        const err = new Error(message) as Error & { availabilityIssue: AvailabilityIssue };
+        err.availabilityIssue = {
+          message,
+          itemId: data.itemId,
+          itemType: data.itemType,
+          itemName: data.itemName,
+        };
+        throw err;
       }
-      if (!shippingRut.trim()) {
-        setError('Por favor ingresa el RUT para el despacho');
-        return;
-      }
+      throw new Error(message);
+    }
+    return { data };
+  };
+
+  /** Returns the AvailabilityIssue payload if `err` is one of those tagged errors. */
+  const getAvailabilityIssue = (err: unknown): AvailabilityIssue | null => {
+    if (err && typeof err === 'object' && 'availabilityIssue' in err) {
+      const tagged = (err as { availabilityIssue?: AvailabilityIssue }).availabilityIssue;
+      return tagged ?? null;
+    }
+    return null;
+  };
+
+  /** PayPal SDK callback: crea la orden Sanity y devuelve el commerceOrderId. */
+  const preparePayPalOrder = async (): Promise<string> => {
+    setError(null);
+    setAvailabilityIssue(null);
+    try {
+      const { data } = await createCheckoutOrder('paypal');
+      setCommerceOrderId(data.commerceOrder as string);
+      setPaypalTotal(data.total as number);
+      setPaypalCurrency(data.currency as string);
+      setCheckoutState('paypal_processing');
+      return data.commerceOrder as string;
+    } catch (err) {
+      const issue = getAvailabilityIssue(err);
+      if (issue) setAvailabilityIssue(issue);
+      throw err;
+    }
+  };
+
+  /** Submit del form Flow (PayPal usa el SDK directamente, no este handler). */
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Con PayPal seleccionado el flujo lo dispara el botón SDK; ignorar Enter en el form.
+    if (selectedGateway === 'paypal') return;
+
+    setError(null);
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
     }
 
     setLoading(true);
+    setAvailabilityIssue(null);
     try {
-      let finalUserId: string | undefined = userId;
-
-      if (!finalUserId && createAccount && password) {
-        try {
-          let recaptchaToken: string | undefined;
-          if (isRecaptchaConfigured) {
-            if (!executeRecaptcha) {
-              setError('reCAPTCHA no está listo. Por favor recarga la página.');
-              setLoading(false);
-              return;
-            }
-            try {
-              recaptchaToken = await executeRecaptcha('register');
-              if (!recaptchaToken) {
-                setError('Error generando verificación de seguridad. Intenta nuevamente.');
-                setLoading(false);
-                return;
-              }
-            } catch {
-              setError('Error generando verificación de seguridad. Intenta nuevamente.');
-              setLoading(false);
-              return;
-            }
-          }
-
-          const registerResponse = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, name: customerName || undefined, password, recaptchaToken }),
-          });
-          const registerData = await registerResponse.json();
-          if (!registerResponse.ok) throw new Error(registerData.error || 'Error al crear cuenta');
-          finalUserId = registerData.userId;
-          await signIn('credentials', { email, password, redirect: false });
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Error al crear cuenta');
-          setLoading(false);
-          return;
-        }
-      }
-
-      const itemsWithSnapshot = await Promise.all(
-        items.map(async (item) => {
-          const itemShippingPref = item.shippingAvailable ? shippingGroupPreference : undefined;
-          try {
-            const res = await fetch(`/api/products/snapshot?id=${item.id}&type=${item.type}`);
-            if (res.ok) {
-              const snapshot = await res.json();
-              return { ...item, snapshot: snapshot.data, shippingPreference: itemShippingPref };
-            }
-          } catch {
-            // fallback below
-          }
-          return {
-            ...item,
-            snapshot: { image: item.image, description: item.name },
-            shippingPreference: itemShippingPref,
-          };
-        })
-      );
-
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: itemsWithSnapshot,
-          email,
-          customerName: customerName || undefined,
-          userId: finalUserId,
-          gateway: selectedGateway,
-          isGift: isGift || undefined,
-          recipientEmail: isGift ? recipientEmail : undefined,
-          recipientName: isGift ? recipientName : undefined,
-          giftMessage: isGift ? giftMessage : undefined,
-          requiresShipping: hasSelectedShipping || undefined,
-          shippingAddress: hasSelectedShipping
-            ? {
-                region: shippingRegion,
-                comuna: shippingComuna,
-                address: shippingAddress,
-                number: shippingNumber,
-                details: shippingDetails || undefined,
-                contactEmail: shippingContactEmail,
-                phone: shippingPhone,
-                rut: shippingRut,
-              }
-            : undefined,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        if (data.outOfStock) {
-          setError(data.error || 'Uno o más productos ya no están disponibles');
-          setLoading(false);
-          if (data.itemId) {
-            const itemType = items.find((i) => i.id === data.itemId)?.type || 'terrarium';
-            removeItem(data.itemId, itemType);
-            router.refresh();
-          }
-          return;
-        }
-        throw new Error(data.error || 'Error al procesar el pago');
-      }
-
-      if (data.gateway === 'paypal') {
-        // PayPal: save order info, show PayPal button
-        setCommerceOrderId(data.commerceOrder);
-        setPaypalTotal(data.total);
-        setPaypalCurrency(data.currency);
-        setCheckoutState('idle');
-        setLoading(false);
-        return;
-      }
-
-      // Flow: existing redirect behavior
+      const { data } = await createCheckoutOrder('flow');
       if (data.paymentUrl && data.token) {
         setCheckoutState('flow_redirecting');
-        const sep = data.paymentUrl.includes('?') ? '&' : '?';
+        const sep = (data.paymentUrl as string).includes('?') ? '&' : '?';
         window.location.href = `${data.paymentUrl}${sep}token=${data.token}`;
       } else if (data.paymentUrl) {
         setCheckoutState('flow_redirecting');
-        window.location.href = data.paymentUrl;
+        window.location.href = data.paymentUrl as string;
       } else {
         throw new Error('No se recibió URL de pago');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      const issue = getAvailabilityIssue(err);
+      if (issue) {
+        setAvailabilityIssue(issue);
+      } else {
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+      }
       setLoading(false);
     }
   };
@@ -361,8 +405,6 @@ export default function CheckoutPage() {
   };
 
   // PayPal button callbacks
-  const handlePayPalProcessing = () => setCheckoutState('paypal_processing');
-
   const handlePayPalSuccess = () => {
     setCheckoutState('confirmed');
     setTimeout(() => {
@@ -380,28 +422,24 @@ export default function CheckoutPage() {
     setError(errorMessage);
   };
 
-  // Botón de pago — reutilizado en columna derecha (desktop) y sticky (mobile)
-  const PayButton = ({ className = '' }: { className?: string }) => {
-    // If PayPal is selected and order is created, show PayPal button instead
-    if (PAYPAL_ENABLED && selectedGateway === 'paypal' && commerceOrderId) {
-      return (
-        <div className={className}>
-          <PayPalCheckoutButton
-            orderId={commerceOrderId}
-            total={paypalTotal}
-            currency={paypalCurrency}
-            onProcessing={handlePayPalProcessing}
-            onSuccess={handlePayPalSuccess}
-            onCancel={handlePayPalCancel}
-            onError={handlePayPalError}
-            disabled={checkoutState === 'paypal_processing'}
-          />
-        </div>
-      );
-    }
-
-    // Flow button (or PayPal pre-order-creation button)
-    return (
+  // CTA de pago. Definido como JSX inline (NO como componente local) para evitar
+  // que cada render de CheckoutPage cree una nueva referencia de componente y
+  // remonte el árbol PayPalScriptProvider/PayPalButtons. Si el SDK se remontea
+  // mientras el popup está abierto, queda huérfano y se cierra silenciosamente
+  // sin disparar onApprove/onCancel/onError.
+  const renderPayCTA = (className = '') =>
+    PAYPAL_ENABLED && selectedGateway === 'paypal' ? (
+      <div className={className}>
+        <PayPalCheckoutButton
+          currency={paypalCurrency}
+          validate={validateForm}
+          prepareOrder={preparePayPalOrder}
+          onSuccess={handlePayPalSuccess}
+          onCancel={handlePayPalCancel}
+          onError={handlePayPalError}
+        />
+      </div>
+    ) : (
       <Button
         type="submit"
         form="checkout-form"
@@ -413,16 +451,13 @@ export default function CheckoutPage() {
         {loading ? (
           <>
             <Loader2 className="animate-spin mr-2" size={18} />
-            {selectedGateway === 'paypal' ? 'Preparando PayPal...' : 'Procesando...'}
+            Procesando...
           </>
-        ) : selectedGateway === 'paypal' ? (
-          `Continuar con PayPal · $${total.toLocaleString('es-CL')} ${currency}`
         ) : (
           `Pagar $${total.toLocaleString('es-CL')} ${currency}`
         )}
       </Button>
     );
-  };
 
   return (
     <div className="min-h-screen bg-white pt-20">
@@ -1013,14 +1048,18 @@ export default function CheckoutPage() {
                   onGatewayChange={setSelectedGateway}
                   flowAmount={`$${total.toLocaleString('es-CL')}`}
                   flowCurrency="CLP"
-                  paypalAmount={`$${total.toLocaleString('en-US')}`}
-                  paypalCurrency="USD"
+                  paypalAmount={
+                    paypalQuoteLoading || paypalTotal === 0
+                      ? 'Calculando…'
+                      : `$${paypalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  }
+                  paypalCurrency={paypalCurrency}
                   disabled={loading || checkoutState !== 'idle'}
                 />
               )}
 
               {/* Botón pagar desktop */}
-              <PayButton />
+              {renderPayCTA()}
 
               <p className="text-center text-xs text-gray/60">
                 {selectedGateway === 'paypal' ? 'Pago seguro con PayPal' : 'Pago seguro con Flow.cl'}
@@ -1039,13 +1078,17 @@ export default function CheckoutPage() {
               onGatewayChange={setSelectedGateway}
               flowAmount={`$${total.toLocaleString('es-CL')}`}
               flowCurrency="CLP"
-              paypalAmount={`$${total.toLocaleString('en-US')}`}
-              paypalCurrency="USD"
+              paypalAmount={
+                paypalQuoteLoading || paypalTotal === 0
+                  ? 'Calculando…'
+                  : `$${paypalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              }
+              paypalCurrency={paypalCurrency}
               disabled={loading || checkoutState !== 'idle'}
             />
           </div>
         )}
-        <PayButton />
+        {renderPayCTA()}
       </div>
 
       {/* PayPal processing overlay */}
@@ -1087,6 +1130,20 @@ export default function CheckoutPage() {
           const { blockedItems } = canPurchaseInternationally(items);
           blockedItems.forEach(item => removeItem(item.id, item.type));
           setShowIntlModal(false);
+        }}
+      />
+
+      {/* Availability error modal (item con problema de stock/fecha/disponibilidad) */}
+      <AvailabilityErrorModal
+        issue={availabilityIssue}
+        onClose={() => setAvailabilityIssue(null)}
+        onRemoveItem={() => {
+          if (availabilityIssue?.itemId && availabilityIssue?.itemType) {
+            removeItem(availabilityIssue.itemId, availabilityIssue.itemType as Parameters<typeof removeItem>[1]);
+            router.refresh();
+          }
+          setAvailabilityIssue(null);
+          setError(null);
         }}
       />
     </div>

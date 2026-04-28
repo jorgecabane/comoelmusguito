@@ -17,6 +17,16 @@ export interface PayPalOrderItem {
   }
 }
 
+export interface PayPalApplicationContext {
+  return_url?: string
+  cancel_url?: string
+  brand_name?: string
+  locale?: string
+  user_action?: 'CONTINUE' | 'PAY_NOW'
+  shipping_preference?: 'GET_FROM_FILE' | 'NO_SHIPPING' | 'SET_PROVIDED_ADDRESS'
+  landing_page?: 'LOGIN' | 'GUEST_CHECKOUT' | 'NO_PREFERENCE'
+}
+
 export interface PayPalCreateOrderRequest {
   intent: 'CAPTURE'
   purchase_units: Array<{
@@ -34,6 +44,7 @@ export interface PayPalCreateOrderRequest {
     }
     items?: PayPalOrderItem[]
   }>
+  application_context?: PayPalApplicationContext
 }
 
 export interface PayPalOrder {

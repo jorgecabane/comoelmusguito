@@ -104,6 +104,8 @@ export async function createPayPalOrder(
     .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
     .toFixed(2)
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
   const body: PayPalCreateOrderRequest = {
     intent: 'CAPTURE',
     purchase_units: [
@@ -122,6 +124,17 @@ export async function createPayPalOrder(
         items,
       },
     ],
+    application_context: {
+      brand_name: 'comoelmusguito',
+      locale: 'es-CL',
+      user_action: 'PAY_NOW',
+      // Cursos / regalos digitales — PayPal no necesita dirección de envío.
+      // Sin esto el sandbox aborta el popup si la cuenta buyer no tiene address.
+      shipping_preference: 'NO_SHIPPING',
+      landing_page: 'NO_PREFERENCE',
+      return_url: `${baseUrl}/api/checkout/callback?order=${params.orderId}`,
+      cancel_url: `${baseUrl}/checkout?cancelled=${params.orderId}`,
+    },
   }
 
   const response = await fetch(`${getBaseUrl()}/v2/checkout/orders`, {
