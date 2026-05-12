@@ -41,10 +41,8 @@ export function PayPalCheckoutButton({
   );
 
   async function createOrder(): Promise<string> {
-    console.log('[PayPal] createOrder: start');
     const commerceOrderId = await prepareOrder();
     commerceOrderIdRef.current = commerceOrderId;
-    console.log('[PayPal] createOrder: commerceOrderId =', commerceOrderId);
 
     const res = await fetch('/api/checkout/paypal/create-order', {
       method: 'POST',
@@ -61,12 +59,10 @@ export function PayPalCheckoutButton({
     }
 
     const data = await res.json();
-    console.log('[PayPal] createOrder: paypalOrderId =', data.paypalOrderId);
     return data.paypalOrderId;
   }
 
   async function handleApprove(data: { orderID: string }) {
-    console.log('[PayPal] onApprove fired', data);
     const commerceOrderId = commerceOrderIdRef.current;
     if (!commerceOrderId) {
       console.error('[PayPal] onApprove: missing commerceOrderId');
@@ -86,12 +82,10 @@ export function PayPalCheckoutButton({
       return;
     }
 
-    console.log('[PayPal] capture OK');
     onSuccess();
   }
 
   async function handleCancel() {
-    console.log('[PayPal] onCancel fired');
     const commerceOrderId = commerceOrderIdRef.current;
     if (commerceOrderId) {
       await fetch('/api/checkout/cancel', {
@@ -116,7 +110,6 @@ export function PayPalCheckoutButton({
           style={{ layout: 'horizontal', tagline: false }}
           onInit={() => setSdkReady(true)}
           onClick={(_data, actions) => {
-            console.log('[PayPal] onClick fired');
             const error = validate();
             if (error) {
               console.warn('[PayPal] onClick: validation failed', error);
