@@ -5,6 +5,15 @@
 import 'server-only';
 import { client, writeClient } from '@/sanity/lib/client';
 import type { CartItem } from '@/types/cart';
+import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
+import type { EmailOrderData, EmailOrderItem, GiftEmailData } from '@/lib/resend/client';
+import { markGiftAsRedeemed } from '@/lib/sanity/gifts';
+import {
+  decreaseTerrariumStock,
+  decreaseWorkshopSpots,
+  decreaseSupplyStock,
+} from '@/lib/sanity/inventory';
+import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 
 export interface SanityOrder {
   _id?: string;
@@ -48,6 +57,12 @@ export interface SanityOrder {
   currency: 'CLP' | 'USD';
   paymentStatus: number;
   paymentDate?: string;
+  paymentProvider?: 'flow' | 'paypal';
+  providerTransactionId?: string;
+  paypalOrderId?: string;
+  refundedAt?: string;
+  refundReason?: string;
+  refundAmount?: number;
   emailSent?: boolean;
   // Campos de Regalo
   isGift?: boolean;
@@ -88,6 +103,7 @@ export async function saveOrderToSanity(data: {
   items: CartItem[];
   total: number;
   currency: 'CLP' | 'USD';
+  paymentProvider?: 'flow' | 'paypal';
   // Campos de regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -145,6 +161,7 @@ export async function saveOrderToSanity(data: {
     total: data.total,
     currency: data.currency,
     paymentStatus: 1, // Pendiente
+    paymentProvider: data.paymentProvider ?? 'flow',
     // Campos de regalo
     isGift: data.isGift || false,
     recipientEmail: data.recipientEmail,
@@ -333,6 +350,206 @@ export async function getLastShippingAddressByUserId(userId: string): Promise<Sa
   }`;
   const result = await client.fetch<{ shippingAddress: SanityOrder['shippingAddress'] } | null>(query, { userId });
   return result?.shippingAddress ?? null;
+}
+
+/**
+ * Procesar un pago exitoso (status=2) de forma idempotente.
+ * Compartido entre webhooks de Flow, PayPal, y cualquier gateway futuro.
+ *
+ * Pasos:
+ * 1. Verificar idempotencia (emailSent)
+ * 2. Actualizar estado de pago
+ * 3. Crear accesos a cursos (regalo o compra directa)
+ * 4. Descontar inventario (terrarios, insumos, talleres)
+ * 5. Enviar emails (confirmación + regalo si aplica)
+ * 6. Marcar email como enviado
+ */
+export async function processSuccessfulPayment(params: {
+  orderId: string;
+  paymentDate?: string;
+  providerOrderId?: string;
+}): Promise<{ success: boolean; alreadyProcessed: boolean }> {
+  const { orderId, paymentDate, providerOrderId } = params;
+
+  // 1. Obtener la orden
+  const savedOrder = await getOrderByOrderId(orderId);
+  if (!savedOrder) {
+    throw new Error(`Orden ${orderId} no encontrada en Sanity`);
+  }
+
+  // 2. Idempotencia: si ya se procesó, retornar sin hacer nada
+  if (savedOrder.emailSent) {
+    return { success: true, alreadyProcessed: true };
+  }
+
+  // 3. Actualizar estado de pago
+  if (savedOrder.paymentStatus !== 2) {
+    try {
+      await updateOrderPaymentStatus(orderId, 2, paymentDate, providerOrderId);
+    } catch (error) {
+      console.error('Error actualizando estado de la orden:', error);
+    }
+  } else if (paymentDate && !savedOrder.paymentDate) {
+    try {
+      await updateOrderPaymentStatus(orderId, 2, paymentDate, providerOrderId);
+    } catch (error) {
+      console.error('Error actualizando paymentDate:', error);
+    }
+  }
+
+  // 4. Crear accesos a cursos
+  if (savedOrder.isGift && savedOrder.recipientEmail && savedOrder.giftToken) {
+    // Regalo: crear acceso para el destinatario si tiene cuenta
+    const recipientUser = await getUserByEmail(savedOrder.recipientEmail);
+
+    if (recipientUser?._id && savedOrder._id) {
+      let coursesCreated = 0;
+      for (const item of savedOrder.items) {
+        if (item.type === 'course') {
+          try {
+            const existingAccess = await client.fetch(
+              `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
+              { userId: recipientUser._id, courseId: item.id }
+            );
+
+            if (!existingAccess) {
+              await createCourseAccess(recipientUser._id, item.id, savedOrder._id);
+              coursesCreated++;
+              console.log(`✅ Acceso a curso ${item.id} creado para destinatario ${savedOrder.recipientEmail}`);
+            } else {
+              console.log(`⚠️ Destinatario ya tiene acceso a curso ${item.id}`);
+            }
+          } catch (error) {
+            console.error(`Error creando acceso a curso ${item.id} para destinatario:`, error);
+          }
+        }
+      }
+
+      if (coursesCreated > 0) {
+        try {
+          await markGiftAsRedeemed(savedOrder.orderId, recipientUser._id);
+          console.log(`✅ Regalo ${savedOrder.orderId} marcado como canjeado automáticamente para destinatario ${savedOrder.recipientEmail}`);
+        } catch (error) {
+          console.error(`Error marcando regalo como canjeado:`, error);
+        }
+      }
+    } else {
+      console.log(`[processSuccessfulPayment] Destinatario no tiene cuenta, acceso se creará al registrarse o canjear token`);
+    }
+  } else {
+    // Compra directa: crear acceso para el comprador
+    if (savedOrder.userId?._ref && savedOrder._id) {
+      for (const item of savedOrder.items) {
+        if (item.type === 'course') {
+          try {
+            await createCourseAccess(savedOrder.userId._ref, item.id, savedOrder._id);
+          } catch (error) {
+            console.error(`Error creando acceso a curso ${item.id}:`, error);
+          }
+        }
+      }
+    }
+  }
+
+  // 5. Descontar inventario
+  for (const item of savedOrder.items) {
+    if (item.type === 'terrarium') {
+      try {
+        await decreaseTerrariumStock(item.id, item.quantity);
+      } catch (error) {
+        console.error(`Error descontando stock de terrario ${item.id}:`, error);
+      }
+    }
+    if (item.type === 'supply') {
+      try {
+        await decreaseSupplyStock(item.id, item.quantity);
+      } catch (error) {
+        console.error(`Error descontando stock de insumo ${item.id}:`, error);
+      }
+    }
+    if (item.type === 'workshop' && item.selectedDate) {
+      try {
+        await decreaseWorkshopSpots(item.id, item.selectedDate.date, item.quantity);
+      } catch (error) {
+        console.error(`Error descontando cupos de taller ${item.id}:`, error);
+      }
+    }
+  }
+
+  // 6. Enviar emails
+  const orderItems: EmailOrderItem[] = savedOrder.items.map((item) => ({
+    name: item.name,
+    type: item.type,
+    quantity: item.quantity,
+    price: item.price,
+    currency: item.currency,
+    slug: item.slug,
+    selectedDate: item.selectedDate ? { date: item.selectedDate.date } : undefined,
+  }));
+
+  const hasAccount = !!savedOrder.userId?._ref;
+  const resolvedProviderOrder = providerOrderId ?? savedOrder.flowOrder;
+
+  const emailData: EmailOrderData = {
+    orderId: savedOrder.orderId,
+    flowOrder: resolvedProviderOrder ? String(resolvedProviderOrder) : undefined,
+    customerEmail: savedOrder.customerEmail,
+    customerName: savedOrder.customerName,
+    items: orderItems,
+    total: savedOrder.total,
+    currency: savedOrder.currency,
+    paymentDate: paymentDate ?? new Date().toISOString(),
+    hasAccount,
+    isGift: savedOrder.isGift ?? false,
+    recipientName: savedOrder.recipientName,
+    recipientEmail: savedOrder.recipientEmail,
+    giftMessage: savedOrder.giftMessage,
+    requiresShipping: savedOrder.requiresShipping ?? false,
+    shippingAddress: savedOrder.shippingAddress,
+  };
+
+  if (emailData.customerEmail) {
+    try {
+      // Email de regalo al destinatario
+      if (savedOrder.isGift && savedOrder.recipientEmail && savedOrder.giftToken) {
+        const giftEmailData: GiftEmailData = {
+          giftToken: savedOrder.giftToken,
+          recipientName: savedOrder.recipientName,
+          recipientEmail: savedOrder.recipientEmail,
+          senderName: savedOrder.customerName,
+          senderEmail: savedOrder.customerEmail,
+          giftMessage: savedOrder.giftMessage,
+          items: orderItems,
+          orderId: savedOrder.orderId,
+          requiresShipping: savedOrder.requiresShipping ?? false,
+          shippingAddress: savedOrder.shippingAddress,
+        };
+
+        try {
+          await sendGiftEmail(giftEmailData);
+          console.log(`✅ Email de regalo enviado a ${savedOrder.recipientEmail}`);
+        } catch (giftEmailError) {
+          console.error('Error enviando email de regalo:', giftEmailError);
+        }
+      }
+
+      // Email de confirmación al comprador (siempre)
+      await sendOrderConfirmationEmail(emailData);
+      console.log(`✅ Email de confirmación enviado a ${emailData.customerEmail}`);
+
+      // 7. Marcar email como enviado (idempotencia)
+      try {
+        await markOrderEmailSent(orderId);
+        console.log(`✅ Email marcado como enviado para orden ${orderId}`);
+      } catch (error) {
+        console.error('Error marcando email como enviado:', error);
+      }
+    } catch (emailError) {
+      console.error('Error enviando emails:', emailError);
+    }
+  }
+
+  return { success: true, alreadyProcessed: false };
 }
 
 /**

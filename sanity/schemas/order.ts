@@ -267,6 +267,7 @@ export default defineType({
           { title: 'Pagado', value: 2 },
           { title: 'Rechazado', value: 3 },
           { title: 'Anulado', value: 4 },
+          { title: 'Reembolsado', value: 5 },
         ],
       },
       initialValue: 1,
@@ -275,6 +276,55 @@ export default defineType({
       name: 'paymentDate',
       title: 'Fecha de Pago',
       type: 'datetime',
+    }),
+    defineField({
+      name: 'paymentProvider',
+      title: 'Proveedor de Pago',
+      type: 'string',
+      description: 'Pasarela de pago utilizada',
+      options: {
+        list: [
+          { title: 'Flow', value: 'flow' },
+          { title: 'PayPal', value: 'paypal' },
+        ],
+      },
+      initialValue: 'flow',
+    }),
+    defineField({
+      name: 'providerTransactionId',
+      title: 'ID de Transacción del Proveedor',
+      type: 'string',
+      description: 'Token de Flow o Capture ID de PayPal',
+    }),
+    defineField({
+      name: 'paypalOrderId',
+      title: 'PayPal Order ID',
+      type: 'string',
+      description: 'ID de la orden en PayPal (solo para pagos con PayPal)',
+      hidden: ({ parent }) => parent?.paymentProvider !== 'paypal',
+    }),
+    defineField({
+      name: 'refundedAt',
+      title: 'Fecha de Reembolso',
+      type: 'datetime',
+      description: 'Fecha y hora del reembolso',
+      hidden: ({ parent }) => parent?.paymentStatus !== 5,
+      readOnly: true,
+    }),
+    defineField({
+      name: 'refundReason',
+      title: 'Razón del Reembolso',
+      type: 'text',
+      rows: 2,
+      description: 'Motivo del reembolso',
+      hidden: ({ parent }) => parent?.paymentStatus !== 5,
+    }),
+    defineField({
+      name: 'refundAmount',
+      title: 'Monto Reembolsado',
+      type: 'number',
+      description: 'Monto reembolsado (para reembolsos parciales)',
+      hidden: ({ parent }) => parent?.paymentStatus !== 5,
     }),
     defineField({
       name: 'createdAt',
@@ -529,6 +579,7 @@ export default defineType({
         2: '✅ Pagado',
         3: '❌ Rechazado',
         4: '🚫 Anulado',
+        5: '💸 Reembolsado',
       };
 
       const giftLabel = isGift ? ` 🎁 Regalo para: ${recipientName || recipientEmail || 'Sin destinatario'}` : '';

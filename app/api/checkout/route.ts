@@ -1,16 +1,13 @@
 /**
- * API Route: Crear orden de pago en Flow
+ * API Route: Crear orden de pago (Flow o PayPal)
  * POST /api/checkout
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentOrder } from '@/lib/flow/client';
-import { getUserCurrency, getUserCountry } from '@/lib/utils/geolocation';
-import { convertUSDToCLP } from '@/lib/utils/currency';
+import { getUserCurrency } from '@/lib/utils/geolocation';
 import { saveOrderToSanity } from '@/lib/sanity/orders';
-import { checkTerrariumStock, checkWorkshopSpots, checkSupplyStock } from '@/lib/sanity/inventory';
-import { getTerrariumById, getCourseById, getWorkshopById, getSupplyById } from '@/lib/sanity/fetch';
-import { getCoursePrice } from '@/lib/sanity/utils';
+import { calculateOrderTotals, CheckoutValidationError } from '@/lib/checkout/calculateOrderTotals';
 import { generateGiftToken } from '@/lib/utils/gift-token';
 import { sanitizeEmail, sanitizeString } from '@/lib/utils/sanitize';
 import type { CartItem } from '@/types/cart';
@@ -18,7 +15,6 @@ import type { CartItem } from '@/types/cart';
 // Límites de seguridad
 const MAX_QUANTITY_PER_ITEM = 10;
 const MAX_ITEMS_PER_ORDER = 20;
-const PRICE_TOLERANCE = 1; // Tolerancia de $1 por redondeo
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +23,7 @@ interface CheckoutRequest {
   email: string;
   customerName?: string;
   userId?: string; // ID del usuario si está registrado
+  gateway?: 'flow' | 'paypal'; // Pasarela de pago (default: 'flow')
   // Campos de Regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -49,7 +46,7 @@ interface CheckoutRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: CheckoutRequest = await request.json();
-    const { items, email, customerName, userId, isGift, recipientEmail, recipientName, giftMessage, requiresShipping, shippingAddress } = body;
+    const { items, email, customerName, userId, gateway = 'flow', isGift, recipientEmail, recipientName, giftMessage, requiresShipping, shippingAddress } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -156,239 +153,41 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Detectar país y moneda del usuario
-    const userCountry = await getUserCountry();
+    // Detectar moneda del usuario (basada en headers de Vercel)
     const userCurrency = await getUserCurrency();
 
-    // 🔒 VALIDACIÓN DE SEGURIDAD: Validar productos y precios en el servidor
-    const validatedItems: CartItem[] = [];
-    
-    for (const item of items) {
-      let product;
-      let validatedPrice: number;
-      let validatedCurrency: 'CLP' | 'USD';
-
-      // Validar existencia y obtener precio real del producto
-      if (item.type === 'terrarium') {
-        product = await getTerrariumById(item.id);
-        if (!product) {
-          return NextResponse.json(
-            { error: `Producto "${item.name}" no encontrado` },
-            { status: 400 }
-          );
-        }
-        // Los terrarios no tienen campo "published", pero verificamos inStock
-        if (!product.inStock) {
-          return NextResponse.json(
-            { error: `Producto "${item.name}" no está disponible` },
-            { status: 400 }
-          );
-        }
-        validatedPrice = product.price;
-        validatedCurrency = product.currency;
-
-        // Validar stock
-        const stockCheck = await checkTerrariumStock(item.id, item.quantity);
-        if (!stockCheck.available) {
-          return NextResponse.json(
-            {
-              error: `Lo sentimos, "${item.name}" ya no está disponible. Solo quedan ${stockCheck.currentStock} unidades.`,
-              outOfStock: true,
-              itemId: item.id,
-              itemName: item.name,
-            },
-            { status: 400 }
-          );
-        }
-      } else if (item.type === 'course') {
-        product = await getCourseById(item.id);
-        if (!product) {
-          return NextResponse.json(
-            { error: `Curso "${item.name}" no encontrado` },
-            { status: 400 }
-          );
-        }
-        if (!product.published) {
-          return NextResponse.json(
-            { error: `Curso "${item.name}" no está disponible` },
-            { status: 400 }
-          );
-        }
-        // Obtener precio según moneda del usuario
-        const pricing = getCoursePrice(product, userCurrency);
-        validatedPrice = pricing.salePrice || pricing.price;
-        validatedCurrency = pricing.currency;
-      } else if (item.type === 'workshop') {
-        product = await getWorkshopById(item.id);
-        if (!product) {
-          return NextResponse.json(
-            { error: `Taller "${item.name}" no encontrado` },
-            { status: 400 }
-          );
-        }
-        if (!product.published) {
-          return NextResponse.json(
-            { error: `Taller "${item.name}" no está disponible` },
-            { status: 400 }
-          );
-        }
-        validatedPrice = product.price;
-        validatedCurrency = product.currency;
-
-        // Validar fecha del taller
-        if (item.selectedDate) {
-          const dateObj = product.dates?.find(
-            (d) => new Date(d.date).toISOString() === new Date(item.selectedDate!.date).toISOString()
-          );
-
-          if (!dateObj) {
-            return NextResponse.json(
-              { error: `La fecha seleccionada no es válida para el taller "${item.name}"` },
-              { status: 400 }
-            );
-          }
-
-          if (dateObj.status === 'cancelled') {
-            return NextResponse.json(
-              { error: `La fecha seleccionada está cancelada para el taller "${item.name}"` },
-              { status: 400 }
-            );
-          }
-
-          const fechaTaller = new Date(dateObj.date);
-          if (fechaTaller <= new Date()) {
-            return NextResponse.json(
-              { error: `La fecha seleccionada ya pasó para el taller "${item.name}"` },
-              { status: 400 }
-            );
-          }
-
-          // Validar cupos
-          const spotsCheck = await checkWorkshopSpots(
-            item.id,
-            item.selectedDate.date,
-            item.quantity
-          );
-          if (!spotsCheck.available) {
-            return NextResponse.json(
-              {
-                error: `Lo sentimos, no hay suficientes cupos disponibles para "${item.name}" en la fecha seleccionada. Solo queda${spotsCheck.currentSpots === 1 ? '' : 'n'} ${spotsCheck.currentSpots} ${spotsCheck.currentSpots === 1 ? 'cupo' : 'cupos'}.`,
-                outOfStock: true,
-                itemId: item.id,
-                itemName: item.name,
-              },
-              { status: 400 }
-            );
-          }
-        } else {
-          return NextResponse.json(
-            { error: `Debes seleccionar una fecha para el taller "${item.name}"` },
-            { status: 400 }
-          );
-        }
-      } else if (item.type === 'supply') {
-        product = await getSupplyById(item.id);
-        if (!product) {
-          return NextResponse.json(
-            { error: `Insumo "${item.name}" no encontrado` },
-            { status: 400 }
-          );
-        }
-        // Los insumos no tienen campo "published", pero verificamos inStock
-        if (!product.inStock) {
-          return NextResponse.json(
-            { error: `Insumo "${item.name}" no está disponible` },
-            { status: 400 }
-          );
-        }
-        validatedPrice = product.price;
-        validatedCurrency = product.currency;
-
-        // Validar stock
-        const stockCheck = await checkSupplyStock(item.id, item.quantity);
-        if (!stockCheck.available) {
-          return NextResponse.json(
-            {
-              error: `Lo sentimos, "${item.name}" ya no está disponible. Solo quedan ${stockCheck.currentStock} unidades.`,
-              outOfStock: true,
-              itemId: item.id,
-              itemName: item.name,
-            },
-            { status: 400 }
-          );
-        }
-      } else {
-        return NextResponse.json(
-          { error: `Tipo de producto inválido: ${item.type}` },
-          { status: 400 }
-        );
-      }
-
-      // 🔒 VALIDAR PRECIO: Comparar precio del cliente con precio real
-      const priceDiff = Math.abs(item.price - validatedPrice);
-      if (priceDiff > PRICE_TOLERANCE) {
-        console.error(`⚠️ Intento de manipulación de precio detectado:`, {
-          itemId: item.id,
-          itemName: item.name,
-          precioCliente: item.price,
-          precioReal: validatedPrice,
-          diferencia: priceDiff,
-        });
-        return NextResponse.json(
-          { error: `Precio inválido para "${item.name}". Por favor, recarga la página.` },
-          { status: 400 }
-        );
-      }
-
-      // Usar precio validado del servidor
-      validatedItems.push({
-        ...item,
-        price: validatedPrice,
-        currency: validatedCurrency,
+    let validatedItems: CartItem[];
+    let finalAmount: number;
+    let finalCurrency: 'CLP' | 'USD';
+    try {
+      const result = await calculateOrderTotals({
+        items,
+        gateway,
+        isGift: !!isGift,
+        userCurrency,
       });
-    }
-
-    // Calcular totales por moneda usando precios validados
-    const totalsByCurrency: Record<string, number> = {};
-    validatedItems.forEach((item) => {
-      const currency = item.currency;
-      if (!totalsByCurrency[currency]) {
-        totalsByCurrency[currency] = 0;
+      validatedItems = result.validatedItems;
+      finalAmount = result.total;
+      finalCurrency = result.currency;
+    } catch (err) {
+      if (err instanceof CheckoutValidationError) {
+        return NextResponse.json(
+          {
+            error: err.message,
+            ...(err.availabilityIssue
+              ? {
+                  availabilityIssue: true,
+                  itemId: err.itemId,
+                  itemType: err.itemType,
+                  itemName: err.itemName,
+                  ...(err.outOfStock ? { outOfStock: true } : {}),
+                }
+              : {}),
+          },
+          { status: err.status },
+        );
       }
-      totalsByCurrency[currency] += item.price * item.quantity;
-    });
-
-    // Si hay items en USD y el usuario está en Chile, convertir a CLP
-    // Si hay items en USD y el usuario está fuera, mantener USD pero convertir a CLP para Flow
-    let finalAmount = 0;
-    let finalCurrency: 'CLP' | 'USD' = 'CLP';
-
-    if (userCountry === 'CL') {
-      // Usuario en Chile: todo en CLP
-      finalAmount = totalsByCurrency['CLP'] || 0;
-      if (totalsByCurrency['USD']) {
-        // Convertir USD a CLP
-        const usdAmount = totalsByCurrency['USD'];
-        const clpAmount = await convertUSDToCLP(usdAmount);
-        finalAmount += clpAmount;
-      }
-      finalCurrency = 'CLP';
-    } else {
-      // Usuario fuera de Chile: convertir todo a CLP para Flow
-      finalAmount = totalsByCurrency['CLP'] || 0;
-      if (totalsByCurrency['USD']) {
-        const usdAmount = totalsByCurrency['USD'];
-        const clpAmount = await convertUSDToCLP(usdAmount);
-        finalAmount += clpAmount;
-      }
-      finalCurrency = 'CLP'; // Flow siempre procesa en CLP
-    }
-
-    if (finalAmount <= 0) {
-      return NextResponse.json(
-        { error: 'Monto inválido' },
-        { status: 400 }
-      );
+      throw err;
     }
 
     // Generar ID único para la orden
@@ -407,30 +206,6 @@ export async function POST(request: NextRequest) {
     // URL de confirmación (webhook - opcional)
     const urlConfirmation = `${baseUrl}/api/webhooks/flow`;
 
-    // Crear orden en Flow
-    const paymentResponse = await createPaymentOrder({
-      commerceOrder,
-      subject,
-      currency: finalCurrency,
-      amount: Math.round(finalAmount), // Flow requiere números enteros
-      email,
-      urlReturn,
-      urlConfirmation,
-      paymentMethod: 9, // 9 = Todos los métodos disponibles
-      items: validatedItems.map((item) => ({
-        name: item.name,
-        amount: item.price, // Precio validado del servidor
-        quantity: item.quantity,
-      })),
-    });
-
-    if (!paymentResponse.url) {
-      return NextResponse.json(
-        { error: 'No se pudo generar la URL de pago' },
-        { status: 500 }
-      );
-    }
-
     // Generar token de regalo si es regalo
     const giftToken = isGift ? generateGiftToken() : undefined;
 
@@ -439,16 +214,16 @@ export async function POST(request: NextRequest) {
     const sanitizedRecipientName = recipientName ? (sanitizeString(recipientName) || undefined) : undefined;
     const sanitizedGiftMessage = giftMessage ? (sanitizeString(giftMessage).substring(0, 500) || undefined) : undefined;
 
-    // Guardar orden en Sanity con items validados
-    await saveOrderToSanity({
+    // Datos comunes para guardar la orden en Sanity
+    const orderData = {
       orderId: commerceOrder,
-      flowOrder: paymentResponse.flowOrder,
       customerEmail: email,
       customerName: customerName,
-      userId: userId, // Si el usuario está registrado, vincular desde el inicio
-      items: validatedItems, // Usar items validados con precios correctos
+      userId: userId,
+      items: validatedItems,
       total: finalAmount,
       currency: finalCurrency,
+      paymentProvider: gateway,
       // Campos de regalo
       isGift: isGift || false,
       recipientEmail: sanitizedRecipientEmail,
@@ -467,10 +242,54 @@ export async function POST(request: NextRequest) {
         phone: shippingAddress.phone.trim(),
         rut: shippingAddress.rut.trim(),
       } : undefined,
+    };
+
+    if (gateway === 'paypal') {
+      // PayPal: no llamar a Flow, guardar orden y devolver orderId para el SDK de PayPal
+      await saveOrderToSanity(orderData);
+
+      return NextResponse.json({
+        success: true,
+        gateway: 'paypal',
+        commerceOrder,
+        total: finalAmount,
+        currency: finalCurrency,
+      });
+    }
+
+    // Flow path (existente, sin cambios)
+    const paymentResponse = await createPaymentOrder({
+      commerceOrder,
+      subject,
+      currency: finalCurrency,
+      amount: Math.round(finalAmount), // Flow requiere números enteros
+      email,
+      urlReturn,
+      urlConfirmation,
+      paymentMethod: 9, // 9 = Todos los métodos disponibles
+      items: validatedItems.map((item) => ({
+        name: item.name,
+        amount: item.price,
+        quantity: item.quantity,
+      })),
+    });
+
+    if (!paymentResponse.url) {
+      return NextResponse.json(
+        { error: 'No se pudo generar la URL de pago' },
+        { status: 500 }
+      );
+    }
+
+    // Guardar orden en Sanity con flowOrder
+    await saveOrderToSanity({
+      ...orderData,
+      flowOrder: paymentResponse.flowOrder,
     });
 
     return NextResponse.json({
       success: true,
+      gateway: 'flow',
       paymentUrl: paymentResponse.url,
       token: paymentResponse.token,
       flowOrder: paymentResponse.flowOrder,
