@@ -1,15 +1,15 @@
 /**
- * API Route: Consultar estado de pago en Flow
+ * API Route: Consultar estado de pago
  * POST /api/checkout/status
- * 
+ *
  * Este endpoint SOLO consulta el estado del pago y devuelve información al usuario.
  * NO modifica estados, NO crea accesos, NO descuenta stock, NO envía emails.
- * 
- * El webhook (/api/webhooks/flow) es la ÚNICA fuente de verdad para:
- * - Actualizar estados de pago
- * - Crear accesos a cursos
- * - Descontar stock
- * - Enviar emails de confirmación
+ *
+ * Branching:
+ * - PayPal: la orden en Sanity ya quedó actualizada por /api/checkout/paypal/capture-order,
+ *   así que leemos directo de Sanity (PayPal no tiene un endpoint público de "status by orderId").
+ * - Flow: consulta a Flow.cl por token o commerceOrder. El webhook de Flow es la fuente
+ *   de verdad para actualizar la orden en Sanity.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -35,6 +35,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Si tenemos orderId, primero detectamos el proveedor desde Sanity.
+    // Las órdenes PayPal no se pueden consultar contra Flow.
+    if (orderId) {
+      const order = await getOrderByOrderId(orderId);
+
+      if (order?.paymentProvider === 'paypal') {
+        return NextResponse.json({
+          success: true,
+          paymentStatus: order.paymentStatus,
+          amount: order.total,
+          currency: order.currency,
+          commerceOrder: order.orderId,
+          paymentDate: order.paymentDate,
+          customerEmail: order.customerEmail,
+          customerName: order.customerName,
+        });
+      }
+    }
+
     let paymentStatus;
 
     if (token) {
@@ -52,7 +71,7 @@ export async function POST(request: NextRequest) {
     // Obtener email y nombre del cliente si la orden existe
     let customerEmail: string | undefined;
     let customerName: string | undefined;
-    
+
     if (paymentStatus.commerceOrder) {
       try {
         const order = await getOrderByOrderId(paymentStatus.commerceOrder);
