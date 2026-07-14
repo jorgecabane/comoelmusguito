@@ -22,7 +22,27 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['@sanity/vision', 'sanity', 'react-player', 'framer-motion'],
   },
   
+  // Cache largo para assets estáticos públicos (videos/imágenes) que casi no cambian.
+  // Si un archivo se reemplaza, hay que cambiar su nombre para invalidar el cache del browser.
+  async headers() {
+    return [
+      {
+        source: '/videos/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/images/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+    ];
+  },
+
   images: {
+    // Cache más largo para imágenes servidas vía /_next/image (default eran 60s)
     remotePatterns: [
       {
         protocol: 'https',
@@ -48,7 +68,7 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 2678400, // 31 días
     // Calidades permitidas (incluye 90 para imágenes hero de alta calidad)
     qualities: [70, 75, 80, 85, 90],
   },
