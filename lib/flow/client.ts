@@ -62,9 +62,28 @@ export interface PaymentStatusResponse {
   paymentDate?: string;
   payer?: string;
   paymentData?: {
+    date?: string; // "YYYY-MM-DD HH:mm:ss" en hora de Chile
     cardNumber?: string;
     cardType?: string;
   };
+}
+
+/**
+ * Flow entrega la fecha de pago en `paymentData.date`, no en la raíz, y en hora
+ * local de Chile sin zona. Sanity guarda datetime ISO, así que hay que fijar el
+ * offset de Santiago (varía con el horario de verano).
+ */
+function flowDateToISO(date: string | undefined): string | undefined {
+  if (!date) return undefined;
+
+  const asIfUTC = new Date(`${date.replace(' ', 'T')}Z`);
+  if (Number.isNaN(asIfUTC.getTime())) return undefined;
+
+  // 'sv-SE' formatea como "YYYY-MM-DD HH:mm:ss", igual que Flow.
+  const santiago = new Date(
+    `${asIfUTC.toLocaleString('sv-SE', { timeZone: 'America/Santiago' }).replace(' ', 'T')}Z`,
+  );
+  return new Date(asIfUTC.getTime() * 2 - santiago.getTime()).toISOString();
 }
 
 /**
@@ -224,7 +243,7 @@ export async function getPaymentStatus(
       currency: data.currency,
       commerceOrder: data.commerceOrder,
       flowOrder: data.flowOrder,
-      paymentDate: data.paymentDate,
+      paymentDate: flowDateToISO(data.paymentData?.date ?? data.paymentDate),
       payer: data.payer,
       paymentData: data.paymentData,
     };
@@ -291,7 +310,7 @@ export async function getPaymentStatusByOrder(
       currency: data.currency,
       commerceOrder: data.commerceOrder,
       flowOrder: data.flowOrder,
-      paymentDate: data.paymentDate,
+      paymentDate: flowDateToISO(data.paymentData?.date ?? data.paymentDate),
       payer: data.payer,
       paymentData: data.paymentData,
     };

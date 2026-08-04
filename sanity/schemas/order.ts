@@ -412,6 +412,13 @@ export default defineType({
       readOnly: true,
       // Los campos reference pueden ser null por defecto si no tienen required()
     }),
+    defineField({
+      name: 'fulfilledAt',
+      title: 'Entregado el',
+      type: 'datetime',
+      description:
+        'Fecha en que la orden se despachó (o se retiró en tienda). Vacío = pendiente de entrega. Se marca desde 📊 Reportes.',
+    }),
     // Campos de Despacho
     defineField({
       name: 'requiresShipping',
