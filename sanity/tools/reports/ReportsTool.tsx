@@ -27,7 +27,7 @@ export default function ReportsTool() {
   const client = useClient({ apiVersion: '2024-01-01' });
   const [data, setData] = useState<ReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [rangeIndex, setRangeIndex] = useState(2);
+  const [rangeIndex, setRangeIndex] = useState(0);
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('ventas');
 
   // Fijo al montar: evita que las agregaciones por mes cambien entre renders.
@@ -52,7 +52,7 @@ export default function ReportsTool() {
     );
   }, []);
 
-  const summary = useMemo(() => (data ? summarize(data.orders, months, now) : null), [data, months, now]);
+  const summary = useMemo(() => (data ? summarize(data, months, now) : null), [data, months, now]);
 
   const hasLegacyDates = useMemo(
     () =>
@@ -79,52 +79,51 @@ export default function ReportsTool() {
   }
 
   return (
-    <Container width={4}>
-      <Box padding={4}>
-        <Stack space={4}>
-          <Flex align="center" justify="space-between" gap={3} wrap="wrap">
-            <Heading size={2}>📊 Reportes</Heading>
-            <Select
-              fontSize={1}
-              value={String(rangeIndex)}
-              onChange={(event) => setRangeIndex(Number(event.currentTarget.value))}
-              style={{ maxWidth: 220 }}
-            >
-              {RANGES.map((range, i) => (
-                <option key={range.label} value={i}>
-                  {range.label}
-                </option>
+    // Sin Container: el panel aprovecha todo el ancho del Studio.
+    <Box padding={3} style={{ overflowY: 'auto', height: '100%' }}>
+      <Stack space={3}>
+        <Flex align="center" gap={3} wrap="wrap">
+          <Heading size={1}>📊 Reportes</Heading>
+          <Box flex={1}>
+            <TabList space={1}>
+              {TABS.map((t) => (
+                <Tab
+                  key={t.id}
+                  id={`${t.id}-tab`}
+                  aria-controls={`${t.id}-panel`}
+                  label={t.label}
+                  selected={tab === t.id}
+                  onClick={() => setTab(t.id)}
+                />
               ))}
-            </Select>
-          </Flex>
-
-          <TabList space={2}>
-            {TABS.map((t) => (
-              <Tab
-                key={t.id}
-                id={`${t.id}-tab`}
-                aria-controls={`${t.id}-panel`}
-                label={t.label}
-                selected={tab === t.id}
-                onClick={() => setTab(t.id)}
-              />
+            </TabList>
+          </Box>
+          <Select
+            fontSize={1}
+            value={String(rangeIndex)}
+            onChange={(event) => setRangeIndex(Number(event.currentTarget.value))}
+            style={{ width: 200 }}
+          >
+            {RANGES.map((range, i) => (
+              <option key={range.label} value={i}>
+                {range.label}
+              </option>
             ))}
-          </TabList>
+          </Select>
+        </Flex>
 
-          <TabPanel id="ventas-panel" aria-labelledby="ventas-tab" hidden={tab !== 'ventas'}>
-            <SalesPanel summary={summary} hasLegacyDates={hasLegacyDates} />
-          </TabPanel>
+        <TabPanel id="ventas-panel" aria-labelledby="ventas-tab" hidden={tab !== 'ventas'}>
+          <SalesPanel summary={summary} hasLegacyDates={hasLegacyDates} />
+        </TabPanel>
 
-          <TabPanel id="entregas-panel" aria-labelledby="entregas-tab" hidden={tab !== 'entregas'}>
-            {/* Las entregas pendientes no caducan: se listan todas, sin filtro de rango. */}
-            <FulfillmentPanel orders={data.orders} onChange={patchOrder} />
-          </TabPanel>
+        <TabPanel id="entregas-panel" aria-labelledby="entregas-tab" hidden={tab !== 'entregas'}>
+          <FulfillmentPanel orders={data.orders} months={months} now={now} onChange={patchOrder} />
+        </TabPanel>
 
-          <TabPanel id="aprendizaje-panel" aria-labelledby="aprendizaje-tab" hidden={tab !== 'aprendizaje'}>
-            <LearningPanel data={data} now={now} />
-          </TabPanel>
-        </Stack>
-      </Box>
-    </Container>
+        <TabPanel id="aprendizaje-panel" aria-labelledby="aprendizaje-tab" hidden={tab !== 'aprendizaje'}>
+          <LearningPanel data={data} months={months} now={now} />
+        </TabPanel>
+      </Stack>
+    </Box>
   );
 }
