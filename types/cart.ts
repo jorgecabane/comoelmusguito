@@ -51,6 +51,8 @@ export interface CartState {
   removeItem: (id: string, type: CartItemType) => void;
   updateQuantity: (id: string, type: CartItemType, quantity: number) => void;
   clearCart: () => void;
+  /** Reemplaza precios locales por los del servidor. Devuelve true si algo cambió. */
+  syncPrices: (serverItems: Pick<CartItem, 'id' | 'type' | 'price' | 'currency'>[]) => boolean;
   openCart: () => void;
   closeCart: () => void;
   
