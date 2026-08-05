@@ -11,7 +11,7 @@
  * o reordenar no repinta las series.
  */
 
-import { Box, Card, Flex, Stack, Text } from '@sanity/ui';
+import { Box, Button, Card, Flex, Stack, Text } from '@sanity/ui';
 import { useColorSchemeValue } from 'sanity';
 import type { ItemType } from './data';
 
@@ -120,7 +120,7 @@ export function BarList({
   return (
     <Stack space={1}>
       {rows.map((row) => (
-        <Box key={row.label} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden' }}>
+        <Box key={row.label} className="rp-row" style={{ position: 'relative', borderRadius: 4, overflow: 'hidden' }}>
           <Box
             style={{
               position: 'absolute',
@@ -181,15 +181,21 @@ export function Section({
 /** Acordeón nativo: sin estado propio, con teclado y semántica gratis. */
 export function Accordion({ summary, children }: { summary: React.ReactNode; children: React.ReactNode }) {
   return (
-    <details>
-      <summary style={{ cursor: 'pointer', listStyle: 'revert' }}>{summary}</summary>
-      <Box paddingTop={3} paddingLeft={3}>
+    <details className="rp-accordion">
+      <summary>
+        <Box flex={1} style={{ minWidth: 0 }}>
+          {summary}
+        </Box>
+      </summary>
+      <Box paddingTop={3} paddingLeft={4} paddingBottom={2}>
         {children}
       </Box>
     </details>
   );
 }
 
+/** Button de @sanity/ui, no Card clicable: trae foco visible, estados de hover
+ *  y semántica de botón sin reimplementarlos. */
 export function Toggle<T extends string>({
   options,
   value,
@@ -202,22 +208,36 @@ export function Toggle<T extends string>({
   return (
     <Flex gap={1}>
       {options.map((option) => (
-        <Card
+        <Button
           key={option.id}
-          as="button"
-          type="button"
-          padding={2}
-          radius={2}
+          className="rp-press"
+          mode={value === option.id ? 'default' : 'bleed'}
           tone={value === option.id ? 'primary' : 'default'}
-          border={value === option.id}
+          fontSize={1}
+          padding={2}
+          text={option.label}
+          aria-pressed={value === option.id}
           onClick={() => onChange(option.id)}
-          style={{ cursor: 'pointer' }}
-        >
-          <Text size={0} weight={value === option.id ? 'semibold' : 'regular'}>
-            {option.label}
-          </Text>
-        </Card>
+        />
       ))}
     </Flex>
+  );
+}
+
+/** Muestra de color del tipo de producto. Acompaña siempre a una etiqueta de
+ *  texto: el color nunca es el único canal. */
+export function Swatch({ color }: { color: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: 'inline-block',
+        width: 8,
+        height: 8,
+        borderRadius: 2,
+        background: color,
+        flexShrink: 0,
+      }}
+    />
   );
 }

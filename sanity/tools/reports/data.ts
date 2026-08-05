@@ -338,8 +338,15 @@ function lessonPosition(modules: CourseModule[] | undefined, lessonId: string | 
   return `M${m + 1}: ${mod.title ?? 'Módulo'} · L${l + 1}: ${lesson.title ?? 'Lección'}`;
 }
 
+/**
+ * El rango filtra por acceso nuevo **o** actividad: responde "quién está en el
+ * curso ahora", no sólo quién compró. Sin esto, un alumno que compró en marzo y
+ * está viendo lecciones hoy desaparecía del reporte de este mes.
+ */
 export function courseStats(data: ReportData, months: number | null, now: Date) {
-  const scoped = data.courseAccess.filter((a) => inMonths(a.accessGrantedAt, months, now));
+  const scoped = data.courseAccess.filter(
+    (a) => inMonths(a.accessGrantedAt, months, now) || inMonths(a.progress?.lastWatchedAt, months, now),
+  );
   const byCourse = new Map<string, CoursePerson[]>();
 
   for (const access of scoped) {
@@ -372,6 +379,9 @@ export function courseStats(data: ReportData, months: number | null, now: Date) 
   return {
     courses,
     totalPeople: new Set(scoped.map((a) => a.email).filter(Boolean)).size,
+    /** Base completa, sin filtrar: el KPI no debe encogerse al acotar el rango. */
+    totalPeopleAllTime: new Set(data.courseAccess.map((a) => a.email).filter(Boolean)).size,
+    newAccess: data.courseAccess.filter((a) => inMonths(a.accessGrantedAt, months, now)).length,
     purchases,
     started: scoped.filter((a) => (a.progress?.completedLessons?.length ?? 0) > 0).length,
   };
@@ -386,7 +396,13 @@ export interface WorkshopSession {
   attendees: { name: string; email: string; quantity: number }[];
 }
 
-export function workshopSessions(data: ReportData, now: Date): { upcoming: WorkshopSession[]; past: WorkshopSession[] } {
+/** Los futuros se muestran completos (una fecha futura no "pertenece" al rango);
+ *  los pasados sí se acotan al rango seleccionado. */
+export function workshopSessions(
+  data: ReportData,
+  now: Date,
+  months: number | null = null,
+): { upcoming: WorkshopSession[]; past: WorkshopSession[] } {
   const upcoming: WorkshopSession[] = [];
   const past: WorkshopSession[] = [];
 
@@ -421,7 +437,7 @@ export function workshopSessions(data: ReportData, now: Date): { upcoming: Works
       };
 
       if (target >= now.getTime()) upcoming.push(session);
-      else past.push(session);
+      else if (inMonths(date.date, months, now)) past.push(session);
     }
   }
 

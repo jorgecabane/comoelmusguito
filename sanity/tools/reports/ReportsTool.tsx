@@ -23,6 +23,44 @@ const TABS = [
   { id: 'aprendizaje', label: 'Cursos y talleres' },
 ] as const;
 
+/**
+ * Estilos que los props de @sanity/ui no alcanzan: hover de fila, feedback de
+ * presión y el triángulo del acordeón. Curva y duraciones cortas porque son
+ * interacciones de todos los días; todo se desactiva con reduced-motion.
+ */
+const STYLES = `
+.rp-row { transition: background-color 150ms ease; }
+.rp-press { transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+.rp-press:active { transform: scale(0.97); }
+
+.rp-accordion > summary {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 4px 2px; border-radius: 4px; cursor: pointer;
+  list-style: none; transition: background-color 150ms ease;
+}
+.rp-accordion > summary::-webkit-details-marker { display: none; }
+.rp-accordion > summary::before {
+  content: ''; flex-shrink: 0; margin-top: 7px; opacity: 0.45;
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease;
+}
+.rp-accordion[open] > summary::before { transform: rotate(90deg); }
+.rp-accordion > summary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .rp-row:hover { background-color: rgba(128, 128, 128, 0.1); }
+  .rp-accordion > summary:hover { background-color: rgba(128, 128, 128, 0.08); }
+  .rp-accordion > summary:hover::before { opacity: 0.85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-row, .rp-press, .rp-accordion > summary, .rp-accordion > summary::before { transition: none; }
+  .rp-press:active { transform: none; }
+}
+`;
+
 export default function ReportsTool() {
   const client = useClient({ apiVersion: '2024-01-01' });
   const [data, setData] = useState<ReportData | null>(null);
@@ -79,11 +117,16 @@ export default function ReportsTool() {
   }
 
   return (
-    // Sin Container: el panel aprovecha todo el ancho del Studio.
-    <Box padding={3} style={{ overflowY: 'auto', height: '100%' }}>
-      <Stack space={3}>
+    // Misma estructura que el tool Vision: raíz fija que no crece con el
+    // contenido, y un solo hijo con el scroll. Sin esto el panel se pasa de
+    // largo y el Studio lo recorta sin dejar scrollear.
+    <Flex direction="column" height="fill" sizing="border" overflow="hidden">
+      <style>{STYLES}</style>
+
+      {/* La barra queda fija: el rango y las pestañas siguen a mano al scrollear. */}
+      <Card padding={3} borderBottom>
         <Flex align="center" gap={3} wrap="wrap">
-          <Heading size={1}>📊 Reportes</Heading>
+          <Heading size={1}>Reportes</Heading>
           <Box flex={1}>
             <TabList space={1}>
               {TABS.map((t) => (
@@ -102,6 +145,7 @@ export default function ReportsTool() {
             fontSize={1}
             value={String(rangeIndex)}
             onChange={(event) => setRangeIndex(Number(event.currentTarget.value))}
+            aria-label="Rango de fechas del reporte"
             style={{ width: 200 }}
           >
             {RANGES.map((range, i) => (
@@ -111,7 +155,9 @@ export default function ReportsTool() {
             ))}
           </Select>
         </Flex>
+      </Card>
 
+      <Box flex={1} overflow="auto" padding={3}>
         <TabPanel id="ventas-panel" aria-labelledby="ventas-tab" hidden={tab !== 'ventas'}>
           <SalesPanel summary={summary} hasLegacyDates={hasLegacyDates} />
         </TabPanel>
@@ -123,7 +169,7 @@ export default function ReportsTool() {
         <TabPanel id="aprendizaje-panel" aria-labelledby="aprendizaje-tab" hidden={tab !== 'aprendizaje'}>
           <LearningPanel data={data} months={months} now={now} />
         </TabPanel>
-      </Stack>
-    </Box>
+      </Box>
+    </Flex>
   );
 }

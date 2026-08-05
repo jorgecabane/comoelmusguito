@@ -3,8 +3,8 @@
  * regiones de despacho y catálogo sin ventas.
  */
 
-import { Stack, Text } from '@sanity/ui';
-import { BarList, Columns, formatCLP, Kpi, Section, usePalette } from './components';
+import { Flex, Stack, Text } from '@sanity/ui';
+import { BarList, Columns, formatCLP, Kpi, Section, Swatch, usePalette } from './components';
 import { TYPE_LABEL, type SalesSummary } from './data';
 
 const MONTH_NAMES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -121,15 +121,17 @@ export function SalesPanel({ summary, hasLegacyDates }: { summary: SalesSummary;
       >
         {summary.unsold.length === 0 ? (
           <Text size={1} muted>
-            Todo el catálogo disponible vendió al menos una unidad. 🎉
+            Todo el catálogo disponible vendió al menos una unidad.
           </Text>
         ) : (
           <Stack space={2}>
             {summary.unsold.map((p) => (
-              <Text key={p._id} size={1}>
-                <span style={{ color: palette.forType(p.type) }}>●</span> {p.name}{' '}
-                <span style={{ opacity: 0.6 }}>· {TYPE_LABEL[p.type]}</span>
-              </Text>
+              <Flex key={p._id} gap={2} align="center">
+                <Swatch color={palette.forType(p.type)} />
+                <Text size={1}>
+                  {p.name} <span style={{ opacity: 0.6 }}>· {TYPE_LABEL[p.type]}</span>
+                </Text>
+              </Flex>
             ))}
           </Stack>
         )}

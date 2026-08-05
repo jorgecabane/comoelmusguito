@@ -97,9 +97,9 @@ function OrderRow({ order, onToggle }: { order: ReportOrder; onToggle: (order: R
   const done = Boolean(order.fulfilledAt);
 
   return (
-    <Card padding={2} radius={2} border tone={done ? 'positive' : 'default'}>
+    <Card padding={3} radius={2} border tone={done ? 'positive' : 'default'}>
       <Flex gap={3} align="flex-start">
-        <Box paddingTop={2}>
+        <Box paddingTop={1}>
           <Checkbox
             checked={done}
             onChange={(event) => onToggle(order, event.currentTarget.checked)}
@@ -110,7 +110,7 @@ function OrderRow({ order, onToggle }: { order: ReportOrder; onToggle: (order: R
         <Box flex={1}>
           <Accordion
             summary={
-              <Stack space={2} paddingY={1} style={{ display: 'inline-block', width: 'calc(100% - 24px)' }}>
+              <Stack space={3}>
                 <Flex gap={2} align="center" wrap="wrap">
                   <Text size={1} weight="semibold">
                     {order.customerName || order.customerEmail || 'Sin nombre'}
@@ -122,7 +122,7 @@ function OrderRow({ order, onToggle }: { order: ReportOrder; onToggle: (order: R
                     {date ? formatDate(date) : 's/f'} · {formatCLP(order.total ?? 0)}
                   </Text>
                 </Flex>
-                <Text size={0} muted textOverflow="ellipsis">
+                <Text size={1} muted textOverflow="ellipsis">
                   {physical.map((i) => `${i.name} ×${i.quantity ?? 1}`).join(' · ')}
                   {order.shippingAddress?.comuna ? ` — ${order.shippingAddress.comuna}` : ''}
                 </Text>
@@ -165,7 +165,7 @@ function Queue({
       <Stack space={2}>
         {visible.length === 0 ? (
           <Text size={1} muted>
-            {view === 'pendientes' ? 'Nada pendiente. 🎉' : 'Nada entregado todavía en este rango.'}
+            {view === 'pendientes' ? 'Nada pendiente.' : 'Nada entregado todavía en este rango.'}
           </Text>
         ) : (
           visible.map((order) => <OrderRow key={order._id} order={order} onToggle={onToggle} />)

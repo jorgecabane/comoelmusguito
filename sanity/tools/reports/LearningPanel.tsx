@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { Badge, Box, Card, Flex, Stack, Text } from '@sanity/ui';
-import { Accordion, Columns, formatDate, formatDateTime, Kpi, Section, Toggle, usePalette } from './components';
+import { Accordion, Columns, formatDate, formatDateTime, Kpi, Section, Swatch, Toggle, usePalette } from './components';
 import { courseStats, workshopSessions, type CoursePerson, type ReportData, type WorkshopSession } from './data';
 
 function ProgressBar({ percent, color }: { percent: number; color: string }) {
@@ -47,17 +47,18 @@ function WorkshopCard({ session, color }: { session: WorkshopSession; color: str
     <Card padding={2} radius={2} border>
       <Accordion
         summary={
-          <Stack space={2} paddingY={1} style={{ display: 'inline-block', width: 'calc(100% - 24px)' }}>
+          <Stack space={3}>
             <Flex gap={2} align="center" wrap="wrap">
               <Text size={1} weight="semibold">
                 {session.workshop}
               </Text>
               <Badge tone={full ? 'critical' : session.enrolled > 0 ? 'positive' : 'default'} fontSize={0}>
                 {session.enrolled}
-                {session.spotsTotal !== undefined ? `/${session.spotsTotal}` : ''}
+                {session.spotsTotal !== undefined ? `/${session.spotsTotal}` : ''} inscrito
+                {session.enrolled === 1 ? '' : 's'}
               </Badge>
             </Flex>
-            <Text size={0} muted>
+            <Text size={1} muted>
               {formatDateTime(session.date)}
             </Text>
           </Stack>
@@ -70,10 +71,13 @@ function WorkshopCard({ session, color }: { session: WorkshopSession; color: str
             </Text>
           ) : (
             session.attendees.map((a, i) => (
-              <Text key={`${a.email}-${i}`} size={0}>
-                <span style={{ color }}>●</span> {a.name}
-                {a.quantity > 1 ? ` ×${a.quantity}` : ''} <span style={{ opacity: 0.6 }}>{a.email}</span>
-              </Text>
+              <Flex key={`${a.email}-${i}`} gap={2} align="center">
+                <Swatch color={color} />
+                <Text size={1}>
+                  {a.name}
+                  {a.quantity > 1 ? ` ×${a.quantity}` : ''} <span style={{ opacity: 0.6 }}>{a.email}</span>
+                </Text>
+              </Flex>
             ))
           )}
         </Stack>
@@ -94,7 +98,7 @@ export function LearningPanel({
   const palette = usePalette();
   const [when, setWhen] = useState<'futuros' | 'historicos'>('futuros');
   const courses = courseStats(data, months, now);
-  const { upcoming, past } = workshopSessions(data, now);
+  const { upcoming, past } = workshopSessions(data, now, months);
   const sessions = when === 'futuros' ? upcoming : past;
   const missingAccess = courses.purchases - courses.courses.reduce((n, c) => n + c.people.length, 0);
 
@@ -103,9 +107,14 @@ export function LearningPanel({
       <Columns min={180}>
         <Kpi
           label="Personas con cursos"
-          value={String(courses.totalPeople)}
-          hint={`${courses.started} han empezado`}
+          value={String(courses.totalPeopleAllTime)}
+          hint={`histórico · ${courses.newAccess} con acceso nuevo en el período`}
           accent={palette.forType('course')}
+        />
+        <Kpi
+          label="Activas en el período"
+          value={String(courses.totalPeople)}
+          hint={`${courses.started} con lecciones completadas`}
         />
         <Kpi label="Cursos comprados" value={String(courses.purchases)} hint="en órdenes pagadas del período" />
         <Kpi
@@ -119,9 +128,9 @@ export function LearningPanel({
       <Columns min={380}>
         <Stack space={3}>
           {courses.courses.length === 0 && (
-            <Section title="Cursos" subtitle="Accesos otorgados en el período.">
+            <Section title="Cursos" subtitle="Personas con acceso nuevo o actividad en el período.">
               <Text size={1} muted>
-                Sin accesos a cursos en este rango de fechas.
+                Nadie compró ni avanzó en un curso en este rango de fechas.
               </Text>
             </Section>
           )}
@@ -132,8 +141,8 @@ export function LearningPanel({
               title={`${course.name} · ${course.people.length}`}
               subtitle={
                 missingAccess > 0
-                  ? `Ojo: ${missingAccess} compra(s) de curso sin acceso asociado.`
-                  : 'Progreso por persona.'
+                  ? `Con acceso nuevo o actividad en el período. Ojo: ${missingAccess} compra(s) sin acceso asociado.`
+                  : 'Con acceso nuevo o actividad en el período, ordenadas por avance.'
               }
             >
               <Stack space={1}>
