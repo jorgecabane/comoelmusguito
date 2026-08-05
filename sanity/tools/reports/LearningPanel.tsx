@@ -138,7 +138,7 @@ export function LearningPanel({
             >
               <Stack space={1}>
                 {course.people.map((person) => (
-                  <PersonRow key={person.email + person.name} person={person} color={palette.forType('course')} />
+                  <PersonRow key={person.id} person={person} color={palette.forType('course')} />
                 ))}
               </Stack>
             </Section>
@@ -167,7 +167,7 @@ export function LearningPanel({
             ) : (
               sessions.map((session) => (
                 <WorkshopCard
-                  key={`${session.workshop}-${session.date}`}
+                  key={`${session.workshopId}-${session.date}`}
                   session={session}
                   color={palette.forType('workshop')}
                 />

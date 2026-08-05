@@ -94,10 +94,14 @@ export interface ReportData {
   catalog: CatalogProduct[];
 }
 
+/** Los borradores son copias `drafts.*` del mismo documento: sin esto, cada uno
+ *  se cuenta dos veces (órdenes, accesos y catálogo por igual). */
+const PUBLISHED = `!(_id in path("drafts.**"))`;
+
 // ponytail: trae todas las órdenes y agrega en memoria. Con ~200 docs es
 // instantáneo; pasando de unos miles, filtrar por fecha en el GROQ.
 export const REPORT_QUERY = `{
-  "orders": *[_type == "order"] | order(createdAt desc) {
+  "orders": *[_type == "order" && ${PUBLISHED}] | order(createdAt desc) {
     _id, orderId, createdAt, updatedAt, paymentDate, paymentStatus, paymentProvider,
     providerTransactionId, total, currency, customerEmail, customerName,
     requiresShipping, fulfilledAt, emailSent, isGift, recipientEmail, recipientName,
@@ -105,18 +109,18 @@ export const REPORT_QUERY = `{
     items[]{id, type, name, quantity, price, currency, shippingPreference, selectedDate},
     shippingAddress
   },
-  "courseAccess": *[_type == "courseAccess"]{
+  "courseAccess": *[_type == "courseAccess" && ${PUBLISHED} && defined(user) && defined(course)]{
     _id, accessGrantedAt, progress,
     "email": user->email, "userName": user->name,
     "courseName": course->name,
     "modules": course->modules[]{title, "lessons": lessons[]{title}}
   },
-  "workshops": *[_type == "workshop"]{_id, name, dates[]{date, spotsTotal, spotsAvailable, status}},
+  "workshops": *[_type == "workshop" && ${PUBLISHED}]{_id, name, dates[]{date, spotsTotal, spotsAvailable, status}},
   "catalog": [
-    ...*[_type == "terrarium" && inStock == true]{_id, name, "type": "terrarium"},
-    ...*[_type == "supply" && inStock == true]{_id, name, "type": "supply"},
-    ...*[_type == "course" && published == true]{_id, name, "type": "course"},
-    ...*[_type == "workshop" && published == true]{_id, name, "type": "workshop"}
+    ...*[_type == "terrarium" && ${PUBLISHED} && inStock == true]{_id, name, "type": "terrarium"},
+    ...*[_type == "supply" && ${PUBLISHED} && inStock == true]{_id, name, "type": "supply"},
+    ...*[_type == "course" && ${PUBLISHED} && published == true]{_id, name, "type": "course"},
+    ...*[_type == "workshop" && ${PUBLISHED} && published == true]{_id, name, "type": "workshop"}
   ]
 }`;
 
@@ -309,6 +313,8 @@ export function fulfillmentQueues(orders: ReportOrder[], months: number | null, 
 }
 
 export interface CoursePerson {
+  /** _id del courseAccess: identidad estable de la fila. */
+  id: string;
   name: string;
   email: string;
   percent: number;
@@ -343,6 +349,7 @@ export function courseStats(data: ReportData, months: number | null, now: Date) 
 
     const people = byCourse.get(courseName) ?? [];
     people.push({
+      id: access._id,
       name: access.userName ?? access.email ?? 'Sin nombre',
       email: access.email ?? '',
       completed,
@@ -371,6 +378,7 @@ export function courseStats(data: ReportData, months: number | null, now: Date) 
 }
 
 export interface WorkshopSession {
+  workshopId: string;
   workshop: string;
   date: string;
   enrolled: number;
@@ -404,6 +412,7 @@ export function workshopSessions(data: ReportData, now: Date): { upcoming: Works
       }
 
       const session: WorkshopSession = {
+        workshopId: workshop._id,
         workshop: workshop.name ?? 'Taller',
         date: date.date,
         enrolled: attendees.reduce((n, a) => n + a.quantity, 0),
