@@ -204,6 +204,11 @@ export async function updateOrderPaymentStatus(
 
   if (paymentDate) {
     updates.paymentDate = paymentDate;
+  } else if (paymentStatus === 2 && !order.paymentDate) {
+    // Red de seguridad: si la pasarela no informa la fecha, la orden queda pagada
+    // sin fecha y desaparece de los reportes. El webhook llega segundos después
+    // del pago, así que "ahora" es una aproximación fiel.
+    updates.paymentDate = new Date().toISOString();
   }
 
   if (flowOrder !== undefined) {

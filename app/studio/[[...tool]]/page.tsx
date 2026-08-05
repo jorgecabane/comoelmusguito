@@ -27,7 +27,9 @@ const StudioWrapper = dynamic(
 
 export default function StudioPage() {
   return (
-    <div className="pt-20">
+    // El Studio se dimensiona al 100% de su contenedor. Fijándolo bajo el header
+    // (h-20) su propia barra superior deja de quedar tapada por el del sitio.
+    <div className="fixed inset-x-0 bottom-0 top-20">
       <StudioWrapper config={config} />
     </div>
   );

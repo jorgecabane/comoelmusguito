@@ -8,6 +8,7 @@ import { structureTool } from 'sanity/structure';
 import { visionTool } from '@sanity/vision';
 import { schemaTypes } from './schemas';
 import { refundOrderAction } from './actions/refund-order';
+import { reportsTool } from './tools/reports';
 
 export default defineConfig({
   name: 'default',
@@ -130,6 +131,8 @@ export default defineConfig({
     }),
     visionTool(),
   ],
+
+  tools: (prev) => [reportsTool, ...prev],
 
   schema: {
     types: schemaTypes,
