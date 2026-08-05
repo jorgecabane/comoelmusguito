@@ -163,6 +163,9 @@ export function inRange(order: ReportOrder, months: number | null, now: Date): b
   return inMonths(saleDate(order), months, now);
 }
 
+/** Importes por moneda. Sumar CLP con USD da un número que no significa nada. */
+export type Money = Record<string, number>;
+
 export interface SalesSummary {
   paidCount: number;
   createdCount: number;
@@ -173,8 +176,9 @@ export interface SalesSummary {
   buyers: { unique: number; repeat: number };
   gifts: number;
   byMonth: { key: string; revenue: number; orders: number }[];
-  topProducts: { name: string; type: ItemType; units: number; revenue: number }[];
-  byType: { type: ItemType; label: string; units: number; revenue: number }[];
+  /** Las unidades se suman entre monedas; el dinero no. */
+  topProducts: { name: string; type: ItemType; units: number; revenue: Money }[];
+  byType: { type: ItemType; label: string; units: number; revenue: Money }[];
   byProvider: { provider: string; orders: number; revenue: number }[];
   byRegion: { region: string; orders: number }[];
   unsold: CatalogProduct[];
@@ -199,8 +203,12 @@ export function summarize(
   const revenue: Record<string, number> = {};
   const counts: Record<string, number> = {};
   const monthRevenue = new Map<string, { revenue: number; orders: number }>();
-  const products = new Map<string, { type: ItemType; units: number; revenue: number }>();
-  const types = new Map<ItemType, { units: number; revenue: number }>();
+  const products = new Map<string, { type: ItemType; units: number; revenue: Money }>();
+  const types = new Map<ItemType, { units: number; revenue: Money }>();
+  const addMoney = (into: Money, currency: string, amount: number) => ({
+    ...into,
+    [currency]: (into[currency] ?? 0) + amount,
+  });
   const providers = new Map<string, { orders: number; revenue: number }>();
   const regions = new Map<string, number>();
   const buyerOrders = new Map<string, number>();
@@ -236,15 +244,21 @@ export function summarize(
       const units = item.quantity ?? 0;
       const amount = (item.price ?? 0) * units;
       const type = (item.type ?? 'supply') as ItemType;
+      // La moneda del ítem manda; si falta, la de la orden.
+      const itemCurrency = item.currency ?? currency;
 
       if (item.id) soldIds.add(item.id);
 
       const name = item.name?.trim() || 'Sin nombre';
-      const prod = products.get(name) ?? { type, units: 0, revenue: 0 };
-      products.set(name, { type, units: prod.units + units, revenue: prod.revenue + amount });
+      const prod = products.get(name) ?? { type, units: 0, revenue: {} };
+      products.set(name, {
+        type,
+        units: prod.units + units,
+        revenue: addMoney(prod.revenue, itemCurrency, amount),
+      });
 
-      const t = types.get(type) ?? { units: 0, revenue: 0 };
-      types.set(type, { units: t.units + units, revenue: t.revenue + amount });
+      const t = types.get(type) ?? { units: 0, revenue: {} };
+      types.set(type, { units: t.units + units, revenue: addMoney(t.revenue, itemCurrency, amount) });
     }
   }
 

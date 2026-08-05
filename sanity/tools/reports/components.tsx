@@ -39,6 +39,18 @@ export function formatCLP(value: number): string {
   return `$${Math.round(value).toLocaleString('es-CL')}`;
 }
 
+export function formatUSD(value: number): string {
+  return `US$${value.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+}
+
+/** Importes por moneda, sin sumar peras con manzanas. */
+export function formatMoney(money: Record<string, number>): string {
+  const parts: string[] = [];
+  if (money.CLP) parts.push(formatCLP(money.CLP));
+  if (money.USD) parts.push(formatUSD(money.USD));
+  return parts.join(' + ') || formatCLP(0);
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('es-CL', {
     timeZone: 'America/Santiago',
@@ -132,10 +144,14 @@ export function BarList({
             }}
           />
           <Flex justify="space-between" gap={3} padding={2} style={{ position: 'relative' }}>
-            <Text size={1} textOverflow="ellipsis">
-              {row.label}
-            </Text>
-            <Text size={1} weight="medium" style={{ whiteSpace: 'nowrap' }}>
+            {/* minWidth 0 para que la etiqueta se recorte con puntos suspensivos
+                en vez de empujar el valor fuera de la tarjeta. */}
+            <Box flex={1} style={{ minWidth: 0 }}>
+              <Text size={1} textOverflow="ellipsis" title={row.label}>
+                {row.label}
+              </Text>
+            </Box>
+            <Text size={1} weight="medium" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
               {row.display ?? row.value.toLocaleString('es-CL')}
             </Text>
           </Flex>

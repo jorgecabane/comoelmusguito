@@ -333,3 +333,11 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* NextStudio fija #sanity a 100vh con estilos inline y sin props para cambiarlo.
+   Como el Studio va bajo el header del sitio, esos 100vh dejan el último tramo
+   fuera de la pantalla y sin forma de scrollear. Se ajusta al contenedor. */
+#sanity[data-ui='NextStudioLayout'] {
+  height: 100% !important;
+  max-height: 100% !important;
+}

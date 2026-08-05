@@ -4,7 +4,7 @@
  */
 
 import { Flex, Stack, Text } from '@sanity/ui';
-import { BarList, Columns, formatCLP, Kpi, Section, Swatch, usePalette } from './components';
+import { BarList, Columns, formatCLP, formatMoney, formatUSD, Kpi, Section, Swatch, usePalette } from './components';
 import { TYPE_LABEL, type SalesSummary } from './data';
 
 const MONTH_NAMES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -28,7 +28,7 @@ export function SalesPanel({ summary, hasLegacyDates }: { summary: SalesSummary;
         <Kpi
           label="Ingreso CLP"
           value={formatCLP(clp)}
-          hint={usd > 0 ? `+ US$${usd.toLocaleString('en-US')} por PayPal` : 'sin ventas en USD'}
+          hint={usd > 0 ? `+ ${formatUSD(usd)} por PayPal` : 'sin ventas en USD'}
           accent={palette.single}
         />
         <Kpi label="Órdenes pagadas" value={String(summary.paidCount)} hint={`de ${summary.createdCount} creadas`} />
@@ -74,7 +74,7 @@ export function SalesPanel({ summary, hasLegacyDates }: { summary: SalesSummary;
             rows={summary.topProducts.slice(0, 10).map((p) => ({
               label: p.name,
               value: p.units,
-              display: `${p.units} u · ${formatCLP(p.revenue)}`,
+              display: `${p.units} u · ${formatMoney(p.revenue)}`,
               color: palette.forType(p.type),
             }))}
           />
@@ -85,7 +85,7 @@ export function SalesPanel({ summary, hasLegacyDates }: { summary: SalesSummary;
             rows={summary.byType.map((t) => ({
               label: t.label,
               value: t.units,
-              display: `${t.units} u · ${formatCLP(t.revenue)}`,
+              display: `${t.units} u · ${formatMoney(t.revenue)}`,
               color: palette.forType(t.type),
             }))}
           />
