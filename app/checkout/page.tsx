@@ -11,6 +11,8 @@ import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useCartStore } from '@/lib/store/useCartStore';
+import { useCartPriceSync } from '@/lib/store/useCartPriceSync';
+import { useCartHydrated } from '@/lib/store/useCartHydrated';
 import { Button, Input } from '@/components/ui';
 import {
   PaymentMethodSelector,
@@ -21,7 +23,7 @@ import {
 } from '@/components/checkout';
 import { canPurchaseInternationally } from '@/lib/utils/cart-validation';
 import { getUserCountryClient } from '@/lib/utils/geolocation.client';
-import { Loader2, ArrowLeft, Gift, ChevronDown, MapPin, Truck, Package } from 'lucide-react';
+import { Loader2, ArrowLeft, Gift, ChevronDown, MapPin, Truck, Package, Info } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CHILE_REGIONS, getCommunesByRegion } from '@/lib/utils/chile-regions';
@@ -31,6 +33,8 @@ const PAYPAL_ENABLED = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, removeItem } = useCartStore();
+  const cartHydrated = useCartHydrated();
+  const pricesUpdated = useCartPriceSync();
   const { data: session, status } = useSession();
   const { executeRecaptcha } = useGoogleReCaptcha();
 
@@ -131,8 +135,9 @@ export default function CheckoutPage() {
   }, [session, status]);
 
   useEffect(() => {
-    if (items.length === 0) router.push('/carrito');
-  }, [items, router]);
+    // Sin esperar la rehidratación, un load directo de /checkout rebota al carrito.
+    if (cartHydrated && items.length === 0) router.push('/carrito');
+  }, [cartHydrated, items, router]);
 
   // Auto-detect country for default gateway
   useEffect(() => {
@@ -532,6 +537,13 @@ export default function CheckoutPage() {
                 <ArrowLeft size={15} />
                 Volver al carrito
               </Link>
+
+              {pricesUpdated && (
+                <div className="flex items-start gap-2 rounded-lg border border-ambar/30 bg-ambar/10 p-3 text-sm text-forest">
+                  <Info size={18} className="shrink-0 mt-0.5" />
+                  <span>Actualizamos los precios de tu pedido con los valores vigentes. Revisa el total antes de pagar.</span>
+                </div>
+              )}
 
               {/* SECCIÓN 1: Contacto */}
               <section>

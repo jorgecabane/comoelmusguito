@@ -100,6 +100,28 @@ export const useCartStore = create<CartState>()(
         });
       },
       
+      syncPrices: (serverItems) => {
+        let changed = false;
+
+        const newItems = get().items.map((item) => {
+          const server = serverItems.find((s) => s.id === item.id && s.type === item.type);
+          if (!server || (server.price === item.price && server.currency === item.currency)) {
+            return item;
+          }
+          changed = true;
+          return { ...item, price: server.price, currency: server.currency };
+        });
+
+        if (!changed) return false;
+
+        set({
+          items: newItems,
+          subtotal: newItems.reduce((total, item) => total + item.price * item.quantity, 0),
+        });
+
+        return true;
+      },
+
       clearCart: () => {
         set({ 
           items: [], 
