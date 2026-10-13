@@ -90,7 +90,7 @@ export function PaymentMethodSelector({
             </div>
             <div className="text-right">
               <p className="font-semibold text-musgo">{amount}</p>
-              <p className="text-xs text-gray">{currency}</p>
+              {currency && <p className="text-xs text-gray">{currency}</p>}
             </div>
           </div>
         </div>

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui';
+import { useDialogFocus } from '@/lib/hooks/useDialogFocus';
 
 export interface AvailabilityIssue {
   message: string;
@@ -18,22 +19,15 @@ interface AvailabilityErrorModalProps {
 }
 
 export function AvailabilityErrorModal({ issue, onClose, onRemoveItem }: AvailabilityErrorModalProps) {
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    },
-    [onClose],
-  );
+  const dialogRef = useDialogFocus<HTMLDivElement>(!!issue, onClose);
 
   useEffect(() => {
     if (!issue) return;
-    document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [issue, handleKeyDown]);
+  }, [issue]);
 
   const canRemove = !!(issue?.itemId && issue?.itemType);
 
@@ -47,9 +41,11 @@ export function AvailabilityErrorModal({ issue, onClose, onRemoveItem }: Availab
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Producto no disponible"
+          tabIndex={-1}
+          aria-labelledby="availability-error-title"
         >
           <motion.div
             className="mx-4 max-w-md rounded-2xl bg-white p-6 shadow-xl"
@@ -59,7 +55,7 @@ export function AvailabilityErrorModal({ issue, onClose, onRemoveItem }: Availab
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-3 font-display text-xl font-semibold text-forest">No pudimos procesar tu compra</h2>
+            <h2 id="availability-error-title" className="mb-3 font-display text-xl font-semibold text-forest">No pudimos procesar tu compra</h2>
 
             <p className="mb-5 text-sm leading-relaxed text-gray">{issue.message}</p>
 

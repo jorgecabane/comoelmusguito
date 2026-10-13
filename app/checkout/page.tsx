@@ -93,9 +93,17 @@ export default function CheckoutPage() {
   const hasShippableItems = shippableItems.length > 0;
   const hasSelectedShipping = shippingGroupPreference === 'shipping' && hasShippableItems;
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Totales por moneda solo para mostrar (igual que /carrito); el cobro lo calcula el servidor.
+  const totalsByCurrency = Object.entries(
+    items.reduce<Record<string, number>>((acc, item) => {
+      acc[item.currency] = (acc[item.currency] ?? 0) + item.price * item.quantity;
+      return acc;
+    }, {}),
+  );
+  const totalLabel = totalsByCurrency
+    .map(([cur, amount]) => `$${amount.toLocaleString('es-CL')} ${cur}`)
+    .join(' + ');
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const currency = items[0]?.currency || 'CLP';
   const availableCommunes = shippingRegion ? getCommunesByRegion(shippingRegion) : [];
 
   // Pre-llenar desde sesión y último despacho anterior
@@ -459,7 +467,7 @@ export default function CheckoutPage() {
             Procesando...
           </>
         ) : (
-          `Pagar $${total.toLocaleString('es-CL')} ${currency}`
+          `Pagar ${totalLabel}`
         )}
       </Button>
     );
@@ -484,7 +492,7 @@ export default function CheckoutPage() {
             />
           </span>
           <span className="font-bold text-forest text-sm">
-            ${total.toLocaleString('es-CL')} {currency}
+            {totalLabel}
           </span>
         </button>
         <AnimatePresence>
@@ -513,7 +521,7 @@ export default function CheckoutPage() {
                 <div className="border-t border-gray/20 pt-2.5 flex justify-between font-bold text-forest">
                   <span>Total</span>
                   <span>
-                    ${total.toLocaleString('es-CL')} {currency}
+                    {totalLabel}
                   </span>
                 </div>
               </div>
@@ -1041,7 +1049,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-sm text-gray">
                   <span>Subtotal</span>
                   <span>
-                    ${total.toLocaleString('es-CL')} {currency}
+                    {totalLabel}
                   </span>
                 </div>
                 {hasSelectedShipping && (
@@ -1053,10 +1061,14 @@ export default function CheckoutPage() {
                 <div className="border-t border-gray/20 pt-3 flex justify-between items-baseline">
                   <span className="font-display font-bold text-forest text-base">Total</span>
                   <div className="text-right">
-                    <span className="font-display text-2xl font-bold text-forest">
-                      ${total.toLocaleString('es-CL')}
-                    </span>
-                    <span className="text-sm text-gray ml-1">{currency}</span>
+                    {totalsByCurrency.map(([cur, amount]) => (
+                      <div key={cur}>
+                        <span className="font-display text-2xl font-bold text-forest">
+                          ${amount.toLocaleString('es-CL')}
+                        </span>
+                        <span className="text-sm text-gray ml-1">{cur}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1073,8 +1085,8 @@ export default function CheckoutPage() {
                 <PaymentMethodSelector
                   selectedGateway={selectedGateway}
                   onGatewayChange={setSelectedGateway}
-                  flowAmount={`$${total.toLocaleString('es-CL')}`}
-                  flowCurrency="CLP"
+                  flowAmount={totalLabel}
+                  flowCurrency=""
                   paypalAmount={
                     paypalQuoteLoading || paypalTotal === 0
                       ? 'Calculando…'
@@ -1103,8 +1115,8 @@ export default function CheckoutPage() {
             <PaymentMethodSelector
               selectedGateway={selectedGateway}
               onGatewayChange={setSelectedGateway}
-              flowAmount={`$${total.toLocaleString('es-CL')}`}
-              flowCurrency="CLP"
+              flowAmount={totalLabel}
+              flowCurrency=""
               paypalAmount={
                 paypalQuoteLoading || paypalTotal === 0
                   ? 'Calculando…'
