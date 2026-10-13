@@ -561,6 +561,7 @@ export default function CheckoutPage() {
                   <div className="space-y-3">
                     <Input
                       id="email"
+                      aria-label="Correo electrónico"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -570,6 +571,7 @@ export default function CheckoutPage() {
                     />
                     <Input
                       id="customerName"
+                      aria-label="Nombre completo"
                       type="text"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
@@ -600,6 +602,7 @@ export default function CheckoutPage() {
                         >
                           <Input
                             id="password"
+                            aria-label="Contraseña"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -609,6 +612,7 @@ export default function CheckoutPage() {
                           />
                           <Input
                             id="confirmPassword"
+                            aria-label="Confirmar contraseña"
                             type="password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -770,6 +774,7 @@ export default function CheckoutPage() {
                       {/* Contacto de entrega */}
                       <Input
                         id="shippingContactEmail"
+                        aria-label="Email de contacto"
                         type="email"
                         value={shippingContactEmail}
                         onChange={(e) => setShippingContactEmail(e.target.value)}
@@ -781,6 +786,7 @@ export default function CheckoutPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <Input
                           id="shippingPhone"
+                          aria-label="Teléfono"
                           type="tel"
                           value={shippingPhone}
                           onChange={(e) => setShippingPhone(e.target.value)}
@@ -790,6 +796,7 @@ export default function CheckoutPage() {
                         />
                         <Input
                           id="shippingRut"
+                          aria-label="RUT"
                           type="text"
                           value={shippingRut}
                           onChange={(e) => setShippingRut(e.target.value)}
@@ -802,6 +809,7 @@ export default function CheckoutPage() {
                       {/* Región y comuna */}
                       <select
                         id="shippingRegion"
+                        aria-label="Región"
                         value={shippingRegion}
                         onChange={(e) => {
                           setShippingRegion(e.target.value);
@@ -822,6 +830,7 @@ export default function CheckoutPage() {
                       {shippingRegion && (
                         <select
                           id="shippingComuna"
+                          aria-label="Comuna"
                           value={shippingComuna}
                           onChange={(e) => setShippingComuna(e.target.value)}
                           required={hasSelectedShipping}
@@ -842,6 +851,7 @@ export default function CheckoutPage() {
                         <div className="col-span-2">
                           <Input
                             id="shippingAddress"
+                            aria-label="Calle / Avenida"
                             type="text"
                             value={shippingAddress}
                             onChange={(e) => setShippingAddress(e.target.value)}
@@ -852,6 +862,7 @@ export default function CheckoutPage() {
                         </div>
                         <Input
                           id="shippingNumber"
+                          aria-label="Número"
                           type="text"
                           value={shippingNumber}
                           onChange={(e) => setShippingNumber(e.target.value)}
@@ -863,6 +874,7 @@ export default function CheckoutPage() {
 
                       <Input
                         id="shippingDetails"
+                        aria-label="Depto, piso, referencias"
                         type="text"
                         value={shippingDetails}
                         onChange={(e) => setShippingDetails(e.target.value)}
@@ -912,6 +924,7 @@ export default function CheckoutPage() {
                     >
                       <Input
                         id="recipientEmail"
+                        aria-label="Email del destinatario"
                         type="email"
                         value={recipientEmail}
                         onChange={(e) => setRecipientEmail(e.target.value)}
@@ -921,6 +934,7 @@ export default function CheckoutPage() {
                       />
                       <Input
                         id="recipientName"
+                        aria-label="Nombre del destinatario"
                         type="text"
                         value={recipientName}
                         onChange={(e) => setRecipientName(e.target.value)}
@@ -930,6 +944,7 @@ export default function CheckoutPage() {
                       <div>
                         <textarea
                           id="giftMessage"
+                          aria-label="Mensaje personalizado"
                           value={giftMessage}
                           onChange={(e) => setGiftMessage(e.target.value)}
                           placeholder="Mensaje personalizado... (opcional)"

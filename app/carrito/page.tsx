@@ -441,6 +441,7 @@ function CartItemCard({
               <button
                 onClick={() => onUpdateQuantity(item.id, item.type, item.quantity - 1)}
                 disabled={item.quantity <= 1}
+                aria-label="Disminuir cantidad"
                 className="w-8 h-8 rounded-lg border border-gray/20 flex items-center justify-center hover:bg-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Minus size={16} />
@@ -449,6 +450,7 @@ function CartItemCard({
               <button
                 onClick={() => onUpdateQuantity(item.id, item.type, item.quantity + 1)}
                 disabled={item.maxQuantity && item.quantity >= item.maxQuantity}
+                aria-label="Aumentar cantidad"
                 className="w-8 h-8 rounded-lg border border-gray/20 flex items-center justify-center hover:bg-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Plus size={16} />

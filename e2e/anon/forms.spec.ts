@@ -40,8 +40,7 @@ test.describe('newsletter', () => {
     try {
       await page.goto('/');
       const footer = page.getByRole('contentinfo');
-      // A11Y: el input del newsletter no tiene <label> (components/shared/NewsletterForm.tsx:107).
-      await footer.getByPlaceholder('tu@email.com').fill(email);
+      await footer.getByLabel('Email para el newsletter').fill(email);
       await footer.getByRole('button', { name: 'Suscribirme' }).click();
       await expect(footer.getByText('¡Te has suscrito exitosamente!')).toBeVisible();
 

@@ -3,25 +3,23 @@ import { COURSE, TERRARIUM, WORKSHOP } from '../fixtures';
 import { sanity, uniqueEmail } from '../helpers/sanity';
 import { seedCart, terrariumCartItem } from '../helpers/ui';
 
-// A11Y: los campos del checkout no tienen <label>, solo placeholder, y los <select> de región/comuna
-// no tienen nombre accesible (app/checkout/page.tsx:562-935). Por eso se ubican por placeholder/orden.
 const payButton = (page: Page) => page.getByRole('button', { name: `Pagar $${TERRARIUM.price.toLocaleString('es-CL')} CLP` });
 
 async function fillContact(page: Page, email: string) {
-  await page.getByPlaceholder('Correo electrónico *').fill(email);
-  await page.getByPlaceholder('Nombre completo *').fill('Visitante E2E');
+  await page.getByLabel('Correo electrónico', { exact: true }).fill(email);
+  await page.getByLabel('Nombre completo', { exact: true }).fill('Visitante E2E');
 }
 
 async function fillShipping(page: Page, email: string) {
   await page.getByRole('button', { name: /Despacho a domicilio/ }).click();
   await expect(page.getByRole('heading', { name: 'Dirección de despacho' })).toBeVisible();
-  await page.getByPlaceholder('Email de contacto *').fill(email);
-  await page.getByPlaceholder('Teléfono *').fill('+56 9 1234 5678');
-  await page.getByPlaceholder('RUT *').fill('11.111.111-1');
-  await page.getByRole('combobox').nth(0).selectOption('Región Metropolitana de Santiago');
-  await page.getByRole('combobox').nth(1).selectOption('Providencia');
-  await page.getByPlaceholder('Calle / Avenida *').fill('Av. Providencia');
-  await page.getByPlaceholder('N° *').fill('123');
+  await page.getByLabel('Email de contacto', { exact: true }).fill(email);
+  await page.getByLabel('Teléfono', { exact: true }).fill('+56 9 1234 5678');
+  await page.getByLabel('RUT', { exact: true }).fill('11.111.111-1');
+  await page.getByLabel('Región', { exact: true }).selectOption('Región Metropolitana de Santiago');
+  await page.getByLabel('Comuna', { exact: true }).selectOption('Providencia');
+  await page.getByLabel('Calle / Avenida', { exact: true }).fill('Av. Providencia');
+  await page.getByLabel('Número', { exact: true }).fill('123');
 }
 
 test.describe('checkout', () => {
@@ -45,10 +43,11 @@ test.describe('checkout', () => {
     await expect(payButton(page)).toBeDisabled();
 
     // La comuna solo aparece tras elegir región, y lista las comunas de esa región.
-    await expect(page.getByRole('combobox')).toHaveCount(1);
-    await page.getByRole('combobox').first().selectOption('Región de Valparaíso');
-    await expect(page.getByRole('combobox').nth(1).getByRole('option', { name: 'Viña del Mar' })).toBeAttached();
-    await expect(page.getByRole('combobox').nth(1).getByRole('option', { name: 'Providencia' })).toHaveCount(0);
+    const comuna = page.getByLabel('Comuna', { exact: true });
+    await expect(comuna).toHaveCount(0);
+    await page.getByLabel('Región', { exact: true }).selectOption('Región de Valparaíso');
+    await expect(comuna.getByRole('option', { name: 'Viña del Mar' })).toBeAttached();
+    await expect(comuna.getByRole('option', { name: 'Providencia' })).toHaveCount(0);
 
     await fillShipping(page, email);
     await expect(payButton(page)).toBeEnabled();
@@ -60,8 +59,8 @@ test.describe('checkout', () => {
   test('crear cuenta valida que las contraseñas coincidan', async ({ page }) => {
     await fillContact(page, uniqueEmail('checkout'));
     await page.getByRole('checkbox', { name: /Crear cuenta/ }).check();
-    await page.getByPlaceholder('Contraseña (mín. 6 caracteres) *').fill('secreta123');
-    await page.getByPlaceholder('Confirmar contraseña *').fill('otra-cosa');
+    await page.getByLabel('Contraseña', { exact: true }).fill('secreta123');
+    await page.getByLabel('Confirmar contraseña', { exact: true }).fill('otra-cosa');
     await payButton(page).click();
     await expect(page.getByText('Las contraseñas no coinciden').filter({ visible: true })).toBeVisible();
   });
@@ -70,7 +69,7 @@ test.describe('checkout', () => {
     const email = uniqueEmail('checkout');
     await fillContact(page, email);
     await page.getByRole('checkbox', { name: /Comprar como regalo/ }).check();
-    await page.getByPlaceholder('Email del destinatario *').fill(email);
+    await page.getByLabel('Email del destinatario', { exact: true }).fill(email);
     await payButton(page).click();
     await expect(page.getByText('No puedes regalarte algo a ti mismo').filter({ visible: true })).toBeVisible();
   });
