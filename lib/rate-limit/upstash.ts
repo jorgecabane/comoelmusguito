@@ -86,19 +86,6 @@ export const checkoutRateLimit = redis
   : null;
 
 /**
- * Rate limiter para check-email
- * 10 verificaciones por hora por IP
- */
-export const checkEmailRateLimit = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(10, '1 h'),
-      analytics: true,
-      prefix: '@upstash/ratelimit/check-email',
-    })
-  : null;
-
-/**
  * Rate limiter para resend-verification
  * 3 solicitudes por hora por IP
  */
