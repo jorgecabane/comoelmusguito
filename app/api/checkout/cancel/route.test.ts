@@ -1,16 +1,20 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getSession } from '@/lib/auth/get-session';
 import { getOrderByOrderId, updateOrderPaymentStatus } from '@/lib/sanity/orders';
 import { POST } from './route';
 
 vi.mock('@/lib/sanity/orders', () => ({ getOrderByOrderId: vi.fn(), updateOrderPaymentStatus: vi.fn() }));
+vi.mock('@/lib/auth/get-session', () => ({ getSession: vi.fn() }));
 
 const getOrder = getOrderByOrderId as unknown as ReturnType<typeof vi.fn>;
+const session = getSession as unknown as ReturnType<typeof vi.fn>;
 const post = (body: string) => POST(new NextRequest('http://localhost/api/checkout/cancel', { method: 'POST', body }));
 
 beforeEach(() => {
   vi.clearAllMocks();
   for (const k of ['log', 'warn', 'error'] as const) vi.spyOn(console, k).mockImplementation(() => {});
+  session.mockResolvedValue(null);
 });
 
 describe('POST /api/checkout/cancel', () => {
@@ -54,5 +58,30 @@ describe('POST /api/checkout/cancel', () => {
     getOrder.mockResolvedValue({ paymentStatus: 1 });
     (updateOrderPaymentStatus as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('down'));
     expect((await post('{"orderId":"ORD-1"}')).status).toBe(500);
+  });
+
+  describe('orden vinculada a una cuenta', () => {
+    const linked = { paymentStatus: 1, customerEmail: 'ana@x.cl', userId: { _ref: 'u1' } };
+
+    it('403 sin sesión y no la anula', async () => {
+      getOrder.mockResolvedValue(linked);
+      expect((await post('{"orderId":"ORD-1"}')).status).toBe(403);
+      expect(updateOrderPaymentStatus).not.toHaveBeenCalled();
+    });
+
+    it('403 con la sesión de otro usuario', async () => {
+      session.mockResolvedValue({ user: { id: 'u2', email: 'otro@x.cl' } });
+      getOrder.mockResolvedValue(linked);
+      expect((await post('{"orderId":"ORD-1"}')).status).toBe(403);
+      expect(updateOrderPaymentStatus).not.toHaveBeenCalled();
+    });
+
+    it('el dueño puede anularla', async () => {
+      session.mockResolvedValue({ user: { id: 'u1', email: 'ana@x.cl' } });
+      getOrder.mockResolvedValue(linked);
+      (updateOrderPaymentStatus as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      expect(await (await post('{"orderId":"ORD-1"}')).json()).toEqual({ success: true });
+      expect(updateOrderPaymentStatus).toHaveBeenCalledWith('ORD-1', 4);
+    });
   });
 });

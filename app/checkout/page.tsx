@@ -112,7 +112,7 @@ export default function CheckoutPage() {
           .then((data) => {
             if (data.userId) {
               setUserId(data.userId);
-              return fetch(`/api/checkout/last-shipping?userId=${encodeURIComponent(data.userId)}`);
+              return fetch('/api/checkout/last-shipping');
             }
           })
           .then((res) => res?.json())

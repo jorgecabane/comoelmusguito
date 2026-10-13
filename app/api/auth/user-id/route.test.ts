@@ -41,11 +41,10 @@ describe('GET /api/auth/user-id', () => {
     expect(await res.json()).toEqual({ userId: 'u1', email: 'a@x.cl' });
   });
 
-  it('returns 500 on errors', async () => {
-    m.getUserByEmail.mockRejectedValueOnce(new Error('db')).mockRejectedValueOnce('x');
+  it('returns a generic 500 without internal details', async () => {
+    m.getUserByEmail.mockRejectedValueOnce(new Error('db'));
     const res = await get('?email=a@x.cl');
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'db' });
-    expect(await (await get('?email=a@x.cl')).json()).toEqual({ error: 'Error obteniendo userId' });
+    expect(await res.json()).toEqual({ error: 'Error obteniendo userId' });
   });
 });

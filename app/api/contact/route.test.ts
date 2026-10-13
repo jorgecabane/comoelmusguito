@@ -54,13 +54,9 @@ describe('POST /api/contact', () => {
     expect((await res.json()).error).toMatch(/Error al enviar el mensaje/);
   });
 
-  it('returns 500 on malformed JSON', async () => {
+  it('returns a generic 500 on malformed JSON without parser details', async () => {
     const res = await POST(new NextRequest('http://localhost/api/contact', { method: 'POST', body: '{' }));
     expect(res.status).toBe(500);
-  });
-
-  it('uses a generic message for non-Error throws', async () => {
-    const bad = { json: () => Promise.reject('x') } as unknown as NextRequest;
-    expect(await (await POST(bad)).json()).toEqual({ error: 'Error al procesar el formulario' });
+    expect(await res.json()).toEqual({ error: 'Error al procesar el formulario' });
   });
 });

@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error en checkout:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Error al procesar el pago' },
+      { error: 'Error al procesar el pago' },
       { status: 500 }
     );
   }

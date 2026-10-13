@@ -44,24 +44,17 @@ describe('GET /api/auth/check-email', () => {
     expect(m.getUserByEmail).toHaveBeenCalledWith('ana@x.cl');
   });
 
-  it('reports verified / unverified state for existing users', async () => {
-    m.getUserByEmail.mockResolvedValueOnce({ emailVerified: true }).mockResolvedValueOnce({});
-    expect(await (await get('a@x.cl')).json()).toMatchObject({ exists: true, verified: true, message: 'Email verificado' });
-    expect(await (await get('a@x.cl')).json()).toMatchObject({ exists: true, verified: false });
+  it('flags accounts pending verification', async () => {
+    m.getUserByEmail.mockResolvedValue({ emailVerified: false });
+    expect(await (await get('a@x.cl')).json()).toEqual({ pendingVerification: true });
   });
 
-  it('reports exists:false for unknown users', async () => {
-    m.getUserByEmail.mockResolvedValue(null);
-    expect(await (await get('a@x.cl')).json()).toMatchObject({ exists: false, verified: false });
-  });
-
-  // BUG: the route claims to prevent enumeration but returns `exists: true/false`, letting anyone probe
-  // which emails are registered (10 req/h per IP, unlimited if Upstash is unset).
-  it.skip('returns the same body whether or not the email is registered', async () => {
-    m.getUserByEmail.mockResolvedValueOnce(null).mockResolvedValueOnce({ emailVerified: false });
-    const a = await (await get('a@x.cl')).json();
-    const b = await (await get('b@x.cl')).json();
-    expect(a).toEqual(b);
+  it('returns the same body for unknown and verified emails (no enumeration)', async () => {
+    m.getUserByEmail.mockResolvedValueOnce(null).mockResolvedValueOnce({ emailVerified: true });
+    const unknown = await (await get('a@x.cl')).json();
+    const verified = await (await get('b@x.cl')).json();
+    expect(unknown).toEqual({ pendingVerification: false });
+    expect(verified).toEqual(unknown);
   });
 
   it('hides error details on failure', async () => {
