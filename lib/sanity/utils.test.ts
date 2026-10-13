@@ -94,6 +94,11 @@ describe('getCoursePrice', () => {
 });
 
 describe('dates (always America/Santiago)', () => {
+  it('trata una fecha sin hora como día de calendario (no el día anterior en Chile)', () => {
+    expect(formatDateLong('2025-06-01')).toBe('1 de junio de 2025');
+    expect(formatDateShort('2025-06-01')).toBe('1 jun 2025');
+  });
+
   const D = '2025-05-15T19:30:00Z'; // 15:30 en Chile (UTC-4)
 
   it('formats each variant', () => {

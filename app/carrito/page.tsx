@@ -13,7 +13,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, AlertTriangle, Info } from
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { formatWorkshopDateTime } from '@/lib/sanity/utils';
+import { formatWorkshopDateTime, formatDateLong } from '@/lib/sanity/utils';
 
 function unavailabilityKey(id: string, type: string, selectedDate?: string): string {
   return `${type}|${id}|${selectedDate ?? ''}`;
@@ -425,11 +425,7 @@ function CartItemCard({
               📅 {(() => {
                 // Usar el campo time si está disponible (ya formateado), sino calcularlo
                 const time = item.selectedDate.time || formatWorkshopDateTime(item.selectedDate.date).time;
-                const fullDate = new Date(item.selectedDate.date).toLocaleDateString('es-CL', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                });
+                const fullDate = formatDateLong(item.selectedDate.date);
                 return `${fullDate} a las ${time}`;
               })()}
             </p>

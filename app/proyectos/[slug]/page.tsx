@@ -4,7 +4,7 @@
  */
 
 import { getBlogPostBySlug, getAllBlogPosts } from '@/lib/sanity/fetch';
-import { getSlugString, getImageUrl } from '@/lib/sanity/utils';
+import { getSlugString, getImageUrl, formatDateLong } from '@/lib/sanity/utils';
 import { BlogHero, BlogContent } from '@/components/blog';
 import { VideoPlayer } from '@/components/ui/VideoPlayer';
 import { FadeIn } from '@/components/animations';
@@ -60,14 +60,6 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
   };
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-CL', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
@@ -108,7 +100,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {post.projectDate && (
                 <div className="flex items-center gap-2">
                   <Calendar size={18} className="text-musgo" />
-                  <span>{formatDate(post.projectDate)}</span>
+                  <span>{formatDateLong(post.projectDate)}</span>
                 </div>
               )}
               {post.location && (

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, MapPin, Tag } from 'lucide-react';
 import { Card } from '@/components/ui';
-import { getImageUrl, getSlugString } from '@/lib/sanity/utils';
+import { getImageUrl, getSlugString, formatDateLong } from '@/lib/sanity/utils';
 import type { BlogPost } from '@/types/sanity';
 import { Badge } from '@/components/ui';
 
@@ -15,14 +15,6 @@ interface BlogCardProps {
   post: BlogPost;
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-CL', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
 
 export function BlogCard({ post }: BlogCardProps) {
   const slug = getSlugString(post.slug);
@@ -47,7 +39,7 @@ export function BlogCard({ post }: BlogCardProps) {
               {post.projectDate && (
                 <div className="flex items-center gap-1.5">
                   <Calendar size={14} className="text-musgo" />
-                  <span>{formatDate(post.projectDate)}</span>
+                  <span>{formatDateLong(post.projectDate)}</span>
                 </div>
               )}
               {post.location && (
