@@ -12,6 +12,7 @@ import { convertCLPToUSD, convertUSDToCLP } from '@/lib/utils/currency';
 import type { CartItem } from '@/types/cart';
 
 const PRICE_TOLERANCE = 1;
+export const MAX_QUANTITY_PER_ITEM = 10;
 
 export class CheckoutValidationError extends Error {
   status: number;
@@ -63,6 +64,15 @@ export async function calculateOrderTotals(
   params: CalculateOrderTotalsParams,
 ): Promise<CalculateOrderTotalsResult> {
   const { items, gateway, isGift, userCurrency, skipAvailabilityChecks = false } = params;
+
+  for (const { name, quantity } of items) {
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY_PER_ITEM) {
+      throw new CheckoutValidationError(
+        400,
+        `Cantidad inválida para "${name}": debe ser un número entero entre 1 y ${MAX_QUANTITY_PER_ITEM}.`,
+      );
+    }
+  }
 
   const validatedItems: CartItem[] = [];
 

@@ -33,7 +33,7 @@ describe('POST /api/cart/validate-stock', () => {
     expect((await post(body)).status).toBe(400);
   });
 
-  it.each(['abc', -2])('400 on invalid quantity %j', async (quantity) => {
+  it.each(['abc', -2, 1.5])('400 on invalid quantity %j', async (quantity) => {
     const { status, json } = await post({ itemId: 'a', itemType: 'terrarium', quantity });
     expect(status).toBe(400);
     expect(json.error).toBe('Cantidad inválida');
@@ -93,8 +93,7 @@ describe('POST /api/cart/validate-stock', () => {
     expect(json).toEqual({ available: true, inStock: true, message: 'Disponible' });
   });
 
-  // BUG: cualquier itemType desconocido cae al caso "curso" y se reporta disponible.
-  it.skip('rejects unknown item types', async () => {
+  it('rejects unknown item types', async () => {
     expect((await post({ itemId: 'x', itemType: 'bogus', quantity: 1 })).status).toBe(400);
   });
 

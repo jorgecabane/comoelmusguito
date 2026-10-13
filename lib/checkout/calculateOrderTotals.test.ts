@@ -117,15 +117,18 @@ describe('totales Flow (CLP)', () => {
     await expectValidationError(run([item({ price: 0 })]), { message: 'Monto inválido' });
   });
 
-  // BUG: ni calculateOrderTotals ni POST /api/checkout validan que quantity sea un entero
-  // positivo. Con quantity negativa un item resta del total (p.ej. 2×10000 + -1×9000 = 11000
-  // cobrados por dos terrarios). Ver lib/checkout/calculateOrderTotals.ts:117.
-  it.skip('BUG: debería rechazar cantidades negativas o no enteras', async () => {
+  it.each([0, -1, 1.5, 11, '2', null])('rechaza quantity=%j antes de consultar Sanity', async (quantity) => {
     m(getSupplyById).mockResolvedValue({ price: 9000, currency: 'CLP', inStock: true });
     await expectValidationError(
-      run([item({ quantity: 2 }), item({ type: 'supply', price: 9000, quantity: -1 })]),
-      {},
+      run([item({ quantity: 2 }), item({ type: 'supply', price: 9000, quantity: quantity as number })]),
+      { message: 'Cantidad inválida para "Item": debe ser un número entero entre 1 y 10.' },
     );
+    expect(getTerrariumById).not.toHaveBeenCalled();
+  });
+
+  it('acepta exactamente 10 unidades (límite inclusivo)', async () => {
+    const res = await run([item({ quantity: 10 })]);
+    expect(res.total).toBe(100000);
   });
 });
 
