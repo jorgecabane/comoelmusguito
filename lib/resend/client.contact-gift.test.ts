@@ -61,12 +61,39 @@ describe('sendContactEmail', () => {
     expect(send).not.toHaveBeenCalled();
   });
 
-  // BUG: lib/resend/client.ts:735 — public contact-form fields (name, subject, message) are
-  // interpolated into the HTML unescaped, allowing HTML injection into the shop's and user's inbox.
-  it.skip('escapes user-supplied HTML', async () => {
+  it('escapes user-supplied HTML', async () => {
     const { sendContactEmail } = await load();
     await sendContactEmail({ ...contact, message: '<img src=x onerror=alert(1)>' });
     expect(send.mock.calls[0][0].html).not.toContain('<img src=x');
+  });
+
+  it('escapes scripts, links and quotes in every field of both emails', async () => {
+    const { sendContactEmail } = await load();
+    await sendContactEmail({
+      name: '<script>alert(1)</script>',
+      email: 'a"onmouseover="x@test.cl',
+      phone: '1"><a href="https://evil">',
+      subject: `<a href="https://evil">Gana</a>`,
+      message: `"citas" y 'apóstrofes' <b>`,
+    });
+    for (const [{ html }] of send.mock.calls) {
+      expect(html).not.toContain('<script>');
+      expect(html).not.toContain('<a href="https://evil"');
+      expect(html).not.toContain('<b>');
+    }
+    const [toShop, toUser] = send.mock.calls.map((c) => c[0].html);
+    expect(toShop).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(toShop).toContain('href="mailto:a&quot;onmouseover=&quot;x@test.cl"');
+    expect(toShop).toContain('href="tel:1&quot;&gt;&lt;a href=&quot;https://evil&quot;&gt;"');
+    expect(toShop).toContain('&quot;citas&quot; y &#39;apóstrofes&#39; &lt;b&gt;');
+    expect(toUser).toContain('<strong>&lt;a href=&quot;https://evil&quot;&gt;Gana&lt;/a&gt;</strong>');
+  });
+
+  it('throws when Resend returns an API error', async () => {
+    const { sendContactEmail } = await load();
+    send.mockResolvedValueOnce({ data: null, error: { message: 'rate limited' } });
+    await expect(sendContactEmail(contact)).rejects.toThrow('rate limited');
+    expect(send).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -153,6 +180,30 @@ describe('sendGiftEmail', () => {
     const { sendGiftEmail } = await load('');
     await sendGiftEmail(gift);
     expect(send).not.toHaveBeenCalled();
+  });
+
+  it('escapes sender, recipient, message, items and address', async () => {
+    const { sendGiftEmail } = await load();
+    await sendGiftEmail({
+      ...gift,
+      recipientName: '<script>x</script>',
+      senderName: `<a href="https://evil">Ana</a>`,
+      giftMessage: `<img src=x> "hola" 'chao'`,
+      items: [{ name: '<b>Curso</b>', type: 'course', quantity: 1, price: 1, currency: 'CLP' }],
+      shippingAddress: { region: 'RM', comuna: '<i>', address: '<u>', number: '1', details: '<s>' },
+    });
+    const { html } = send.mock.calls[0][0];
+    expect(html).not.toMatch(/<script>|<a href="https:\/\/evil"|<img src=x|<b>|<i>|<u>|<s>/);
+    expect(html).toContain('¡Hola &lt;script&gt;x&lt;/script&gt;!');
+    expect(html).toContain('<strong>&lt;a href=&quot;https://evil&quot;&gt;Ana&lt;/a&gt;</strong>');
+    expect(html).toContain('"&lt;img src=x&gt; &quot;hola&quot; &#39;chao&#39;"');
+    expect(html).toContain('• &lt;b&gt;Curso&lt;/b&gt;');
+  });
+
+  it('throws when Resend returns an API error', async () => {
+    const { sendGiftEmail } = await load();
+    send.mockResolvedValueOnce({ data: null, error: { message: 'invalid to' } });
+    await expect(sendGiftEmail(gift)).rejects.toThrow('invalid to');
   });
 
   it('rethrows SDK failures', async () => {

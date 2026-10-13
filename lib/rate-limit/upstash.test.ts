@@ -51,6 +51,7 @@ describe('limiters', () => {
     expect(mod.loginRateLimit).toBeNull();
     expect(mod.registerRateLimit).toBeNull();
     expect(mod.apiRateLimit).toBeNull();
+    expect(mod.contactRateLimit).toBeNull();
     expect(ctorArgs).toHaveLength(0);
   });
 
@@ -66,6 +67,7 @@ describe('limiters', () => {
       '@upstash/ratelimit/check-email',
       '@upstash/ratelimit/resend-verification',
       '@upstash/ratelimit/redeem-gift',
+      '@upstash/ratelimit/contact',
       '@upstash/ratelimit/api',
     ]);
     expect(ctorArgs[1]).toMatchObject({ limiter: { n: 3, w: '1 h' } });

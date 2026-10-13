@@ -125,6 +125,19 @@ export const redeemGiftRateLimit = redis
   : null;
 
 /**
+ * Rate limiter para el formulario de contacto
+ * 5 mensajes por hora por IP
+ */
+export const contactRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(5, '1 h'),
+      analytics: true,
+      prefix: '@upstash/ratelimit/contact',
+    })
+  : null;
+
+/**
  * Rate limiter genérico para endpoints API
  * 100 requests por minuto por IP
  */

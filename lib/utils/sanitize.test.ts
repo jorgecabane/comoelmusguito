@@ -6,7 +6,20 @@ import {
   sanitizeFloat,
   sanitizeUrl,
   sanitizeObject,
+  escapeHtml,
 } from './sanitize';
+
+describe('escapeHtml', () => {
+  it('escapes HTML metacharacters and quotes', () => {
+    expect(escapeHtml(`<a href="x" title='y'>&</a>`)).toBe(
+      '&lt;a href=&quot;x&quot; title=&#39;y&#39;&gt;&amp;&lt;/a&gt;'
+    );
+  });
+
+  it('leaves plain text untouched', () => {
+    expect(escapeHtml('Ñuñoa 123')).toBe('Ñuñoa 123');
+  });
+});
 
 describe('sanitizeString', () => {
   it('trims and strips angle brackets to neutralize tags', () => {
