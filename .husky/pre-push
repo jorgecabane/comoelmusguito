@@ -1,0 +1,3 @@
+# Igual que la CI: coverage ≥90% + E2E. Saltarlo (--no-verify) no evita la CI.
+npm run test:coverage
+npm run e2e
