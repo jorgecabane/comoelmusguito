@@ -224,11 +224,29 @@ describe('sendOrderConfirmationEmail', () => {
     await expect(sendOrderConfirmationEmail(baseOrder)).rejects.toThrow('network down');
   });
 
-  // BUG: lib/resend/client.ts:90 — resend v6 returns { data, error } instead of throwing on API
-  // errors; the result is ignored, so a rejected email is logged as sent and the caller never knows.
-  it.skip('surfaces Resend API errors returned in { error }', async () => {
+  it('surfaces Resend API errors returned in { error }', async () => {
     const { sendOrderConfirmationEmail } = await load();
     send.mockResolvedValueOnce({ data: null, error: { message: 'domain not verified' } });
-    await expect(sendOrderConfirmationEmail(baseOrder)).rejects.toThrow();
+    await expect(sendOrderConfirmationEmail(baseOrder)).rejects.toThrow('domain not verified');
+    expect(console.log).not.toHaveBeenCalled();
+  });
+
+  it('escapes customer, gift and shipping fields', async () => {
+    const { sendOrderConfirmationEmail } = await load();
+    await sendOrderConfirmationEmail({
+      ...baseOrder,
+      customerName: '<script>x</script>',
+      isGift: true,
+      recipientName: `<a href="https://evil">Luis</a>`,
+      recipientEmail: 'l"@x.cl',
+      giftMessage: `<img src=x> 'hola'`,
+      flowInvoiceUrl: 'https://flow.cl/b?a=1&b="2"',
+    });
+    const html = sentHtml();
+    expect(html).not.toMatch(/<script>|<a href="https:\/\/evil"|<img src=x/);
+    expect(html).toContain('Hola &lt;script&gt;x&lt;/script&gt;,');
+    expect(html).toContain('&lt;a href=&quot;https://evil&quot;&gt;Luis&lt;/a&gt; (l&quot;@x.cl)');
+    expect(html).toContain('"&lt;img src=x&gt; &#39;hola&#39;"');
+    expect(html).toContain('href="https://flow.cl/b?a=1&amp;b=&quot;2&quot;"');
   });
 });

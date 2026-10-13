@@ -7,6 +7,7 @@ import 'server-only';
 import { Resend } from 'resend';
 import { getTelLink, getFormattedPhoneNumber } from '@/lib/config/contact';
 import { formatDateLong, formatWorkshopDateFull } from '@/lib/sanity/utils';
+import { escapeHtml } from '@/lib/utils/sanitize';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'hola@comoelmusguito.cl';
@@ -16,6 +17,14 @@ if (!RESEND_API_KEY) {
 }
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+type EmailPayload = Parameters<Resend['emails']['send']>[0];
+
+/** resend v6 devuelve `{ data, error }` en vez de lanzar: lo convertimos en excepción. */
+async function sendEmail(client: Resend, payload: EmailPayload): Promise<void> {
+  const { error } = await client.emails.send(payload);
+  if (error) throw new Error(`Resend rechazó el email: ${error.message}`);
+}
 
 export interface EmailOrderItem {
   name: string;
@@ -87,7 +96,7 @@ export async function sendOrderConfirmationEmail(data: EmailOrderData): Promise<
   try {
     const { html, subject } = generateOrderConfirmationEmail(data);
 
-    await resend.emails.send({
+    await sendEmail(resend, {
       from: `comoelmusguito <${RESEND_FROM_EMAIL}>`,
       to: data.customerEmail,
       subject,
@@ -155,7 +164,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
               </h2>
               
               <p style="margin: 0 0 30px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
-                Hola${data.customerName ? ` ${data.customerName}` : ''},
+                Hola${data.customerName ? ` ${escapeHtml(data.customerName)}` : ''},
               </p>
               
               <p style="margin: 0 0 30px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
@@ -178,7 +187,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                     Destinatario:
                   </p>
                   <p style="margin: 0; color: #1A1F16; font-size: 15px; font-weight: 600;">
-                    ${data.recipientName || 'Sin nombre'} ${data.recipientEmail ? `(${data.recipientEmail})` : ''}
+                    ${data.recipientName ? escapeHtml(data.recipientName) : 'Sin nombre'} ${data.recipientEmail ? `(${escapeHtml(data.recipientEmail)})` : ''}
                   </p>
                 </div>
                 ${data.giftMessage ? `
@@ -187,7 +196,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                     Tu mensaje:
                   </p>
                   <p style="margin: 0; color: #1A1F16; font-size: 14px; font-style: italic; line-height: 1.6; white-space: pre-wrap;">
-                    "${data.giftMessage}"
+                    "${escapeHtml(data.giftMessage)}"
                   </p>
                 </div>
                 ` : ''}
@@ -206,12 +215,12 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
                   <tr>
                     <td style="padding: 8px 0; color: #5a5a5a; font-size: 14px;">Número de Orden:</td>
-                    <td align="right" style="padding: 8px 0; color: #2d3e2d; font-weight: 600; font-size: 14px;">${data.orderId}</td>
+                    <td align="right" style="padding: 8px 0; color: #2d3e2d; font-weight: 600; font-size: 14px;">${escapeHtml(data.orderId)}</td>
                   </tr>
                   ${data.flowOrder ? `
                   <tr>
                     <td style="padding: 8px 0; color: #5a5a5a; font-size: 14px;">Orden Flow:</td>
-                    <td align="right" style="padding: 8px 0; color: #2d3e2d; font-weight: 600; font-size: 14px;">${data.flowOrder}</td>
+                    <td align="right" style="padding: 8px 0; color: #2d3e2d; font-weight: 600; font-size: 14px;">${escapeHtml(data.flowOrder)}</td>
                   </tr>
                   ` : ''}
                   <tr>
@@ -229,7 +238,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                     <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e8e8e3;">
                       <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                         <div style="flex: 1;">
-                          <p style="margin: 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">${item.name}</p>
+                          <p style="margin: 0; color: #2d3e2d; font-weight: 600; font-size: 15px;">${escapeHtml(item.name)}</p>
                           <p style="margin: 4px 0 0 0; color: #5a5a5a; font-size: 13px;">
                             ${item.type === 'terrarium' ? '🌿 Terrario' : item.type === 'course' ? '🎓 Curso Online' : item.type === 'workshop' ? '🤝 Taller Presencial' : '🛠️ Insumo'}
                             ${item.quantity > 1 ? ` • Cantidad: ${item.quantity}` : ''}
@@ -298,7 +307,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                   ` : `
                     <div style="background-color: #fff9e6; border: 2px solid #ffd700; border-radius: 8px; padding: 12px; margin: 12px 0;">
                       <p style="margin: 0; color: #856404; font-size: 13px; font-weight: 600; text-align: center; line-height: 1.5;">
-                        ⚠️ Importante: Crea tu cuenta usando el mismo email con el que compraste (${data.customerEmail}) para que tus cursos se vinculen automáticamente.
+                        ⚠️ Importante: Crea tu cuenta usando el mismo email con el que compraste (${escapeHtml(data.customerEmail)}) para que tus cursos se vinculen automáticamente.
                       </p>
                     </div>
                     <div style="text-align: center; margin: 16px 0 0 0;">
@@ -349,8 +358,8 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                     🚚 Dirección de Despacho:
                   </p>
                   <p style="margin: 0 0 8px 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
-                    <strong>${data.shippingAddress.address} ${data.shippingAddress.number}</strong><br>
-                    ${data.shippingAddress.comuna}, ${data.shippingAddress.region}${data.shippingAddress.details ? `<br>${data.shippingAddress.details}` : ''}
+                    <strong>${escapeHtml(data.shippingAddress.address)} ${escapeHtml(data.shippingAddress.number)}</strong><br>
+                    ${escapeHtml(data.shippingAddress.comuna)}, ${escapeHtml(data.shippingAddress.region)}${data.shippingAddress.details ? `<br>${escapeHtml(data.shippingAddress.details)}` : ''}
                   </p>
                   <p style="margin: 12px 0 0 0; color: #856404; font-size: 13px; line-height: 1.6; font-weight: 500;">
                     ⚠️ Comoelmusguito te contactará después de la compra para coordinar el costo y fecha de envío. El despacho solo está disponible dentro de Chile.
@@ -363,7 +372,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
               ${data.flowInvoiceUrl ? `
               <!-- Link a Boleta -->
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${data.flowInvoiceUrl}" 
+                <a href="${escapeHtml(data.flowInvoiceUrl)}" 
                    style="display: inline-block; background-color: #4a7c59; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
                   Ver Boleta en Flow →
                 </a>
@@ -389,7 +398,7 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
           <tr>
             <td style="background-color: #f9f9f4; padding: 20px 30px; text-align: center;">
               <p style="margin: 0; color: #5a5a5a; font-size: 12px;">
-                Este email fue enviado a ${data.customerEmail}
+                Este email fue enviado a ${escapeHtml(data.customerEmail)}
               </p>
             </td>
           </tr>
@@ -424,7 +433,7 @@ export async function sendVerificationEmail(
 
     const { html, subject } = generateVerificationEmail(name || email, verificationUrl);
 
-    await resend.emails.send({
+    await sendEmail(resend, {
       from: `comoelmusguito <${RESEND_FROM_EMAIL}>`,
       to: email,
       subject,
@@ -479,7 +488,7 @@ function generateVerificationEmail(
               </h2>
               
               <p style="margin: 0 0 20px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
-                Hola${name ? ` ${name}` : ''},
+                Hola${name ? ` ${escapeHtml(name)}` : ''},
               </p>
               
               <p style="margin: 0 0 30px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
@@ -560,7 +569,7 @@ export async function sendPasswordResetEmail(
 
     const { html, subject } = generatePasswordResetEmail(name || email, resetUrl, isInitializing);
 
-    await resend.emails.send({
+    await sendEmail(resend, {
       from: `comoelmusguito <${RESEND_FROM_EMAIL}>`,
       to: email,
       subject,
@@ -631,7 +640,7 @@ function generatePasswordResetEmail(
               </h2>
 
               <p style="margin: 0 0 20px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
-                Hola${name ? ` ${name}` : ''},
+                Hola${name ? ` ${escapeHtml(name)}` : ''},
               </p>
 
               <p style="margin: 0 0 30px 0; color: #5a5a5a; font-size: 16px; line-height: 1.6;">
@@ -708,8 +717,13 @@ export async function sendContactEmail(data: {
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'hola@comoelmusguito.cl';
   const toEmail = process.env.CONTACT_EMAIL || 'hola@comoelmusguito.cl';
+  const name = escapeHtml(data.name);
+  const email = escapeHtml(data.email);
+  const phone = data.phone ? escapeHtml(data.phone) : undefined;
+  const subject = escapeHtml(data.subject);
+  const message = escapeHtml(data.message);
 
-  await resend.emails.send({
+  await sendEmail(resend, {
     from: fromEmail,
     to: toEmail,
     replyTo: data.email,
@@ -732,37 +746,37 @@ export async function sendContactEmail(data: {
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 8px 0; color: #666; font-weight: 600; width: 120px;">Nombre:</td>
-                  <td style="padding: 8px 0; color: #333;">${data.name}</td>
+                  <td style="padding: 8px 0; color: #333;">${name}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #666; font-weight: 600;">Email:</td>
                   <td style="padding: 8px 0; color: #333;">
-                    <a href="mailto:${data.email}" style="color: #4a7c2a; text-decoration: none;">${data.email}</a>
+                    <a href="mailto:${email}" style="color: #4a7c2a; text-decoration: none;">${email}</a>
                   </td>
                 </tr>
-                ${data.phone ? `
+                ${phone ? `
                 <tr>
                   <td style="padding: 8px 0; color: #666; font-weight: 600;">Teléfono:</td>
                   <td style="padding: 8px 0; color: #333;">
-                    <a href="tel:${data.phone}" style="color: #4a7c2a; text-decoration: none;">${data.phone}</a>
+                    <a href="tel:${phone}" style="color: #4a7c2a; text-decoration: none;">${phone}</a>
                   </td>
                 </tr>
                 ` : ''}
                 <tr>
                   <td style="padding: 8px 0; color: #666; font-weight: 600;">Asunto:</td>
-                  <td style="padding: 8px 0; color: #333;">${data.subject}</td>
+                  <td style="padding: 8px 0; color: #333;">${subject}</td>
                 </tr>
               </table>
             </div>
 
             <div style="background: white; padding: 20px; border-radius: 8px;">
               <h2 style="color: #2d5016; margin-top: 0; font-size: 20px;">Mensaje</h2>
-              <div style="color: #333; white-space: pre-wrap; line-height: 1.8;">${data.message}</div>
+              <div style="color: #333; white-space: pre-wrap; line-height: 1.8;">${message}</div>
             </div>
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: center;">
               <p style="color: #666; font-size: 14px; margin: 0;">
-                Puedes responder directamente a este email para contactar a ${data.name}
+                Puedes responder directamente a este email para contactar a ${name}
               </p>
             </div>
           </div>
@@ -772,7 +786,7 @@ export async function sendContactEmail(data: {
   });
 
   // También enviar confirmación al usuario
-  await resend.emails.send({
+  await sendEmail(resend, {
     from: fromEmail,
     to: data.email,
     subject: 'Hemos recibido tu mensaje - Como el Musguito',
@@ -785,12 +799,12 @@ export async function sendContactEmail(data: {
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-            <h1 style="color: #f5f5dc; margin: 0; font-size: 24px;">¡Hola ${data.name}!</h1>
+            <h1 style="color: #f5f5dc; margin: 0; font-size: 24px;">¡Hola ${name}!</h1>
           </div>
           
           <div style="background: #f5f5dc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e0e0e0;">
             <p style="color: #333; font-size: 16px; margin-top: 0;">
-              Hemos recibido tu mensaje sobre: <strong>${data.subject}</strong>
+              Hemos recibido tu mensaje sobre: <strong>${subject}</strong>
             </p>
             
             <p style="color: #333; font-size: 16px;">
@@ -799,7 +813,7 @@ export async function sendContactEmail(data: {
 
             <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <p style="color: #666; font-size: 14px; margin: 0 0 10px 0;"><strong>Tu mensaje:</strong></p>
-              <p style="color: #333; font-size: 14px; white-space: pre-wrap; margin: 0;">${data.message}</p>
+              <p style="color: #333; font-size: 14px; white-space: pre-wrap; margin: 0;">${message}</p>
             </div>
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
@@ -835,7 +849,7 @@ export async function sendGiftEmail(data: GiftEmailData): Promise<void> {
   try {
     const { html, subject } = generateGiftEmail(data);
 
-    await resend.emails.send({
+    await sendEmail(resend, {
       from: `comoelmusguito <${RESEND_FROM_EMAIL}>`,
       to: data.recipientEmail,
       subject,
@@ -893,17 +907,17 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
               
               <!-- Saludo -->
               <h2 style="margin: 0 0 20px 0; color: #1A1F16; font-size: 24px; font-weight: 600;">
-                ¡Hola${data.recipientName ? ` ${data.recipientName}` : ''}!
+                ¡Hola${data.recipientName ? ` ${escapeHtml(data.recipientName)}` : ''}!
               </h2>
               
               <p style="margin: 0 0 20px 0; color: #6B7566; font-size: 16px; line-height: 1.6;">
-                <strong>${data.senderName || data.senderEmail}</strong> te ha enviado un regalo especial:
+                <strong>${escapeHtml(data.senderName || data.senderEmail)}</strong> te ha enviado un regalo especial:
               </p>
 
               ${data.giftMessage ? `
               <!-- Mensaje Personalizado -->
               <div style="background-color: #FDFAF6; border-left: 4px solid #D4A574; padding: 16px; margin: 20px 0; border-radius: 8px;">
-                <p style="margin: 0; color: #1A1F16; font-size: 15px; font-style: italic; line-height: 1.6; white-space: pre-wrap;">"${data.giftMessage}"</p>
+                <p style="margin: 0; color: #1A1F16; font-size: 15px; font-style: italic; line-height: 1.6; white-space: pre-wrap;">"${escapeHtml(data.giftMessage)}"</p>
               </div>
               ` : ''}
 
@@ -917,7 +931,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 <div style="margin-bottom: 16px;">
                   <h4 style="margin: 0 0 8px 0; color: #2D5016; font-size: 16px; font-weight: 600;">📚 Cursos Online:</h4>
                   ${cursos.map((item) => `
-                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
@@ -926,7 +940,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 <div style="margin-bottom: 16px;">
                   <h4 style="margin: 0 0 8px 0; color: #2D5016; font-size: 16px; font-weight: 600;">🎨 Talleres:</h4>
                   ${talleres.map((item) => `
-                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${item.name}${item.selectedDate ? ` - ${formatDateLong(item.selectedDate.date)}` : ''}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${escapeHtml(item.name)}${item.selectedDate ? ` - ${formatDateLong(item.selectedDate.date)}` : ''}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
@@ -935,7 +949,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 <div style="margin-bottom: 16px;">
                   <h4 style="margin: 0 0 8px 0; color: #2D5016; font-size: 16px; font-weight: 600;">🌿 Terrarios:</h4>
                   ${terrarios.map((item) => `
-                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
@@ -944,7 +958,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 <div style="margin-bottom: 16px;">
                   <h4 style="margin: 0 0 8px 0; color: #2D5016; font-size: 16px; font-weight: 600;">🛠️ Insumos:</h4>
                   ${insumos.map((item) => `
-                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: #1A1F16; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
@@ -957,8 +971,8 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                   🚚 Dirección de Despacho:
                 </p>
                 <p style="margin: 0 0 8px 0; color: #5a5a5a; font-size: 14px; line-height: 1.6;">
-                  <strong>${data.shippingAddress.address} ${data.shippingAddress.number}</strong><br>
-                  ${data.shippingAddress.comuna}, ${data.shippingAddress.region}${data.shippingAddress.details ? `<br>${data.shippingAddress.details}` : ''}
+                  <strong>${escapeHtml(data.shippingAddress.address)} ${escapeHtml(data.shippingAddress.number)}</strong><br>
+                  ${escapeHtml(data.shippingAddress.comuna)}, ${escapeHtml(data.shippingAddress.region)}${data.shippingAddress.details ? `<br>${escapeHtml(data.shippingAddress.details)}` : ''}
                 </p>
                 <p style="margin: 12px 0 0 0; color: #856404; font-size: 13px; line-height: 1.6; font-weight: 500;">
                   ⚠️ Comoelmusguito te contactará después de canjear tu regalo para coordinar el costo y fecha de envío.
@@ -973,7 +987,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 </p>
                 <div style="background-color: #ffffff; border: 2px solid #3D6B22; border-radius: 8px; padding: 16px; margin: 12px 0;">
                   <p style="margin: 0; color: #2D5016; font-size: 20px; font-weight: bold; font-family: monospace; letter-spacing: 2px;">
-                    ${data.giftToken}
+                    ${escapeHtml(data.giftToken)}
                   </p>
                 </div>
                 <p style="margin: 12px 0 0 0; color: #6B7566; font-size: 13px; line-height: 1.5;">
@@ -1083,7 +1097,7 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
           <tr>
             <td style="background-color: #FDFAF6; padding: 20px 30px; text-align: center;">
               <p style="margin: 0; color: #6B7566; font-size: 12px;">
-                Este email fue enviado a ${data.recipientEmail}
+                Este email fue enviado a ${escapeHtml(data.recipientEmail)}
               </p>
             </td>
           </tr>

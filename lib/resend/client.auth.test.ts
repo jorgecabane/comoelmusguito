@@ -56,6 +56,18 @@ describe('sendVerificationEmail', () => {
     send.mockRejectedValueOnce(new Error('boom'));
     await expect(sendVerificationEmail('a@b.cl', 'A', 't')).rejects.toThrow('boom');
   });
+
+  it('throws when Resend returns an API error', async () => {
+    const { sendVerificationEmail } = await load();
+    send.mockResolvedValueOnce({ data: null, error: { message: 'quota' } });
+    await expect(sendVerificationEmail('a@b.cl', 'A', 't')).rejects.toThrow('quota');
+  });
+
+  it('escapes the user name', async () => {
+    const { sendVerificationEmail } = await load();
+    await sendVerificationEmail('a@b.cl', '<a href="https://evil">x</a>', 't');
+    expect(send.mock.calls[0][0].html).toContain('Hola &lt;a href=&quot;https://evil&quot;&gt;x&lt;/a&gt;,');
+  });
 });
 
 describe('sendPasswordResetEmail', () => {
@@ -99,5 +111,17 @@ describe('sendPasswordResetEmail', () => {
     const { sendPasswordResetEmail } = await load();
     send.mockRejectedValueOnce(new Error('boom'));
     await expect(sendPasswordResetEmail('a@b.cl', 'A', 't')).rejects.toThrow('boom');
+  });
+
+  it('throws when Resend returns an API error', async () => {
+    const { sendPasswordResetEmail } = await load();
+    send.mockResolvedValueOnce({ data: null, error: { message: 'quota' } });
+    await expect(sendPasswordResetEmail('a@b.cl', 'A', 't')).rejects.toThrow('quota');
+  });
+
+  it('escapes the user name', async () => {
+    const { sendPasswordResetEmail } = await load();
+    await sendPasswordResetEmail('a@b.cl', '<a href="https://evil">x</a>', 't');
+    expect(send.mock.calls[0][0].html).toContain('Hola &lt;a href=&quot;https://evil&quot;&gt;x&lt;/a&gt;,');
   });
 });

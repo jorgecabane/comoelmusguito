@@ -3,6 +3,12 @@ import { NextRequest } from 'next/server';
 
 const sendContactEmail = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/resend/client', () => ({ sendContactEmail }));
+const applyRateLimit = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/rate-limit/upstash', () => ({
+  contactRateLimit: 'contact-limiter',
+  getClientIP: () => '1.2.3.4',
+  applyRateLimit,
+}));
 
 import { POST } from './route';
 
@@ -13,6 +19,7 @@ const valid = { name: 'Ana', email: 'a@x.cl', subject: 'Hola', message: 'Quiero 
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
   sendContactEmail.mockReset().mockResolvedValue(undefined);
+  applyRateLimit.mockReset().mockResolvedValue({ success: true });
 });
 
 describe('POST /api/contact', () => {
@@ -40,11 +47,41 @@ describe('POST /api/contact', () => {
     expect(sendContactEmail).toHaveBeenCalledWith(expect.objectContaining({ phone: '+56 9 1234' }));
   });
 
-  // BUG: name/subject/message are forwarded unsanitized and lib/resend/client.ts interpolates them raw into
-  // the HTML email (HTML injection / phishing links in the owner's inbox). No rate limit or captcha either.
-  it.skip('strips HTML from user-supplied fields before emailing', async () => {
+  // El HTML se escapa al renderizar el email (lib/resend/client.ts, ver client.contact-gift.test.ts):
+  // la ruta reenvía el texto tal cual para no mutilar mensajes legítimos que contengan "<" o ">".
+  it('forwards the raw text so the email renderer can escape it', async () => {
     await post({ ...valid, message: '<a href="https://evil">click</a>' });
-    expect(sendContactEmail.mock.calls[0][0].message).not.toContain('<a');
+    expect(sendContactEmail.mock.calls[0][0].message).toBe('<a href="https://evil">click</a>');
+  });
+
+  it('rate limits by client IP with the contact limiter', async () => {
+    applyRateLimit.mockResolvedValueOnce({ success: false });
+    const res = await post(valid);
+    expect(res.status).toBe(429);
+    expect(applyRateLimit).toHaveBeenCalledWith('contact-limiter', '1.2.3.4');
+    expect(sendContactEmail).not.toHaveBeenCalled();
+  });
+
+  it('allows the request when the limiter falls back (no Upstash)', async () => {
+    applyRateLimit.mockResolvedValueOnce(null);
+    expect((await post(valid)).status).toBe(200);
+  });
+
+  it.each([
+    ['name', 101],
+    ['email', 255],
+    ['phone', 31],
+    ['subject', 201],
+    ['message', 5001],
+  ])('rejects %s longer than the cap', async (field, length) => {
+    const res = await post({ ...valid, [field]: 'a'.repeat(length - 1) + '@' });
+    expect(res.status).toBe(400);
+    expect(sendContactEmail).not.toHaveBeenCalled();
+  });
+
+  it('accepts fields at the cap', async () => {
+    const res = await post({ ...valid, message: 'a'.repeat(5000) });
+    expect(res.status).toBe(200);
   });
 
   it('returns 500 when delivery fails', async () => {
