@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Builder encadenable de patches de Sanity: cada operación queda registrada.
 const m = vi.hoisted(() => {
-  const commit = vi.fn<(...a: any[]) => any>(async () => ({}));
-  const set = vi.fn<(...a: any[]) => any>(() => ({ commit }));
-  const patch = vi.fn<(...a: any[]) => any>(() => ({ set }));
-  return { commit, set, patch, fetch: vi.fn<(...a: any[]) => any>() };
+  const fn = vi.fn<(...a: any[]) => any>;
+  const b = { set: fn(() => b), setIfMissing: fn(() => b), dec: fn(() => b), inc: fn(() => b), commit: fn(async () => ({})) };
+  return { ...b, patch: fn(() => b), fetch: fn() };
 });
 
 vi.mock('@/sanity/lib/client', () => {
@@ -66,43 +66,48 @@ describe.each([
   });
 
   describe('decrease', () => {
-    it('decrements stock and keeps inStock while units remain', async () => {
-      m.fetch.mockResolvedValue({ stock: 5 });
+    it('decrements atomically with dec, without reading first', async () => {
+      m.commit.mockResolvedValueOnce({ stock: 3 });
       await decrease('id1', 2);
+      expect(m.fetch).not.toHaveBeenCalled();
       expect(m.patch).toHaveBeenCalledWith('id1');
-      expect(m.set.mock.calls[0][0]).toMatchObject({ stock: 3, inStock: true });
-      expect(m.commit).toHaveBeenCalled();
+      expect(m.setIfMissing).toHaveBeenCalledWith({ stock: 0 });
+      expect(m.dec).toHaveBeenCalledWith({ stock: 2 });
+      expect(m.commit).toHaveBeenCalledTimes(1);
+      expect(m.inc).not.toHaveBeenCalled();
     });
 
     it('marks out of stock when reaching zero', async () => {
-      m.fetch.mockResolvedValue({ stock: 2 });
+      m.commit.mockResolvedValueOnce({ stock: 0 });
       await decrease('id1', 2);
-      expect(m.set.mock.calls[0][0]).toMatchObject({ stock: 0, inStock: false });
+      expect(m.inc).toHaveBeenCalledWith({ stock: -0 });
+      expect(m.set).toHaveBeenLastCalledWith({ inStock: false });
+      expect(console.warn).not.toHaveBeenCalled();
     });
 
-    it('never goes negative: deducts only what is available', async () => {
-      m.fetch.mockResolvedValue({ stock: 1 });
+    it('never stays negative: returns the excess atomically', async () => {
+      m.commit.mockResolvedValueOnce({ stock: -2 });
       await decrease('id1', 3);
-      expect(m.set.mock.calls[0][0]).toMatchObject({ stock: 0, inStock: false });
+      expect(m.inc).toHaveBeenCalledWith({ stock: 2 });
+      expect(m.set).toHaveBeenLastCalledWith({ inStock: false });
       expect(console.warn).toHaveBeenCalled();
     });
 
-    it('writes nothing when stock is already 0 or undefined', async () => {
-      m.fetch.mockResolvedValueOnce({ stock: 0 }).mockResolvedValueOnce({});
-      await decrease('id1', 1);
-      await decrease('id1', 1);
-      expect(m.patch).not.toHaveBeenCalled();
+    it('two concurrent decrements both apply (no lost update)', async () => {
+      let stock = 5;
+      m.dec.mockImplementation(({ stock: q }: { stock: number }) => {
+        stock -= q;
+        return m.patch();
+      });
+      m.commit.mockImplementation(async () => ({ stock }));
+      await Promise.all([decrease('id1', 1), decrease('id1', 1)]);
+      expect(stock).toBe(3);
     });
 
-    it('throws when the document is missing', async () => {
-      m.fetch.mockResolvedValue(null);
-      await expect(decrease('id1', 1)).rejects.toThrow(`${label} id1 no encontrado`);
-    });
-
-    it('propagates commit failures', async () => {
-      m.fetch.mockResolvedValue({ stock: 5 });
-      m.commit.mockRejectedValueOnce(new Error('conflict'));
-      await expect(decrease('id1', 1)).rejects.toThrow('conflict');
+    it(`propagates errors (e.g. ${label} missing)`, async () => {
+      m.commit.mockRejectedValueOnce(new Error('not found'));
+      await expect(decrease('id1', 1)).rejects.toThrow('not found');
+      expect(console.error).toHaveBeenCalledWith(expect.stringContaining(type === 'terrarium' ? 'terrario' : 'insumo'), expect.any(Error));
     });
   });
 });
@@ -154,43 +159,55 @@ describe('checkWorkshopSpots', () => {
 describe('decreaseWorkshopSpots', () => {
   const D1 = '2026-03-01T15:00:00.000Z';
   const D2 = '2026-03-08T15:00:00.000Z';
-  const workshop = (spots1?: number) => ({
+  const workshop = () => ({
     dates: [
-      { _key: 'a', date: D1, spotsAvailable: spots1, status: 'available', price: 1 },
+      { _key: 'a', date: D1, spotsAvailable: 5, status: 'available' },
       { _key: 'b', date: D2, spotsAvailable: 9, status: 'available' },
     ],
   });
+  const after = (spots: number) => ({ dates: [{ _key: 'a', spotsAvailable: spots }, { _key: 'b', spotsAvailable: 9 }] });
+  const SPOTS = 'dates[_key=="a"].spotsAvailable';
 
-  it('decrements only the matching date and preserves other fields', async () => {
-    m.fetch.mockResolvedValue(workshop(5));
-    await decreaseWorkshopSpots('w1', D1, 2);
+  it('decrements only the matching date atomically by _key', async () => {
+    m.fetch.mockResolvedValue(workshop());
+    m.commit.mockResolvedValueOnce(after(3));
+    await decreaseWorkshopSpots('w1', '2026-03-01T12:00:00-03:00', 2);
     expect(m.patch).toHaveBeenCalledWith('w1');
-    const { dates } = m.set.mock.calls[0][0];
-    expect(dates[0]).toEqual({ _key: 'a', date: D1, spotsAvailable: 3, status: 'available', price: 1 });
-    expect(dates[1]).toEqual(workshop().dates[1]);
+    expect(m.setIfMissing).toHaveBeenCalledWith({ [SPOTS]: 0 });
+    expect(m.dec).toHaveBeenCalledWith({ [SPOTS]: 2 });
+    expect(m.commit).toHaveBeenCalledTimes(1);
   });
 
-  it('clamps to available spots and marks the date as sold out', async () => {
-    m.fetch.mockResolvedValue(workshop(1));
-    await decreaseWorkshopSpots('w1', D1, 3);
-    const { dates } = m.set.mock.calls[0][0];
-    expect(dates[0].spotsAvailable).toBe(0);
+  it('marks the date sold out at zero', async () => {
+    m.fetch.mockResolvedValue(workshop());
+    m.commit.mockResolvedValueOnce(after(0));
+    await decreaseWorkshopSpots('w1', D1, 5);
+    expect(m.set).toHaveBeenLastCalledWith({ 'dates[_key=="a"].status': 'soldOut' });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('clamps to zero when overbooked', async () => {
+    m.fetch.mockResolvedValue(workshop());
+    m.commit.mockResolvedValueOnce(after(-2));
+    await decreaseWorkshopSpots('w1', D1, 7);
+    expect(m.inc).toHaveBeenCalledWith({ [SPOTS]: 2 });
     expect(console.warn).toHaveBeenCalled();
   });
 
-  // BUG: inventory.ts:280 escribe status 'soldOut', pero el schema (sanity/schemas/workshop.ts)
-  // y los lectores (checkWorkshopSpots, WorkshopDetail, talleres/[slug]) esperan 'sold_out'.
-  it.skip('uses the schema value sold_out when spots run out', async () => {
-    m.fetch.mockResolvedValue(workshop(1));
+  it('treats a date missing from the result as zero spots', async () => {
+    m.fetch.mockResolvedValue(workshop());
+    m.commit.mockResolvedValueOnce({ dates: [] });
     await decreaseWorkshopSpots('w1', D1, 1);
-    expect(m.set.mock.calls[0][0].dates[0].status).toBe('sold_out');
+    expect(m.inc).toHaveBeenCalledWith({ [SPOTS]: -0 });
   });
 
-  it('writes nothing when there are no spots left', async () => {
-    m.fetch.mockResolvedValueOnce(workshop(0)).mockResolvedValueOnce(workshop(undefined));
-    await decreaseWorkshopSpots('w1', D1, 1);
-    await decreaseWorkshopSpots('w1', D1, 1);
-    expect(m.patch).not.toHaveBeenCalled();
+  // BUG: inventory.ts escribe status 'soldOut', pero el schema (sanity/schemas/workshop.ts)
+  // y los lectores (checkWorkshopSpots, WorkshopDetail, talleres/[slug]) esperan 'sold_out'.
+  it.skip('uses the schema value sold_out when spots run out', async () => {
+    m.fetch.mockResolvedValue(workshop());
+    m.commit.mockResolvedValueOnce(after(0));
+    await decreaseWorkshopSpots('w1', D1, 5);
+    expect(m.set).toHaveBeenLastCalledWith({ 'dates[_key=="a"].status': 'sold_out' });
   });
 
   it('throws for a missing workshop or date', async () => {
@@ -198,10 +215,11 @@ describe('decreaseWorkshopSpots', () => {
     await expect(decreaseWorkshopSpots('w1', D1, 1)).rejects.toThrow('Taller w1 no encontrado');
     m.fetch.mockResolvedValueOnce({});
     await expect(decreaseWorkshopSpots('w1', D1, 1)).rejects.toThrow(`Fecha ${D1} no encontrada`);
+    expect(m.patch).not.toHaveBeenCalled();
   });
 
   it('propagates commit failures', async () => {
-    m.fetch.mockResolvedValue(workshop(5));
+    m.fetch.mockResolvedValue(workshop());
     m.commit.mockRejectedValueOnce(new Error('conflict'));
     await expect(decreaseWorkshopSpots('w1', D1, 1)).rejects.toThrow('conflict');
   });
