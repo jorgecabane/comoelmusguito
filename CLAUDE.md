@@ -51,7 +51,7 @@ npm run script:generate-favicons   # Regenerate favicon set with sharp
 ### Rendering + routing
 - Next.js 16 **App Router** with React 19. Routes live directly under `app/` (not grouped) — e.g. `app/terrarios`, `app/cursos`, `app/talleres`, `app/proyectos`, `app/mi-cuenta`, `app/checkout`, `app/carrito`.
 - `app/studio` embeds the Sanity Studio in-app (configured via `sanity/sanity.config.ts`).
-- `middleware.ts` uses `next-auth/middleware` to gate `/mi-cuenta`, `/mis-cursos`, `/mis-pedidos`. Next.js 16 deprecates `middleware` in favor of `proxy`, but next-auth hasn't migrated yet — the warning is expected; do not rewrite until next-auth supports proxy.
+- `middleware.ts` uses `next-auth/middleware` to gate `/mi-cuenta` (courses and orders live there via `?filter=`). Next.js 16 deprecates `middleware` in favor of `proxy`, but next-auth hasn't migrated yet — the warning is expected; do not rewrite until next-auth supports proxy.
 
 ### Data layer — Sanity as source of truth
 - Schemas live in `sanity/schemas/` (terrarium, course, courseAccess, order, supply, workshop, blogPost, newsletter, user).
