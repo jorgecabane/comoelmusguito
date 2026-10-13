@@ -7,7 +7,7 @@ import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import { visionTool } from '@sanity/vision';
 import { schemaTypes } from './schemas';
-import { refundOrderAction } from './actions/refund-order';
+import { RefundOrderAction } from './actions/refund-order';
 import { reportsTool } from './tools/reports';
 
 export default defineConfig({
@@ -141,7 +141,7 @@ export default defineConfig({
   document: {
     actions: (prev, context) => {
       if (context.schemaType === 'order') {
-        return [...prev, refundOrderAction];
+        return [...prev, RefundOrderAction];
       }
       return prev;
     },

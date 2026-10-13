@@ -14,7 +14,15 @@ npm run build         # Production build (Turbopack)
 npm run build:webpack # Production build using Webpack (fallback)
 npm run start         # Serve the production build
 npm run lint          # ESLint (eslint-config-next)
+npm run typecheck     # tsc --noEmit
+npm test              # Vitest unit tests (colocated *.test.ts)
+npm run test:coverage # Unit tests + coverage gate (90% lines/branches/functions/statements)
+npm run e2e           # Playwright: seeds the Sanity `test` dataset, builds, starts on :3100, runs all roles
+npm run e2e:ui        # Playwright UI mode
+npm run e2e:seed      # Re-seed only the `test` dataset (refuses any other dataset)
 ```
+
+Run a single test: `npx vitest run lib/flow/utils.test.ts` / `npx playwright test e2e/anon/cart.spec.ts --project=anon`.
 
 One-off maintenance scripts (run via `tsx`):
 
@@ -25,7 +33,18 @@ npm run script:instagram-auth      # OAuth flow to mint an Instagram long-lived 
 npm run script:generate-favicons   # Regenerate favicon set with sharp
 ```
 
-No test runner is configured — do not claim tests pass; verify manually in the browser.
+## Workflow & quality gates
+
+- **Branches:** `main` = production (comoelmusguito.cl). `develop` = live dev environment (dev.comoelmusguito.cl). Feature branches `feat/*`, `fix/*`, `chore/*` → PR to `develop` → PR `develop` → `main`. Never push to `main`/`develop` directly; both are protected and require approval from @jorgecabane (`.github/CODEOWNERS`) plus green CI.
+- **dev.comoelmusguito.cl uses production data and payment credentials** (same Sanity dataset, real Flow). Only `NEXTAUTH_URL` / `NEXT_PUBLIC_SITE_URL` are overridden for the `develop` branch in Vercel. Anything you buy or edit there is real. It is not indexed (`app/robots.ts`).
+- **Husky:** pre-commit runs lint-staged (ESLint) + typecheck + unit tests; pre-push runs coverage + full E2E. CI (`.github/workflows/ci.yml`) runs the same and is the real gate — `--no-verify` doesn't get you past it.
+- Commits: Conventional Commits in Spanish, e.g. `feat(checkout): ...`, `fix(studio): ...`.
+
+## Testing
+
+- **Unit (Vitest):** colocate `foo.ts` → `foo.test.ts`. Coverage scope is `lib/**`, `app/api/**`, `sanity/lib/**`, `middleware.ts`; pages/components are covered by E2E. Mock boundaries only (Sanity client, Resend, fetch, next-auth, Upstash) with `vi.mock`; env with `vi.stubEnv`. Every change to a file in scope ships with tests that keep it ≥90%; payment/order/stock/auth code needs its failure branches tested too.
+- **E2E (Playwright):** run against Sanity dataset **`test`**, never `production` (`e2e/env.ts` forces it and blanks Resend/Flow/PayPal/reCAPTCHA/Upstash creds; `scripts/seed-e2e.ts` refuses other datasets). Fixtures use fixed `e2e-` ids; import them from `e2e/fixtures.ts`. Specs live per role: `e2e/anon`, `e2e/customer`, `e2e/buyer` (sessions created by `e2e/auth.setup.ts`). New user-facing flow ⇒ new spec. Accessible locators only (`getByRole`/`getByLabel`), no fixed waits; tests that create data use unique emails and clean up.
+- Don't claim tests pass without running them; still check UI changes in the browser.
 
 ## Architecture
 
@@ -77,10 +96,13 @@ No test runner is configured — do not claim tests pass; verify manually in the
 
 ## Environment
 
+Environments: local (`.env.local`, production values), `develop` → dev.comoelmusguito.cl (Vercel Preview, branch-scoped overrides), `main` → production. E2E/CI → dataset `test`. See `CONTRIBUTING.md`.
+
 `env.example` is the canonical list. Minimum to boot: `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`. Flow, Resend, Upstash, and Instagram vars are required in production but degrade gracefully in dev.
 
 ## Reference docs
 
+- `CONTRIBUTING.md` — onboarding, branch/PR flow, testing rules
 - `ARCHITECTURE.md` — deeper rationale and folder map
 - `docs/` — UI guidelines, SEO strategy, Instagram integration notes
 - `production-checklist.md` — pre-launch gate

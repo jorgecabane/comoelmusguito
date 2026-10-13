@@ -11,7 +11,7 @@ import type { DocumentActionComponent } from 'sanity';
 
 const REFUND_STATUS = 5;
 
-export const refundOrderAction: DocumentActionComponent = (props) => {
+export const RefundOrderAction: DocumentActionComponent = (props) => {
   const { id, type, published } = props;
   const client = useClient({ apiVersion: '2024-01-01' });
   const [isRunning, setIsRunning] = useState(false);
