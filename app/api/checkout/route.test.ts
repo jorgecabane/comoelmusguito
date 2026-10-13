@@ -157,7 +157,8 @@ describe('POST /api/checkout — Flow', () => {
 
     expect(res.status).toBe(200);
     expect(body).toMatchObject({ success: true, gateway: 'flow', paymentUrl: 'https://flow/pay', token: 'tk', flowOrder: 'F1' });
-    expect(body.commerceOrder).toMatch(/^ORD-\d+-[a-z0-9]+$/);
+    expect(body.commerceOrder).toMatch(/^ORD-\d{13}-[0-9a-f]{12}$/);
+    expect(body.commerceOrder.length).toBeLessThanOrEqual(45);
     expect(calculateOrderTotals).toHaveBeenCalledWith({ items: base.items, gateway: 'flow', isGift: false, userCurrency: 'CLP' });
 
     const flowArgs = m(createPaymentOrder).mock.calls[0][0];

@@ -8,7 +8,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/get-session';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
-import { client, writeClient } from '@/sanity/lib/client';
 import { createCourseAccess } from '@/lib/sanity/orders';
 import { getOrderByGiftToken, markGiftAsRedeemed } from '@/lib/sanity/gifts';
 import { isValidGiftToken } from '@/lib/utils/gift-token';
@@ -18,6 +17,48 @@ export const dynamic = 'force-dynamic';
 
 interface RedeemGiftRequest {
   token: string;
+}
+
+const PHYSICAL_LABELS = [
+  ['workshop', 'Taller(es)'],
+  ['terrarium', 'Terrario(s)'],
+  ['supply', 'Insumo(s)'],
+] as const;
+
+type GiftOrder = NonNullable<Awaited<ReturnType<typeof getOrderByGiftToken>>>;
+
+/** Crea los accesos a cursos (en paralelo) y lista los ítems físicos del regalo. */
+async function redeemItems(order: GiftOrder, userId: string) {
+  const courseItems = order.items.filter((item) => item.type === 'course');
+  const createdAccesses: string[] = [];
+  const errors: string[] = [];
+  let failedCourses = 0;
+
+  // createCourseAccess es idempotente: false = el usuario ya tenía el curso
+  const results = await Promise.allSettled(
+    courseItems.map((item) => createCourseAccess(userId, item.id, order._id))
+  );
+  results.forEach((result, i) => {
+    const { name } = courseItems[i];
+    if (result.status === 'rejected') {
+      console.error(`Error creando acceso a curso ${name}:`, result.reason);
+      errors.push(`Error al crear acceso a "${name}"`);
+      failedCourses++;
+    } else if (result.value) {
+      createdAccesses.push(`Curso: ${name}`);
+    } else {
+      errors.push(`Ya tienes acceso al curso "${name}"`);
+    }
+  });
+
+  // Talleres, terrarios e insumos no crean documentos de acceso: se muestran en
+  // "Mi Cuenta" desde los regalos recibidos (getGiftsReceivedByEmail).
+  for (const [type, label] of PHYSICAL_LABELS) {
+    const names = order.items.filter((item) => item.type === type).map((item) => item.name);
+    if (names.length > 0) createdAccesses.push(`${label}: ${names.join(', ')}`);
+  }
+
+  return { createdAccesses, errors, failedCourses };
 }
 
 export async function POST(request: NextRequest) {
@@ -66,8 +107,11 @@ export async function POST(request: NextRequest) {
     // Extraer token como string tipado explícitamente
     const token: string = rawToken;
 
-    // Buscar orden con ese token usando función helper (mismo patrón que otras funciones en lib/sanity/gifts.ts)
-    const order = await getOrderByGiftToken(token);
+    // Orden y usuario son independientes: se leen en paralelo
+    const [order, currentUser] = await Promise.all([
+      getOrderByGiftToken(token),
+      getUserByEmail(session.user.email),
+    ]);
 
     if (!order) {
       return NextResponse.json(
@@ -84,8 +128,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener usuario actual
-    const currentUser = await getUserByEmail(session.user.email);
     if (!currentUser?._id) {
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
@@ -93,88 +135,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el email del usuario actual coincida con el destinatario
-    // O permitir canje si el token es válido (flexibilidad)
-    // Por ahora, permitimos canje si el token es válido, independiente del email
-    // (el usuario puede haberse registrado con otro email)
+    // Se permite canjear con cualquier email: el token es la credencial
+    // (el destinatario puede haberse registrado con otro email).
+    const { createdAccesses, errors, failedCourses } = await redeemItems(order, currentUser._id);
 
-    // Procesar todos los tipos de items del regalo
-    const courseItems = order.items.filter((item: any) => item.type === 'course');
-    const workshopItems = order.items.filter((item: any) => item.type === 'workshop');
-    const terrariumItems = order.items.filter((item: any) => item.type === 'terrarium');
-    const supplyItems = order.items.filter((item: any) => item.type === 'supply');
-    
-    const createdAccesses: string[] = [];
-    const errors: string[] = [];
-    let hasProcessedItems = false;
-
-    // 1. Crear accesos a cursos para el usuario actual
-    for (const item of courseItems) {
-      try {
-        // Verificar si ya tiene acceso (evitar duplicados)
-        const existingAccess = await client.fetch(
-          `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
-          {
-            userId: currentUser._id,
-            courseId: item.id,
-          }
-        );
-
-        if (existingAccess) {
-          errors.push(`Ya tienes acceso al curso "${item.name}"`);
-          continue;
-        }
-
-        // Crear acceso
-        await createCourseAccess(
-          currentUser._id,
-          item.id,
-          order._id
-        );
-        createdAccesses.push(`Curso: ${item.name}`);
-        hasProcessedItems = true;
-      } catch (error) {
-        console.error(`Error creando acceso a curso ${item.name}:`, error);
-        errors.push(`Error al crear acceso a "${item.name}"`);
-      }
+    if (createdAccesses.length === 0) {
+      return failedCourses > 0
+        ? NextResponse.json(
+            { error: 'No pudimos canjear el regalo. Por favor, intenta nuevamente.' },
+            { status: 500 }
+          )
+        : NextResponse.json(
+            { error: 'Ya tienes acceso a todos los cursos de este regalo' },
+            { status: 409 }
+          );
     }
 
-    // 2. Para talleres, terrarios e insumos, no necesitamos crear documentos de acceso
-    // porque se mostrarán desde los regalos recibidos (giftsReceived) en "Mi Cuenta"
-    // La orden se mantiene con el userId del comprador (no se cambia)
-    // El destinatario verá sus regalos a través de getGiftsReceivedByEmail
-    if (workshopItems.length > 0 || terrariumItems.length > 0 || supplyItems.length > 0) {
-      // Agregar items procesados al mensaje
-      if (workshopItems.length > 0) {
-        createdAccesses.push(`Taller(es): ${workshopItems.map((i: any) => i.name).join(', ')}`);
-        hasProcessedItems = true;
-      }
-      if (terrariumItems.length > 0) {
-        createdAccesses.push(`Terrario(s): ${terrariumItems.map((i: any) => i.name).join(', ')}`);
-        hasProcessedItems = true;
-      }
-      if (supplyItems.length > 0) {
-        createdAccesses.push(`Insumo(s): ${supplyItems.map((i: any) => i.name).join(', ')}`);
-        hasProcessedItems = true;
-      }
-
-      console.log(`✅ Regalo ${order.orderId} canjeado - talleres/terrarios/insumos disponibles para ${currentUser._id}`);
-    }
-
-    // 🔒 MARCAR EL REGALO COMO CANJEADO (si se procesó al menos un item)
-    if (hasProcessedItems) {
-      try {
-        await markGiftAsRedeemed(order.orderId, currentUser._id);
-        console.log(`✅ Regalo ${order.orderId} marcado como canjeado por usuario ${currentUser._id}`);
-      } catch (error) {
-        console.error('Error marcando regalo como canjeado:', error);
-        // No fallar el canje si hay error marcando, pero loguear el error
-      }
+    // 🔒 MARCAR EL REGALO COMO CANJEADO
+    try {
+      await markGiftAsRedeemed(order.orderId, currentUser._id);
+    } catch (error) {
+      // No fallar el canje si hay error marcando, pero loguear el error
+      console.error('Error marcando regalo como canjeado:', error);
     }
 
     return NextResponse.json({
       success: true,
-      message: `Regalo canjeado exitosamente. ${createdAccesses.length > 0 ? `Acceso creado a: ${createdAccesses.join(', ')}` : ''}`,
+      message: `Regalo canjeado exitosamente. Acceso creado a: ${createdAccesses.join(', ')}`,
       accesses: createdAccesses,
       errors: errors.length > 0 ? errors : undefined,
     });

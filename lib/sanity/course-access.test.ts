@@ -30,8 +30,8 @@ const modules = [{ lessons: [{ order: 1 }, { order: 2 }] }, { lessons: [{ order:
 
 describe('calculateCourseProgress', () => {
   it('returns a rounded percentage over all lessons', () => {
-    expect(calculateCourseProgress({ modules }, ['a'])).toBe(33);
-    expect(calculateCourseProgress({ modules }, ['a', 'b', 'c'])).toBe(100);
+    expect(calculateCourseProgress({ modules }, ['0-0'])).toBe(33);
+    expect(calculateCourseProgress({ modules }, ['0-0', '0-1', '1-0'])).toBe(100);
   });
 
   it('returns 0 without modules or lessons', () => {
@@ -41,10 +41,9 @@ describe('calculateCourseProgress', () => {
     expect(calculateCourseProgress({ modules })).toBe(0);
   });
 
-  // BUG (menor): course-access.ts:159 cuenta completedLessons sin cruzarlas con las lecciones
-  // actuales; si se borra una lección ya vista el progreso supera 100%.
-  it.skip('never exceeds 100%', () => {
-    expect(calculateCourseProgress({ modules }, ['a', 'b', 'c', 'old'])).toBe(100);
+  it('ignores lessons that no longer exist and duplicates, never exceeding 100%', () => {
+    expect(calculateCourseProgress({ modules }, ['0-0', '0-1', '1-0', '3-0', '0-0'])).toBe(100);
+    expect(calculateCourseProgress({ modules }, ['0-2', 'old'])).toBe(0);
   });
 });
 
@@ -67,11 +66,11 @@ describe('getUserCourseAccesses', () => {
   it('maps accesses with progress', async () => {
     m.fetch.mockResolvedValue([
       {
-        course: { _id: 'c1', slug: { current: 'curso' }, name: 'Curso', modules },
+        course: { _id: 'c1', slug: 'curso', name: 'Curso', modules },
         accessGrantedAt: 'T',
-        progress: { completedLessons: ['a', 'b'], lastWatched: 'b', totalWatchTime: 30 },
+        progress: { completedLessons: ['0-0', '0-1'], lastWatched: 'b', totalWatchTime: 30 },
       },
-      { course: { _id: 'c2', slug: {}, modules: [] }, accessGrantedAt: 'T2' },
+      { course: { _id: 'c2', slug: 's2', modules: [] }, accessGrantedAt: 'T2' },
     ]);
     const res = (await getUserCourseAccesses('u1')) as any[];
     expect(m.fetch.mock.calls[0][1]).toEqual({ userId: 'u1' });
@@ -79,14 +78,12 @@ describe('getUserCourseAccesses', () => {
       courseId: 'c1',
       courseSlug: 'curso',
       courseName: 'Curso',
-      progress: { percentage: 67, completedLessons: ['a', 'b'], lastWatched: 'b', totalWatchTime: 30 },
+      progress: { percentage: 67, completedLessons: ['0-0', '0-1'], lastWatched: 'b', totalWatchTime: 30 },
     });
     expect(res[1].progress).toEqual({ percentage: 0, completedLessons: [], lastWatched: undefined, totalWatchTime: 0 });
   });
 
-  // BUG: course-access.ts:70 lee `access.course.slug.current`, pero la query ya proyecta
-  // `"slug": slug.current` (string), así que courseSlug siempre es undefined.
-  it.skip('returns the projected slug string', async () => {
+  it('returns the projected slug string', async () => {
     m.fetch.mockResolvedValue([{ course: { _id: 'c1', slug: 'curso', modules: [] } }]);
     const res = await getUserCourseAccesses('u1');
     expect(res[0].courseSlug).toBe('curso');
@@ -123,7 +120,7 @@ describe('getUserCoursesWithProgress', () => {
         course: { _id: 'c1', slug: 'curso', name: 'Curso', modules },
         order: { isGift: true, customerName: 'Ana', customerEmail: 'ana@x.cl' },
         accessGrantedAt: 'T',
-        progress: { completedLessons: ['a', 'b', 'c'], totalWatchTime: 5 },
+        progress: { completedLessons: ['0-0', '0-1', '1-0'], totalWatchTime: 5 },
       },
       { course: { _id: 'c2', slug: 's2', modules: [] }, order: { isGift: false, customerName: 'Yo' } },
       { course: { _id: 'c3', slug: 's3' } },

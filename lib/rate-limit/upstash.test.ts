@@ -64,7 +64,6 @@ describe('limiters', () => {
       '@upstash/ratelimit/register',
       '@upstash/ratelimit/forgot-password',
       '@upstash/ratelimit/checkout',
-      '@upstash/ratelimit/check-email',
       '@upstash/ratelimit/resend-verification',
       '@upstash/ratelimit/redeem-gift',
       '@upstash/ratelimit/contact',

@@ -29,7 +29,7 @@ beforeEach(() => {
 describe('addItem', () => {
   it('adds a new item, recomputes totals and opens the cart', () => {
     state().addItem(item({ quantity: 2 }));
-    expect(state()).toMatchObject({ itemCount: 2, subtotal: 50000, isOpen: true });
+    expect(state()).toMatchObject({ itemCount: 2, isOpen: true });
     expect(state().items).toHaveLength(1);
   });
 
@@ -39,7 +39,7 @@ describe('addItem', () => {
     state().addItem(item({ type: 'supply', price: 1000 }));
     expect(state().items).toHaveLength(2);
     expect(state().getItemByIdAndType('t1', 'terrarium')?.quantity).toBe(3);
-    expect(state()).toMatchObject({ itemCount: 4, subtotal: 76000 });
+    expect(state()).toMatchObject({ itemCount: 4 });
   });
 
   it('rejects a merge that exceeds maxQuantity and leaves state untouched', () => {
@@ -101,7 +101,7 @@ describe('removeItem / updateQuantity', () => {
     state().removeItem('t1', 'supply');
     expect(state().items).toHaveLength(2);
     state().removeItem('t1', 'terrarium');
-    expect(state()).toMatchObject({ itemCount: 1, subtotal: 10000 });
+    expect(state()).toMatchObject({ itemCount: 1 });
   });
 
   it('updates quantity clamped to maxQuantity (default 999)', () => {
@@ -110,7 +110,7 @@ describe('removeItem / updateQuantity', () => {
     state().updateQuantity('c', 'course', 5000);
     expect(state().getItemByIdAndType('c', 'course')?.quantity).toBe(999);
     state().updateQuantity('c', 'course', 3);
-    expect(state()).toMatchObject({ itemCount: 7, subtotal: 4 * 25000 + 3 * 10000 });
+    expect(state()).toMatchObject({ itemCount: 7 });
   });
 
   it.each([0, -1])('removes the item when quantity is %i', (q) => {
@@ -135,21 +135,19 @@ describe('syncPrices', () => {
     expect(state().items).toBe(before);
   });
 
-  it('applies server price and currency changes and recomputes subtotal', () => {
+  it('applies server price and currency changes', () => {
     expect(state().syncPrices([
       { id: 't1', type: 'terrarium', price: 27000, currency: 'CLP' },
       { id: 'c', type: 'course', price: 30000, currency: 'CLP' },
     ])).toBe(true);
     expect(state().getItemByIdAndType('c', 'course')).toMatchObject({ price: 30000, currency: 'CLP' });
-    expect(state().subtotal).toBe(2 * 27000 + 30000);
   });
 });
 
-// BUG: subtotal suma precios sin mirar `currency`; un carrito CLP+USD da un número sin sentido.
-it.skip('does not sum mixed currencies into one subtotal', () => {
+it('does not expose a single cross-currency subtotal', () => {
   state().addItem(item());
   state().addItem(item({ id: 'c', type: 'course', price: 30, currency: 'USD' }));
-  expect(state().subtotal).not.toBe(25030);
+  expect(state()).not.toHaveProperty('subtotal');
 });
 
 describe('UI state and selectors', () => {
@@ -160,7 +158,7 @@ describe('UI state and selectors', () => {
     expect(state().isOpen).toBe(false);
     state().addItem(item());
     state().clearCart();
-    expect(state()).toMatchObject({ items: [], itemCount: 0, subtotal: 0, isOpen: false });
+    expect(state()).toMatchObject({ items: [], itemCount: 0, isOpen: false });
   });
 
   it('getItemsByType filters', () => {
@@ -178,13 +176,13 @@ describe('persist', () => {
     expect(saved.state.items[0].id).toBe('t1');
   });
 
-  it('recomputes itemCount and subtotal on rehydrate', async () => {
+  it('recomputes itemCount on rehydrate', async () => {
     storage.set(KEY, JSON.stringify({
       state: { items: [item({ quantity: 3, price: 1000 }), item({ id: 'c', type: 'course', price: 500 })] },
       version: 0,
     }));
     await useCartStore.persist.rehydrate();
-    expect(state()).toMatchObject({ itemCount: 4, subtotal: 3500 });
+    expect(state()).toMatchObject({ itemCount: 4 });
     expect(useCartStore.persist.hasHydrated()).toBe(true);
   });
 

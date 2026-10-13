@@ -58,7 +58,7 @@ test.describe('canjear regalo', () => {
 
     await page.getByRole('button', { name: 'Canjear Regalo' }).click();
     await form.getByLabel('Token de Regalo').fill(ORDERS.gift.token);
-    // El canje encadena ~8 llamadas a Sanity (~5-6 s): se espera la respuesta en vez del timeout de expect.
+    // El canje encadena ~5 llamadas a Sanity (~3-4 s): se espera la respuesta en vez del timeout de expect.
     const redeemed = page.waitForResponse((r) => r.url().endsWith('/api/gifts/redeem'));
     await form.getByRole('button', { name: 'Canjear Regalo' }).click();
     expect((await redeemed).status()).toBe(200);

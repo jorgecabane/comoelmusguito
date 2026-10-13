@@ -3,6 +3,7 @@
  * POST /api/checkout
  */
 
+import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentOrder } from '@/lib/flow/client';
 import { getUserCurrency } from '@/lib/utils/geolocation';
@@ -180,8 +181,8 @@ export async function POST(request: NextRequest) {
       throw err;
     }
 
-    // Generar ID único para la orden
-    const commerceOrder = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // ID único de la orden (30 caracteres; Flow acepta commerceOrder de hasta 45)
+    const commerceOrder = `ORD-${Date.now()}-${randomUUID().replace(/-/g, '').slice(0, 12)}`;
 
     // Crear descripción del pedido
     const subject = items.length === 1

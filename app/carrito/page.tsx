@@ -21,7 +21,7 @@ function unavailabilityKey(id: string, type: string, selectedDate?: string): str
 }
 
 export default function CarritoPage() {
-  const { items, itemCount, subtotal, updateQuantity, removeItem, clearCart } = useCartStore();
+  const { items, itemCount, updateQuantity, removeItem, clearCart } = useCartStore();
   const [unavailable, setUnavailable] = useState<Record<string, string>>({});
   const pricesUpdated = useCartPriceSync();
 
