@@ -13,7 +13,6 @@ import { sanitizeEmail, sanitizeString } from '@/lib/utils/sanitize';
 import type { CartItem } from '@/types/cart';
 
 // Límites de seguridad
-const MAX_QUANTITY_PER_ITEM = 10;
 const MAX_ITEMS_PER_ORDER = 20;
 
 export const dynamic = 'force-dynamic';
@@ -142,15 +141,6 @@ export async function POST(request: NextRequest) {
         { error: `Máximo ${MAX_ITEMS_PER_ORDER} productos por orden` },
         { status: 400 }
       );
-    }
-
-    for (const item of items) {
-      if (item.quantity > MAX_QUANTITY_PER_ITEM) {
-        return NextResponse.json(
-          { error: `Máximo ${MAX_QUANTITY_PER_ITEM} unidades por producto` },
-          { status: 400 }
-        );
-      }
     }
 
     // Detectar moneda del usuario (basada en headers de Vercel)
@@ -298,7 +288,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error en checkout:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Error al procesar el pago' },
+      { error: 'Error al procesar el pago' },
       { status: 500 }
     );
   }

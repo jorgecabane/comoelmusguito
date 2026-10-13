@@ -1,24 +1,28 @@
 /**
- * API Route: Obtener última dirección de despacho de un usuario
- * GET /api/checkout/last-shipping?userId=xxx
+ * API Route: Obtener la última dirección de despacho del usuario de la sesión
+ * GET /api/checkout/last-shipping
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth/get-session';
+import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 import { getLastShippingAddressByUserId } from '@/lib/sanity/orders';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'userId requerido' }, { status: 400 });
+    const session = await getSession();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const shippingAddress = await getLastShippingAddressByUserId(userId);
+    const user = await getUserByEmail(session.user.email);
+    if (!user?._id) {
+      return NextResponse.json({ shippingAddress: null });
+    }
 
+    const shippingAddress = await getLastShippingAddressByUserId(user._id);
     return NextResponse.json({ shippingAddress });
   } catch (error) {
     console.error('Error obteniendo última dirección de despacho:', error);

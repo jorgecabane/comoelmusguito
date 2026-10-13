@@ -62,9 +62,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error procesando formulario de contacto:', error);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Error al procesar el formulario',
-      },
+      { error: 'Error al procesar el formulario' },
       { status: 500 }
     );
   }

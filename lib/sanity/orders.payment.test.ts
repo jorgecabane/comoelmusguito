@@ -8,10 +8,9 @@ import { decreaseTerrariumStock, decreaseWorkshopSpots, decreaseSupplyStock } fr
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 
 const m = vi.hoisted(() => {
-  const commit = vi.fn<(...a: any[]) => any>(async () => ({}));
-  const set = vi.fn<(...a: any[]) => any>(() => ({ commit }));
-  const patch = vi.fn<(...a: any[]) => any>(() => ({ set }));
-  return { commit, set, patch, fetch: vi.fn<(...a: any[]) => any>(), create: vi.fn<(...a: any[]) => any>() };
+  const fn = vi.fn<(...a: any[]) => any>;
+  const b = { set: fn(() => b), ifRevisionId: fn(() => b), commit: fn(async () => ({})) };
+  return { ...b, patch: fn(() => b), fetch: fn(), create: fn() };
 });
 
 vi.mock('@/sanity/lib/client', () => {
@@ -33,6 +32,7 @@ const course = (id: string) => ({ id, type: 'course', name: id, slug: id, price:
 
 const baseOrder = (over: Record<string, any> = {}) => ({
   _id: 'doc-1',
+  _rev: 'rev-1',
   _type: 'order',
   orderId: 'ORD-1',
   customerEmail: 'buyer@x.cl',
@@ -56,6 +56,37 @@ function db(order: any, existingAccess: Record<string, any> = {}) {
 }
 
 const patchedFields = () => m.set.mock.calls.map((c) => c[0]);
+
+/**
+ * Simula la semántica real de Sanity sobre una orden: cada escritura sube `_rev` y
+ * un patch con `ifRevisionId` desactualizado falla con 409. Devuelve el documento vivo.
+ */
+function sanity(order: Record<string, any>) {
+  const doc: Record<string, any> = { ...order, _rev: 'r0' };
+  let rev = 0;
+  m.patch.mockImplementation((id: string) => {
+    let expectedRev: string | undefined;
+    let fields: Record<string, any> = {};
+    const builder = {
+      ifRevisionId: (r: string) => ((expectedRev = r), builder),
+      set: (f: Record<string, any>) => ((fields = f), builder),
+      commit: async () => {
+        if (id !== doc._id) return {};
+        if (expectedRev && expectedRev !== doc._rev) throw Object.assign(new Error('rev mismatch'), { statusCode: 409 });
+        Object.assign(doc, fields, { _rev: `r${++rev}` });
+        return doc;
+      },
+    };
+    return builder;
+  });
+  m.fetch.mockImplementation(async (q: string, p: any) => {
+    if (q.includes('"courseAccess"')) return null;
+    if (q.includes('"course"')) return { enrollmentCount: 0 };
+    if (q.includes('"order"') && p.orderId) return { ...doc };
+    return null;
+  });
+  return doc;
+}
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -142,22 +173,33 @@ describe('processSuccessfulPayment', () => {
     expect(patchedFields()[0]).toMatchObject({ paymentStatus: 2, paymentDate: 'PD' });
   });
 
-  it('does not touch payment status when already paid with a date', async () => {
+  it('claims the order with an optimistic lock before any side effect', async () => {
     db(baseOrder({ paymentStatus: 2, paymentDate: 'old', items: [] }));
-    await processSuccessfulPayment({ orderId: 'ORD-1', paymentDate: 'PD' });
-    expect(patchedFields()).toEqual([expect.objectContaining({ emailSent: true })]);
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(m.ifRevisionId).toHaveBeenCalledWith('rev-1');
+    expect(patchedFields()[0]).toMatchObject({ paymentStatus: 2, paymentProcessedAt: expect.any(String) });
+    expect(patchedFields()[0].paymentDate).toBeUndefined();
   });
 
-  it.each([
-    ['pending order', { paymentStatus: 1 }],
-    ['paid order without date', { paymentStatus: 2 }],
-  ])('keeps going when the status update fails (%s)', async (_label, over) => {
-    db(baseOrder({ ...over, items: [] }));
+  it('aborts without side effects when the claim fails for a non-conflict error', async () => {
+    db(baseOrder());
     m.commit.mockRejectedValueOnce(new Error('sanity down'));
-    await expect(processSuccessfulPayment({ orderId: 'ORD-1', paymentDate: 'PD' })).resolves.toMatchObject({
-      success: true,
-    });
-    expect(sendOrderConfirmationEmail).toHaveBeenCalled();
+    await expect(processSuccessfulPayment({ orderId: 'ORD-1' })).rejects.toThrow('sanity down');
+    expect(m.create).not.toHaveBeenCalled();
+    expect(sendOrderConfirmationEmail).not.toHaveBeenCalled();
+  });
+
+  it('gives up after repeated revision conflicts', async () => {
+    db(baseOrder());
+    m.commit.mockRejectedValue(Object.assign(new Error('rev'), { statusCode: 409 }));
+    await expect(processSuccessfulPayment({ orderId: 'ORD-1' })).rejects.toThrow('rev');
+    expect(m.commit).toHaveBeenCalledTimes(3);
+    expect(m.create).not.toHaveBeenCalled();
+  });
+
+  it('throws when the order has no revision', async () => {
+    db(baseOrder({ _rev: undefined }));
+    await expect(processSuccessfulPayment({ orderId: 'ORD-1' })).rejects.toThrow('no encontrada');
   });
 
   it('logs and continues when course access or inventory fail', async () => {
@@ -189,7 +231,7 @@ describe('processSuccessfulPayment', () => {
   });
 
   it('survives a failure marking the email as sent', async () => {
-    db(baseOrder({ paymentStatus: 2, paymentDate: 'x', items: [] }));
+    db(baseOrder({ paymentProcessedAt: 'x', items: [] }));
     m.commit.mockRejectedValueOnce(new Error('patch failed'));
     await expect(processSuccessfulPayment({ orderId: 'ORD-1' })).resolves.toMatchObject({ success: true });
     expect(console.error).toHaveBeenCalledWith('Error marcando email como enviado:', expect.any(Error));
@@ -201,13 +243,47 @@ describe('processSuccessfulPayment', () => {
     expect(sendOrderConfirmationEmail).not.toHaveBeenCalled();
   });
 
-  // BUG: la idempotencia depende de `emailSent`, que sólo se escribe al final. Dos
-  // entregas concurrentes del webhook (o un reintento tras fallar el email) pasan ambas
-  // el chequeo y descuentan stock dos veces (orders.ts:386 + 460).
-  it.skip('decrements inventory once under concurrent webhook deliveries', async () => {
-    db(baseOrder({ items: [{ id: 't1', type: 'terrarium', quantity: 1 }] }));
-    await Promise.all([processSuccessfulPayment({ orderId: 'ORD-1' }), processSuccessfulPayment({ orderId: 'ORD-1' })]);
+  it('a delivery that loses the claim (409) re-reads and causes no side effects', async () => {
+    const order = baseOrder({ items: [course('c1'), { id: 't1', type: 'terrarium', quantity: 1 }] });
+    let reads = 0;
+    m.fetch.mockImplementation(async (q: string) =>
+      // segunda lectura: otra entrega ya reclamó y envió el email
+      q.includes('"order"') ? (reads++ ? { ...order, _rev: 'rev-2', paymentProcessedAt: 'now', emailSent: true } : order) : null
+    );
+    m.commit.mockRejectedValueOnce(Object.assign(new Error('revision mismatch'), { statusCode: 409 }));
+
+    await expect(processSuccessfulPayment({ orderId: 'ORD-1' })).resolves.toEqual({ success: true, alreadyProcessed: true });
+    expect(m.create).not.toHaveBeenCalled();
+    expect(decreaseTerrariumStock).not.toHaveBeenCalled();
+    expect(sendOrderConfirmationEmail).not.toHaveBeenCalled();
+  });
+
+  it('decrements inventory and grants access once under concurrent webhook deliveries', async () => {
+    sanity(baseOrder({ items: [course('c1'), { id: 't1', type: 'terrarium', quantity: 1 }] }));
+    const results = await Promise.all([
+      processSuccessfulPayment({ orderId: 'ORD-1' }),
+      processSuccessfulPayment({ orderId: 'ORD-1' }),
+    ]);
+    expect(results.filter((r) => !r.alreadyProcessed)).toHaveLength(1);
     expect(decreaseTerrariumStock).toHaveBeenCalledTimes(1);
+    expect(m.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('a retry after an email failure resends the email but never touches stock again', async () => {
+    const doc = sanity(baseOrder({ items: [course('c1'), { id: 't1', type: 'terrarium', quantity: 2 }] }));
+    vi.mocked(sendOrderConfirmationEmail).mockRejectedValueOnce(new Error('resend down'));
+
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(doc.emailSent).toBeUndefined();
+
+    await expect(processSuccessfulPayment({ orderId: 'ORD-1' })).resolves.toEqual({ success: true, alreadyProcessed: true });
+    expect(sendOrderConfirmationEmail).toHaveBeenCalledTimes(2);
+    expect(decreaseTerrariumStock).toHaveBeenCalledTimes(1);
+    expect(m.create).toHaveBeenCalledTimes(1);
+    expect(doc.emailSent).toBe(true);
+
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(sendOrderConfirmationEmail).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -277,12 +353,5 @@ describe('processSuccessfulPayment — gifts', () => {
     expect(getUserByEmail).not.toHaveBeenCalled();
     expect(sendGiftEmail).not.toHaveBeenCalled();
     expect(m.create.mock.calls[0][0]).toMatchObject({ user: { _ref: 'buyer-id' } });
-  });
-
-  it('skips recipient access when the order has no Sanity _id', async () => {
-    db(gift({ _id: undefined }));
-    vi.mocked(getUserByEmail).mockResolvedValue({ _id: 'friend-id' } as any);
-    await processSuccessfulPayment({ orderId: 'ORD-1' });
-    expect(m.create).not.toHaveBeenCalled();
   });
 });

@@ -1,25 +1,36 @@
 /**
  * API Route: Refresh Instagram Token
- * Endpoint para refrescar manualmente el token de Instagram
- * 
+ * Endpoint para refrescar manualmente el token de Instagram.
+ *
  * GET /api/instagram/refresh
- * 
- * Útil para:
- * - Refrescar el token antes de que expire
- * - Verificar que el token sigue válido
- * - Obtener el nuevo token para actualizar variables de entorno
+ * Authorization: Bearer <CRON_SECRET>
+ *
+ * Nunca retorna el token: solo confirma el refresh y su expiración.
+ * Para actualizar la variable en Vercel usa /api/instagram/refresh-auto.
  */
 
 import { NextResponse } from 'next/server';
 import { refreshInstagramToken } from '@/lib/instagram/token';
 
 const INSTAGRAM_ACCESS_TOKEN = process.env.INSTAGRAM_ACCESS_TOKEN;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 /**
  * Refrescar token de Instagram
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    if (!CRON_SECRET) {
+      return NextResponse.json(
+        { error: 'CRON_SECRET no configurado en variables de entorno' },
+        { status: 500 }
+      );
+    }
+
+    if (request.headers.get('authorization') !== `Bearer ${CRON_SECRET}`) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
     if (!INSTAGRAM_ACCESS_TOKEN) {
       return NextResponse.json(
         { error: 'Instagram no configurado. Falta INSTAGRAM_ACCESS_TOKEN' },
@@ -50,21 +61,9 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       message: 'Token refrescado exitosamente',
-      token: result.token,
       expiresIn: result.expiresIn,
       expiresInDays: Math.floor(result.expiresIn / 86400), // Convertir segundos a días
       expiresAt: new Date(Date.now() + result.expiresIn * 1000).toISOString(),
-      instructions: [
-        '✅ Token refrescado exitosamente',
-        `⏰ Expira en ${Math.floor(result.expiresIn / 86400)} días`,
-        '',
-        '📝 IMPORTANTE: Actualiza tu variable de entorno:',
-        `   INSTAGRAM_ACCESS_TOKEN=${result.token}`,
-        '',
-        '💡 En producción, considera automatizar esto con un cron job que:',
-        '   1. Refresque el token cada 50 días',
-        '   2. Actualice automáticamente la variable de entorno'
-      ]
     });
   } catch (error) {
     console.error('Error en refresh endpoint:', error);
@@ -74,4 +73,3 @@ export async function GET() {
     );
   }
 }
-

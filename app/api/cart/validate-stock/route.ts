@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
     // Sanitizar inputs
     const sanitizedItemId = String(itemId).trim();
     const sanitizedItemType = String(itemType).trim();
-    const sanitizedQuantity = parseInt(String(quantity), 10);
+    const sanitizedQuantity = Number(quantity);
 
-    if (isNaN(sanitizedQuantity) || sanitizedQuantity <= 0) {
+    if (!Number.isInteger(sanitizedQuantity) || sanitizedQuantity <= 0) {
       return NextResponse.json(
         { error: 'Cantidad inválida' },
         { status: 400 }
@@ -122,12 +122,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Cursos: siempre disponibles
-    return NextResponse.json({
-      available: true,
-      inStock: true,
-      message: 'Disponible',
-    });
+    if (sanitizedItemType === 'course') {
+      return NextResponse.json({
+        available: true,
+        inStock: true,
+        message: 'Disponible',
+      });
+    }
+
+    return NextResponse.json(
+      { error: 'Tipo de producto inválido', available: false },
+      { status: 400 }
+    );
   } catch (error) {
     console.error('Error validando stock:', error);
     return NextResponse.json(

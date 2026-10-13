@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useCartStore } from '@/lib/store/useCartStore';
+import type { CartState } from '@/types/cart';
 import { useCartPriceSync } from '@/lib/store/useCartPriceSync';
 import { Button, Badge } from '@/components/ui';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, AlertTriangle, Info } from 'lucide-react';
@@ -352,8 +353,8 @@ function CartItemCard({
   unavailableMessage,
 }: {
   item: any;
-  onUpdateQuantity: (id: string, type: any, quantity: number) => void;
-  onRemove: (id: string, type: any) => void;
+  onUpdateQuantity: CartState['updateQuantity'];
+  onRemove: CartState['removeItem'];
   unavailableMessage?: string;
 }) {
   return (
@@ -394,7 +395,7 @@ function CartItemCard({
               </h3>
             </Link>
             <button
-              onClick={() => onRemove(item.id, item.type)}
+              onClick={() => onRemove(item.id, item.type, item.selectedDate?.date)}
               className="text-gray hover:text-error transition-colors p-1"
               aria-label="Eliminar"
             >
@@ -435,7 +436,7 @@ function CartItemCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
-                onClick={() => onUpdateQuantity(item.id, item.type, item.quantity - 1)}
+                onClick={() => onUpdateQuantity(item.id, item.type, item.quantity - 1, item.selectedDate?.date)}
                 disabled={item.quantity <= 1}
                 aria-label="Disminuir cantidad"
                 className="w-8 h-8 rounded-lg border border-gray/20 flex items-center justify-center hover:bg-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -444,8 +445,8 @@ function CartItemCard({
               </button>
               <span className="w-8 text-center font-semibold">{item.quantity}</span>
               <button
-                onClick={() => onUpdateQuantity(item.id, item.type, item.quantity + 1)}
-                disabled={item.maxQuantity && item.quantity >= item.maxQuantity}
+                onClick={() => onUpdateQuantity(item.id, item.type, item.quantity + 1, item.selectedDate?.date)}
+                disabled={item.maxQuantity != null && item.quantity >= item.maxQuantity}
                 aria-label="Aumentar cantidad"
                 className="w-8 h-8 rounded-lg border border-gray/20 flex items-center justify-center hover:bg-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >

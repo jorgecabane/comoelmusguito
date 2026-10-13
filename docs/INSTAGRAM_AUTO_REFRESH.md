@@ -81,20 +81,20 @@ CRON_SECRET=tu_secret_generado_aqui
 
 ### Paso 5: Actualizar vercel.json
 
-El archivo `vercel.json` ya está configurado, pero necesitas reemplazar el placeholder:
+El archivo `vercel.json` ya está configurado y **no lleva el secret**. Cuando `CRON_SECRET` está definido en el proyecto, Vercel Cron envía automáticamente `Authorization: Bearer <CRON_SECRET>`:
 
 ```json
 {
   "crons": [
     {
-      "path": "/api/instagram/refresh-auto?secret=TU_CRON_SECRET_AQUI",
+      "path": "/api/instagram/refresh-auto",
       "schedule": "0 0 */50 * *"
     }
   ]
 }
 ```
 
-**⚠️ IMPORTANTE:** Reemplaza `TU_CRON_SECRET_AQUI` con el valor real de `CRON_SECRET` que generaste.
+**⚠️ IMPORTANTE:** Nunca pongas el secret en `vercel.json` (queda en git).
 
 **Nota sobre el schedule:**
 - `0 0 */50 * *` = Cada 50 días a medianoche
@@ -131,8 +131,7 @@ CRON_SECRET=tu_secret_generado
 ### 1. Probar el Endpoint Manualmente
 
 ```bash
-# Reemplaza TU_CRON_SECRET con tu secret real
-curl "https://comoelmusguito.cl/api/instagram/refresh-auto?secret=TU_CRON_SECRET"
+curl -H "Authorization: Bearer $CRON_SECRET" https://comoelmusguito.cl/api/instagram/refresh-auto
 ```
 
 **Respuesta esperada:**
@@ -213,8 +212,8 @@ El endpoint está protegido por `CRON_SECRET`:
 ### Error: "No autorizado. Secret inválido"
 
 **Solución:**
-- Verifica que `CRON_SECRET` en `vercel.json` coincida con la variable de entorno
-- Asegúrate de que el secret en la URL del cron sea correcto
+- Verifica que `CRON_SECRET` esté definido en Vercel (Production) y redeploya
+- Si llamas a mano, envía el header `Authorization: Bearer <CRON_SECRET>`
 
 ### Error: "No se pudo refrescar el token"
 
@@ -238,9 +237,9 @@ El endpoint está protegido por `CRON_SECRET`:
 ```
 Cron Job (cada 50 días)
     ↓
-GET /api/instagram/refresh-auto?secret=xxx
+GET /api/instagram/refresh-auto  (Authorization: Bearer <CRON_SECRET>)
     ↓
-Validar secret
+Validar header
     ↓
 Refrescar token de Instagram
     ↓

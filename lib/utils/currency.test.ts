@@ -77,8 +77,7 @@ describe('formatPrice', () => {
     expect(mod.formatPrice(0.005, 'USD')).toBe('$0.01 USD');
   });
 
-  // BUG: CLP no tiene centavos, pero un monto fraccionario se muestra con coma decimal ("$1.234,5 CLP").
-  it.skip('never shows decimals for CLP', () => {
+  it('never shows decimals for CLP', () => {
     expect(mod.formatPrice(1234.5, 'CLP')).toBe('$1.235 CLP');
   });
 });

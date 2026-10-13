@@ -35,65 +35,45 @@ export async function checkTerrariumStock(
 }
 
 /**
- * Descontar stock de un terrario
- * Es idempotente: usa transacción atómica para evitar race conditions
- * Si el stock es insuficiente, solo descuenta lo disponible (no permite negativo)
+ * Descuenta stock con un `dec` atómico de Sanity (sin leer antes), así dos pagos
+ * concurrentes nunca pisan el valor del otro. Si el resultado queda negativo se
+ * devuelve el exceso con `inc` (también atómico) y se marca sin stock.
  */
-export async function decreaseTerrariumStock(
-  terrariumId: string,
-  quantity: number
-): Promise<void> {
+async function decreaseStock(id: string, quantity: number, label: string): Promise<void> {
   try {
-    // Usar transacción atómica para evitar race conditions
-    // Leer y actualizar en una sola operación
-    const terrarium = await writeClient.fetch(
-      `*[_type == "terrarium" && _id == $id][0]`,
-      { id: terrariumId }
-    );
+    const updated = await writeClient
+      .patch(id)
+      .setIfMissing({ stock: 0 })
+      .dec({ stock: quantity })
+      .set({ updatedAt: new Date().toISOString() })
+      .commit<{ stock: number }>();
 
-    if (!terrarium) {
-      throw new Error(`Terrario ${terrariumId} no encontrado`);
+    if (updated.stock > 0) {
+      console.log(`✅ Stock de ${label} ${id} descontado en ${quantity}: quedan ${updated.stock}`);
+      return;
     }
 
-    const currentStock = terrarium.stock || 0;
-    
-    // Si no hay suficiente stock, solo descontar lo disponible
-    // Esto previene doble descuento en race conditions
-    const quantityToDeduct = Math.min(quantity, currentStock);
-    
-    if (quantityToDeduct === 0) {
+    if (updated.stock < 0) {
       console.warn(
-        `⚠️ No se puede descontar stock de terrario ${terrariumId}: stock actual es ${currentStock}, se intentó descontar ${quantity}`
-      );
-      return; // No hacer nada si no hay stock disponible
-    }
-
-    if (quantityToDeduct < quantity) {
-      console.warn(
-        `⚠️ Intento de descontar ${quantity} unidades pero solo hay ${currentStock} disponibles para terrario ${terrariumId}. Descontando ${quantityToDeduct}`
+        `⚠️ Se intentó descontar ${quantity} unidades de ${label} ${id} con stock insuficiente; se deja en 0`
       );
     }
-
-    const newStock = currentStock - quantityToDeduct;
-    const inStock = newStock > 0;
-
-    // Actualizar stock de forma atómica
     await writeClient
-      .patch(terrariumId)
-      .set({
-        stock: newStock,
-        inStock,
-        updatedAt: new Date().toISOString(),
-      })
+      .patch(id)
+      .inc({ stock: -updated.stock })
+      .set({ inStock: false })
       .commit();
-
-    console.log(
-      `✅ Stock de terrario ${terrariumId} actualizado: ${currentStock} → ${newStock} (descontado: ${quantityToDeduct})`
-    );
   } catch (error) {
-    console.error(`Error descontando stock de terrario ${terrariumId}:`, error);
+    console.error(`Error descontando stock de ${label} ${id}:`, error);
     throw error;
   }
+}
+
+/**
+ * Descontar stock de un terrario (atómico, nunca queda negativo)
+ */
+export async function decreaseTerrariumStock(terrariumId: string, quantity: number): Promise<void> {
+  await decreaseStock(terrariumId, quantity, 'terrario');
 }
 
 /**
@@ -126,65 +106,10 @@ export async function checkSupplyStock(
 }
 
 /**
- * Descontar stock de un insumo
- * Es idempotente: usa transacción atómica para evitar race conditions
- * Si el stock es insuficiente, solo descuenta lo disponible (no permite negativo)
+ * Descontar stock de un insumo (atómico, nunca queda negativo)
  */
-export async function decreaseSupplyStock(
-  supplyId: string,
-  quantity: number
-): Promise<void> {
-  try {
-    // Usar transacción atómica para evitar race conditions
-    // Leer y actualizar en una sola operación
-    const supply = await writeClient.fetch(
-      `*[_type == "supply" && _id == $id][0]`,
-      { id: supplyId }
-    );
-
-    if (!supply) {
-      throw new Error(`Insumo ${supplyId} no encontrado`);
-    }
-
-    const currentStock = supply.stock || 0;
-    
-    // Si no hay suficiente stock, solo descontar lo disponible
-    // Esto previene doble descuento en race conditions
-    const quantityToDeduct = Math.min(quantity, currentStock);
-    
-    if (quantityToDeduct === 0) {
-      console.warn(
-        `⚠️ No se puede descontar stock de insumo ${supplyId}: stock actual es ${currentStock}, se intentó descontar ${quantity}`
-      );
-      return; // No hacer nada si no hay stock disponible
-    }
-
-    if (quantityToDeduct < quantity) {
-      console.warn(
-        `⚠️ Intento de descontar ${quantity} unidades pero solo hay ${currentStock} disponibles para insumo ${supplyId}. Descontando ${quantityToDeduct}`
-      );
-    }
-
-    const newStock = currentStock - quantityToDeduct;
-    const inStock = newStock > 0;
-
-    // Actualizar stock de forma atómica
-    await writeClient
-      .patch(supplyId)
-      .set({
-        stock: newStock,
-        inStock,
-        updatedAt: new Date().toISOString(),
-      })
-      .commit();
-
-    console.log(
-      `✅ Stock de insumo ${supplyId} actualizado: ${currentStock} → ${newStock} (descontado: ${quantityToDeduct})`
-    );
-  } catch (error) {
-    console.error(`Error descontando stock de insumo ${supplyId}:`, error);
-    throw error;
-  }
+export async function decreaseSupplyStock(supplyId: string, quantity: number): Promise<void> {
+  await decreaseStock(supplyId, quantity, 'insumo');
 }
 
 /**
@@ -229,8 +154,8 @@ export async function checkWorkshopSpots(
 }
 
 /**
- * Descontar cupos disponibles de un taller
- * Es idempotente: solo descuenta lo disponible para evitar race conditions
+ * Descontar cupos de un taller en una fecha. Se lee el taller sólo para ubicar
+ * la fecha (_key); el descuento es un `dec` atómico sobre ese cupo.
  */
 export async function decreaseWorkshopSpots(
   workshopId: string,
@@ -238,7 +163,6 @@ export async function decreaseWorkshopSpots(
   quantity: number
 ): Promise<void> {
   try {
-    // Obtener taller actual
     const query = `*[_type == "workshop" && _id == $id][0]`;
     const workshop = await writeClient.fetch(query, { id: workshopId });
 
@@ -246,59 +170,40 @@ export async function decreaseWorkshopSpots(
       throw new Error(`Taller ${workshopId} no encontrado`);
     }
 
-    // Buscar la fecha específica y actualizar cupos
-    const dates = workshop.dates || [];
-    const dateIndex = dates.findIndex(
-      (d: any) => new Date(d.date).toISOString() === new Date(date).toISOString()
+    const target = new Date(date).toISOString();
+    const dateObj = (workshop.dates || []).find(
+      (d: any) => new Date(d.date).toISOString() === target
     );
 
-    if (dateIndex === -1) {
+    if (!dateObj) {
       throw new Error(`Fecha ${date} no encontrada en el taller ${workshopId}`);
     }
 
-    const currentDate = dates[dateIndex];
-    const currentSpots = currentDate.spotsAvailable || 0;
-    
-    // Si no hay suficientes cupos, solo descontar lo disponible
-    // Esto previene doble descuento en race conditions
-    const quantityToDeduct = Math.min(quantity, currentSpots);
-    
-    if (quantityToDeduct === 0) {
-      console.warn(
-        `⚠️ No se pueden descontar cupos del taller ${workshopId} en fecha ${date}: cupos actuales son ${currentSpots}, se intentó descontar ${quantity}`
-      );
-      return; // No hacer nada si no hay cupos disponibles
+    const path = `dates[_key=="${dateObj._key}"]`;
+    const spotsPath = `${path}.spotsAvailable`;
+    const updated = await writeClient
+      .patch(workshopId)
+      .setIfMissing({ [spotsPath]: 0 })
+      .dec({ [spotsPath]: quantity })
+      .set({ updatedAt: new Date().toISOString() })
+      .commit<{ dates: Array<{ _key: string; spotsAvailable: number }> }>();
+
+    const newSpots = updated.dates.find((d) => d._key === dateObj._key)?.spotsAvailable ?? 0;
+    if (newSpots > 0) {
+      console.log(`✅ Cupos de taller ${workshopId} (${date}) descontados en ${quantity}: quedan ${newSpots}`);
+      return;
     }
 
-    if (quantityToDeduct < quantity) {
+    if (newSpots < 0) {
       console.warn(
-        `⚠️ Intento de descontar ${quantity} cupos pero solo hay ${currentSpots} disponibles para taller ${workshopId} en fecha ${date}. Descontando ${quantityToDeduct}`
+        `⚠️ Se intentó descontar ${quantity} cupos del taller ${workshopId} en fecha ${date} sin cupos suficientes; se deja en 0`
       );
     }
-
-    const newSpots = currentSpots - quantityToDeduct;
-    const status = newSpots > 0 ? 'available' : 'sold_out';
-
-    // Actualizar el array de fechas
-    const updatedDates = [...dates];
-    updatedDates[dateIndex] = {
-      ...currentDate,
-      spotsAvailable: newSpots,
-      status,
-    };
-
-    // Actualizar taller
     await writeClient
       .patch(workshopId)
-      .set({
-        dates: updatedDates,
-        updatedAt: new Date().toISOString(),
-      })
+      .inc({ [spotsPath]: -newSpots })
+      .set({ [`${path}.status`]: 'sold_out' })
       .commit();
-
-    console.log(
-      `✅ Cupos de taller ${workshopId} (${date}) actualizados: ${currentSpots} → ${newSpots} (descontado: ${quantityToDeduct})`
-    );
   } catch (error) {
     console.error(`Error descontando cupos de taller ${workshopId}:`, error);
     throw error;

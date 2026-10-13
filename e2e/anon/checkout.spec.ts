@@ -81,9 +81,8 @@ test.describe('checkout', () => {
     await payButton(page).click();
     expect((await checkoutResponse).status()).toBe(500);
 
-    // BUG: el mensaje expone configuración interna ("FLOW_API_KEY no está configurada en .env.local"),
-    // app/api/checkout/route.ts:301 devuelve error.message tal cual.
-    await expect(page.getByText(/no está configurada|Error al procesar el pago/).filter({ visible: true })).toBeVisible();
+    await expect(page.getByText('Error al procesar el pago').filter({ visible: true })).toBeVisible();
+    await expect(page.getByText(/no está configurada/)).toHaveCount(0);
     await expect(payButton(page)).toBeEnabled();
     const orders = await sanity.fetch<number>(`count(*[_type == "order" && customerEmail == $email])`, { email });
     expect(orders).toBe(0);
@@ -124,4 +123,19 @@ test('checkout de curso + taller: todo es retiro, sin sección de despacho', asy
   await expect(page.getByText('Todos los productos son de retiro en tienda')).toBeVisible();
   await expect(page.getByRole('button', { name: /Despacho a domicilio/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: `Pagar $${(COURSE.price + WORKSHOP.price).toLocaleString('es-CL')} CLP` })).toBeVisible();
+});
+
+test('la API rechaza cantidades negativas o no enteras y no crea la orden', async ({ request }) => {
+  const email = uniqueEmail('checkout-qty');
+  for (const quantity of [-1, 0, 1.5]) {
+    const items = [terrariumCartItem({ quantity: 2 }), terrariumCartItem({ quantity })];
+    const res = await request.post('/api/checkout', { data: { items, email, gateway: 'flow' } });
+    expect(res.status()).toBe(400);
+    expect((await res.json()).error).toContain('Cantidad inválida');
+
+    const quote = await request.post('/api/checkout/quote', { data: { items, gateway: 'flow' } });
+    expect(quote.status()).toBe(400);
+  }
+  const orders = await sanity.fetch<number>(`count(*[_type == "order" && customerEmail == $email])`, { email });
+  expect(orders).toBe(0);
 });
