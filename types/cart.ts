@@ -43,8 +43,7 @@ export interface CartState {
   isOpen: boolean; // Para modal de confirmación
   
   // Computed values
-  itemCount: number;
-  subtotal: number;
+  itemCount: number; // Los totales en dinero se agrupan por moneda en la UI (carrito/checkout)
   
   // Actions
   addItem: (item: CartItem) => void;

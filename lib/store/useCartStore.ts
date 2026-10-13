@@ -21,7 +21,6 @@ export const useCartStore = create<CartState>()(
       
       // Computed values (como propiedades normales que se actualizan)
       itemCount: 0,
-      subtotal: 0,
       
       // Actions
       addItem: (item: CartItem) => {
@@ -44,12 +43,10 @@ export const useCartStore = create<CartState>()(
         
         // Recalcular valores computados
         const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
-        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
         
         set({
           items: newItems,
           itemCount,
-          subtotal,
           isOpen: true,
         });
       },
@@ -58,12 +55,10 @@ export const useCartStore = create<CartState>()(
         const newItems = get().items.filter((item) => !isLine(item, id, type, date));
         
         const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
-        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
         
         set({
           items: newItems,
           itemCount,
-          subtotal,
         });
       },
       
@@ -84,12 +79,10 @@ export const useCartStore = create<CartState>()(
         });
         
         const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
-        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
         
         set({
           items: newItems,
           itemCount,
-          subtotal,
         });
       },
       
@@ -107,10 +100,7 @@ export const useCartStore = create<CartState>()(
 
         if (!changed) return false;
 
-        set({
-          items: newItems,
-          subtotal: newItems.reduce((total, item) => total + item.price * item.quantity, 0),
-        });
+        set({ items: newItems });
 
         return true;
       },
@@ -119,8 +109,7 @@ export const useCartStore = create<CartState>()(
         set({ 
           items: [], 
           itemCount: 0,
-          subtotal: 0,
-          isOpen: false 
+              isOpen: false 
         });
       },
       
@@ -151,7 +140,6 @@ export const useCartStore = create<CartState>()(
         if (state) {
           const items = state.items;
           state.itemCount = items.reduce((total, item) => total + item.quantity, 0);
-          state.subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
         }
       },
     }
