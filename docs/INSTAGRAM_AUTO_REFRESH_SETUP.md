@@ -41,15 +41,15 @@ CRON_SECRET=tu_secret_de_paso_3
 
 **Aplicar a:** Production, Preview
 
-### 5. Actualizar vercel.json
+### 5. vercel.json
 
-Edita `vercel.json` y reemplaza `CRON_SECRET_PLACEHOLDER` con tu secret real:
+No hay que tocarlo: el secret **no** va en `vercel.json`. Con `CRON_SECRET` definido, Vercel envía `Authorization: Bearer <CRON_SECRET>` solo:
 
 ```json
 {
   "crons": [
     {
-      "path": "/api/instagram/refresh-auto?secret=TU_SECRET_AQUI",
+      "path": "/api/instagram/refresh-auto",
       "schedule": "0 0 1 * *"
     }
   ]
@@ -73,8 +73,7 @@ git push
 ### Probar Manualmente
 
 ```bash
-# Reemplaza TU_SECRET con tu CRON_SECRET
-curl "https://comoelmusguito.cl/api/instagram/refresh-auto?secret=TU_SECRET"
+curl -H "Authorization: Bearer $CRON_SECRET" https://comoelmusguito.cl/api/instagram/refresh-auto
 ```
 
 Deberías ver:
@@ -95,7 +94,7 @@ Deberías ver:
 
 ## 📝 Notas Importantes
 
-1. **El secret en vercel.json** debe coincidir con `CRON_SECRET` en variables de entorno
+1. **El secret nunca va en vercel.json**: basta con `CRON_SECRET` en las variables de entorno
 2. **El cron se ejecuta cada 50 días** aproximadamente
 3. **El nuevo token** estará disponible después del próximo deploy
 4. **Si el token expira completamente** (más de 60 días), necesitarás renovarlo manualmente
@@ -105,7 +104,7 @@ Deberías ver:
 ## 🆘 Problemas Comunes
 
 **Error: "No autorizado"**
-- Verifica que el secret en `vercel.json` coincida con `CRON_SECRET`
+- Verifica que `CRON_SECRET` esté definido en Vercel (Production) y redeploya
 
 **Error: "VERCEL_TOKEN no configurado"**
 - Verifica que las variables estén en Vercel y aplicadas a Production

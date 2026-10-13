@@ -122,11 +122,7 @@ async function updateVercelEnvVariable(
  */
 export async function GET(request: Request) {
   try {
-    // Validar secret (protección del endpoint)
-    // El secret puede venir en query param o header
-    const { searchParams } = new URL(request.url);
-    const secret = searchParams.get('secret') || request.headers.get('x-cron-secret');
-
+    // Vercel Cron envía `Authorization: Bearer ${CRON_SECRET}` cuando CRON_SECRET está definido
     if (!CRON_SECRET) {
       return NextResponse.json(
         { error: 'CRON_SECRET no configurado en variables de entorno' },
@@ -134,7 +130,7 @@ export async function GET(request: Request) {
       );
     }
 
-    if (secret !== CRON_SECRET) {
+    if (request.headers.get('authorization') !== `Bearer ${CRON_SECRET}`) {
       return NextResponse.json(
         { error: 'No autorizado. Secret inválido.' },
         { status: 401 }
@@ -240,7 +236,6 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       message: 'Token refrescado y actualizado en Vercel exitosamente',
-      token: refreshResult.token,
       expiresIn: refreshResult.expiresIn,
       expiresInDays: Math.floor(refreshResult.expiresIn / 86400),
       expiresAt: new Date(Date.now() + refreshResult.expiresIn * 1000).toISOString(),

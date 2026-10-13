@@ -18,8 +18,10 @@ async function load(env: Record<string, string | undefined> = {}) {
   return (await import('./route')).GET;
 }
 
-const req = (qs = `?secret=${SECRET}`, headers: Record<string, string> = {}) =>
-  new Request(`https://musgo.test/api/instagram/refresh-auto${qs}`, { headers });
+const req = (authorization: string | null = `Bearer ${SECRET}`) =>
+  new Request('https://musgo.test/api/instagram/refresh-auto', {
+    headers: authorization ? { authorization } : {},
+  });
 
 /** Vercel API: list → (delete) → create */
 function vercelApi({ existing = true, list = 200, del = 200, create = 200 } = {}) {
@@ -46,26 +48,24 @@ describe('GET /api/instagram/refresh-auto — auth', () => {
     expect((await GET(req())).status).toBe(500);
   });
 
-  it('rejects a wrong or missing secret', async () => {
+  it('rejects a wrong or missing bearer token', async () => {
     const GET = await load();
-    expect((await GET(req('?secret=nope'))).status).toBe(401);
-    expect((await GET(req(''))).status).toBe(401);
+    expect((await GET(req('Bearer nope'))).status).toBe(401);
+    expect((await GET(req(SECRET))).status).toBe(401);
+    expect((await GET(req(null))).status).toBe(401);
     expect(refreshInstagramToken).not.toHaveBeenCalled();
   });
 
-  it('accepts the secret via the x-cron-secret header', async () => {
+  it('accepts the Authorization: Bearer header Vercel Cron sends', async () => {
     vercelApi();
     const GET = await load();
-    expect((await GET(req('', { 'x-cron-secret': SECRET }))).status).toBe(200);
+    expect((await GET(req())).status).toBe(200);
   });
 
-  // BUG: app/api/instagram/refresh-auto/route.ts:127 — searchParams.get() decodes '+' as a space, so a
-  // base64 CRON_SECRET containing '+' (like the one in vercel.json's cron path) never matches → cron always 401.
-  // Also, Vercel Cron authenticates with `Authorization: Bearer <CRON_SECRET>`, which this route ignores.
-  it.skip('accepts a secret containing "+" passed in the cron query string', async () => {
-    vercelApi();
-    const GET = await load({ CRON_SECRET: 'abc+def=' });
-    expect((await GET(req('?secret=abc+def='))).status).toBe(200);
+  it('ignores the legacy ?secret= query string', async () => {
+    const GET = await load();
+    const res = await GET(new Request(`https://musgo.test/api/instagram/refresh-auto?secret=${SECRET}`));
+    expect(res.status).toBe(401);
   });
 });
 
@@ -78,7 +78,8 @@ describe('GET /api/instagram/refresh-auto — refresh + Vercel update', () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body).toMatchObject({ success: true, token: 'ig-new', expiresInDays: 60 });
+    expect(body).toMatchObject({ success: true, expiresInDays: 60 });
+    expect(body).not.toHaveProperty('token');
     expect(refreshInstagramToken).toHaveBeenCalledWith('ig-old');
 
     const [list, del, create] = fetchMock.mock.calls;

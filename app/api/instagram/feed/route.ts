@@ -69,7 +69,7 @@ export async function GET(request: Request) {
             instructions: [
               'El token de Instagram expiró.',
               'Para renovarlo:',
-              '1. Llama a: GET /api/instagram/refresh',
+              '1. Llama a: GET /api/instagram/refresh-auto (Authorization: Bearer CRON_SECRET)',
               '2. O ejecuta: npm run script:instagram-auth',
               '3. Actualiza INSTAGRAM_ACCESS_TOKEN en Vercel (ver docs/VERCEL_ENV_VARIABLES.md)'
             ]
