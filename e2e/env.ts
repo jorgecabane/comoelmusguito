@@ -7,6 +7,13 @@ export const E2E_PORT = Number(process.env.E2E_PORT ?? 3100);
 export const E2E_URL = `http://localhost:${E2E_PORT}`;
 export const E2E_DATASET = 'test';
 
+/**
+ * Namespace de esta corrida: los fixtures mutables (usuarios, pedidos, accesos) llevan este id
+ * para que varias corridas (CI + locales) compartan el dataset sin pisarse. Se escribe de vuelta
+ * en process.env para que los workers de Playwright hereden el mismo valor que el proceso principal.
+ */
+export const E2E_RUN_ID = (process.env.E2E_RUN_ID ??= `l${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`);
+
 export const e2eServerEnv: Record<string, string> = {
   NEXT_PUBLIC_SANITY_DATASET: E2E_DATASET,
   NEXTAUTH_URL: E2E_URL,
@@ -28,3 +35,6 @@ export const e2eServerEnv: Record<string, string> = {
   NEXT_PUBLIC_GOOGLE_CLIENT_ID: '',
   GOOGLE_CLIENT_SECRET: '',
 };
+
+/** Sesiones guardadas por e2e/auth.setup.ts, por corrida (dos corridas en la misma carpeta no se pisan). */
+export const authFile = (role: 'customer' | 'buyer') => `.auth/${E2E_RUN_ID}/${role}.json`;

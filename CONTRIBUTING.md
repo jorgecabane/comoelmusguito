@@ -59,6 +59,7 @@ npm run dev                # http://localhost:3000
 **E2E (Playwright)** — `npm run e2e`, `npm run e2e:ui`
 - Corren contra el dataset **`test`** de Sanity con datos de prueba (`scripts/seed-e2e.ts`), nunca contra producción. Emails, pagos y captcha quedan desactivados.
 - Una carpeta por rol: `e2e/anon` (visitante), `e2e/customer` (cliente sin compras), `e2e/buyer` (cliente con cursos y pedidos).
+- Varias corridas (CI y el pre-push de cada uno) usan el dataset a la vez. El catálogo (productos, cursos, taller, blog; ids fijos `e2e-`) es **solo lectura** para los tests. Usuarios, pedidos, accesos y el regalo son **por corrida** (`E2E_RUN_ID`, creados en `e2e/global-setup.ts` y borrados en `e2e/global-teardown.ts`): un test solo puede mutar esos o los datos que él mismo crea. Importa todo desde `e2e/fixtures.ts`.
 - Flujo nuevo visible para el usuario ⇒ spec nuevo. Usa locators accesibles (`getByRole`, `getByLabel`), sin `waitForTimeout`. Si tu test crea datos, usa emails únicos y límpialos.
 - Correr uno: `npx playwright test e2e/anon/carrito.spec.ts --project=anon`.
 
