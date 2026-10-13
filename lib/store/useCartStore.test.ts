@@ -63,27 +63,31 @@ describe('addItem', () => {
     expect(state().getItemByIdAndType('c', 'course')?.quantity).toBe(999);
   });
 
-  // BUG: el tope de stock solo se valida al fusionar; un item nuevo entra con quantity > maxQuantity.
-  it.skip('caps a brand-new item at maxQuantity', () => {
+  it('caps a brand-new item at maxQuantity', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     state().addItem(item({ quantity: 5, maxQuantity: 2 }));
     expect(state().itemCount).toBeLessThanOrEqual(2);
   });
 
-  // BUG: `maxQuantity || 999` trata maxQuantity 0 (sin stock) como ilimitado.
-  it.skip('treats maxQuantity 0 as no stock', () => {
-    state().addItem(item({ maxQuantity: 0 }));
+  it('treats maxQuantity 0 as no stock', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     state().addItem(item({ maxQuantity: 0 }));
-    expect(state().itemCount).toBeLessThanOrEqual(1);
+    state().addItem(item({ maxQuantity: 0 }));
+    expect(state().itemCount).toBe(0);
   });
 
-  // BUG: talleres se identifican solo por id+type; agregar el mismo taller en otra fecha
-  // suma cupos a la primera fecha y la segunda se pierde.
-  it.skip('keeps the same workshop on different dates as separate lines', () => {
+  it('keeps the same workshop on different dates as separate lines', () => {
     const d = (date: string) => ({ date, spotsAvailable: 5, price: 1 });
     state().addItem(item({ id: 'w', type: 'workshop', selectedDate: d('2026-11-01') }));
     state().addItem(item({ id: 'w', type: 'workshop', selectedDate: d('2026-11-08') }));
-    expect(state().items).toHaveLength(2);
+    state().addItem(item({ id: 'w', type: 'workshop', selectedDate: d('2026-11-08') }));
+    expect(state().items.map((i) => i.quantity)).toEqual([1, 2]);
+
+    state().updateQuantity('w', 'workshop', 4, '2026-11-01');
+    expect(state().items.map((i) => i.quantity)).toEqual([4, 2]);
+    state().removeItem('w', 'workshop', '2026-11-08');
+    expect(state().items).toHaveLength(1);
+    expect(state().items[0].selectedDate?.date).toBe('2026-11-01');
   });
 });
 

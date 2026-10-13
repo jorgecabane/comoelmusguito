@@ -95,7 +95,7 @@ export async function convertCLPToUSD(clpAmount: number): Promise<number> {
  */
 export function formatPrice(amount: number, currency: 'CLP' | 'USD'): string {
   if (currency === 'CLP') {
-    return `$${amount.toLocaleString('es-CL')} CLP`;
+    return `$${Math.round(amount).toLocaleString('es-CL')} CLP`;
   } else {
     return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
   }
