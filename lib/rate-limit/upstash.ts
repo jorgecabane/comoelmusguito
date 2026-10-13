@@ -17,7 +17,7 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
 /**
  * Obtener IP del request
  */
-export function getClientIP(request: Request): string {
+export function getClientIP(request: Pick<Request, 'headers'>): string {
   // En Vercel, usar x-forwarded-for
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {

@@ -69,8 +69,8 @@ function RegisterContent() {
       return;
     }
 
-    if (!password || password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    if (!password || password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
@@ -264,9 +264,9 @@ function RegisterContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres"
                 disabled={loading}
-                minLength={6}
+                minLength={8}
               />
             </div>
 
@@ -282,7 +282,7 @@ function RegisterContent() {
                 required
                 placeholder="Repite tu contraseña"
                 disabled={loading}
-                minLength={6}
+                minLength={8}
               />
             </div>
 

@@ -8,14 +8,20 @@ const adapter = vi.hoisted(() => ({
   updateUser: vi.fn(),
 }));
 const orders = vi.hoisted(() => ({ linkOrdersToUser: vi.fn() }));
+const rl = vi.hoisted(() => ({ applyRateLimit: vi.fn() }));
 
 vi.mock('@/lib/auth/sanity-adapter', () => adapter);
 vi.mock('@/lib/sanity/orders', () => orders);
+vi.mock('@/lib/rate-limit/upstash', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/rate-limit/upstash')>()),
+  loginRateLimit: 'login-limiter',
+  applyRateLimit: rl.applyRateLimit,
+}));
 vi.mock('next-auth', () => ({ default: vi.fn(() => 'handler') }));
 vi.mock('next-auth/providers/credentials', () => ({ default: (o: object) => ({ id: 'credentials', ...o }) }));
 vi.mock('next-auth/providers/google', () => ({ default: (o: object) => ({ id: 'google', ...o }) }));
 
-type Authorize = (c: Record<string, string> | undefined) => Promise<unknown>;
+type Authorize = (c: Record<string, string> | undefined, req?: { headers?: Record<string, string> }) => Promise<unknown>;
 
 async function load(google = false) {
   vi.resetModules();
@@ -35,6 +41,7 @@ beforeEach(() => {
   vi.spyOn(console, 'log').mockImplementation(() => {});
   Object.values(adapter).forEach((f) => f.mockReset());
   orders.linkOrdersToUser.mockReset().mockResolvedValue(0);
+  rl.applyRateLimit.mockReset().mockResolvedValue({ success: true });
 });
 
 describe('module wiring', () => {
@@ -87,12 +94,13 @@ describe('credentials authorize', () => {
     expect(await authorize({ email: 'ana@x.cl', password: 'bad' })).toBeNull();
   });
 
-  it('blocks unverified emails by default (gate on)', async () => {
+  it('blocks unverified emails by default (gate on) with EmailNotVerified, only after a valid password', async () => {
     const { authorize } = await load();
     adapter.getUserByEmail.mockResolvedValue(dbUser({ emailVerified: false }));
     adapter.verifyPassword.mockResolvedValue(true);
-    expect(await authorize({ email: 'ana@x.cl', password: 'secret' })).toBeNull();
-    expect(adapter.verifyPassword).not.toHaveBeenCalled();
+    await expect(authorize({ email: 'ana@x.cl', password: 'secret' })).rejects.toThrow('EmailNotVerified');
+    adapter.verifyPassword.mockResolvedValue(false);
+    expect(await authorize({ email: 'ana@x.cl', password: 'bad' })).toBeNull();
   });
 
   it('lets unverified emails in when REQUIRE_EMAIL_VERIFICATION=false', async () => {
@@ -103,20 +111,45 @@ describe('credentials authorize', () => {
     expect(await authorize({ email: 'ana@x.cl', password: 'secret' })).toMatchObject({ id: 'u1' });
   });
 
-  // BUG: `throw new Error('EmailNotVerified')` is caught by the surrounding try/catch and turned into `null`,
-  // so NextAuth never sees EmailNotVerified and the UI cannot tell the user to verify their email.
-  it.skip('surfaces EmailNotVerified to NextAuth', async () => {
+  it('returns null when the DB fails', async () => {
     const { authorize } = await load();
-    adapter.getUserByEmail.mockResolvedValue(dbUser({ emailVerified: false }));
-    await expect(authorize({ email: 'ana@x.cl', password: 'secret' })).rejects.toThrow('EmailNotVerified');
+    adapter.getUserByEmail.mockRejectedValue(new Error('down'));
+    expect(await authorize({ email: 'ana@x.cl', password: 'secret' })).toBeNull();
   });
 
-  // BUG: credentials email is not lowercased, but createUser stores emails lowercased; "Ana@X.cl" cannot log in.
-  it.skip('normalizes email case before lookup', async () => {
+  it('normalizes email case and whitespace before lookup', async () => {
     const { authorize } = await load();
     adapter.getUserByEmail.mockResolvedValue(null);
-    await authorize({ email: 'Ana@X.cl', password: 'p' });
+    await authorize({ email: ' Ana@X.cl ', password: 'p' });
     expect(adapter.getUserByEmail).toHaveBeenCalledWith('ana@x.cl');
+  });
+});
+
+describe('login rate limit', () => {
+  it('keys the limiter by client IP + normalized email and allows when under the limit', async () => {
+    const { authorize } = await load();
+    adapter.getUserByEmail.mockResolvedValue(dbUser());
+    adapter.verifyPassword.mockResolvedValue(true);
+    const req = { headers: { 'x-forwarded-for': '9.9.9.9, 1.1.1.1' } };
+    expect(await authorize({ email: 'Ana@X.cl', password: 'secret' }, req)).toMatchObject({ id: 'u1' });
+    expect(rl.applyRateLimit).toHaveBeenCalledWith('login-limiter', '9.9.9.9:ana@x.cl');
+  });
+
+  it('throws TooManyAttempts without touching the DB when blocked', async () => {
+    const { authorize } = await load();
+    rl.applyRateLimit.mockResolvedValue({ success: false });
+    await expect(authorize({ email: 'ana@x.cl', password: 'secret' })).rejects.toThrow('TooManyAttempts');
+    expect(adapter.getUserByEmail).not.toHaveBeenCalled();
+  });
+
+  it('lets the login through when Upstash is not configured (null limiter)', async () => {
+    const { authorize } = await load();
+    const { applyRateLimit } = await vi.importActual<typeof import('@/lib/rate-limit/upstash')>('@/lib/rate-limit/upstash');
+    rl.applyRateLimit.mockImplementation(() => applyRateLimit(null, 'x'));
+    adapter.getUserByEmail.mockResolvedValue(dbUser());
+    adapter.verifyPassword.mockResolvedValue(true);
+    expect(await authorize({ email: 'ana@x.cl', password: 'secret' })).toMatchObject({ id: 'u1' });
+    expect(rl.applyRateLimit).toHaveBeenCalledWith('login-limiter', 'unknown:ana@x.cl');
   });
 });
 
