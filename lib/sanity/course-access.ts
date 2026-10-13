@@ -67,7 +67,7 @@ export async function getUserCourseAccesses(userId: string): Promise<
       
       return {
         courseId: access.course._id,
-        courseSlug: access.course.slug.current,
+        courseSlug: access.course.slug,
         courseName: access.course.name,
         courseThumbnail: access.course.thumbnail,
         accessGrantedAt: access.accessGrantedAt,
@@ -146,20 +146,15 @@ export function calculateCourseProgress(
   course: { modules?: Array<{ lessons?: Array<{ order: number }> }> },
   completedLessons: string[] = []
 ): number {
-  if (!course.modules || course.modules.length === 0) return 0;
-  
-  // Contar total de lecciones
-  const totalLessons = course.modules.reduce((total, module) => {
-    return total + (module.lessons?.length || 0);
-  }, 0);
-  
-  if (totalLessons === 0) return 0;
-  
-  // Contar lecciones completadas
-  const completedCount = completedLessons.length;
-  
-  // Calcular porcentaje
-  return Math.round((completedCount / totalLessons) * 100);
+  // IDs de lección: "moduleIndex-lessonIndex" (ver app/api/courses/progress)
+  const lessonIds = new Set(
+    (course.modules ?? []).flatMap((module, m) => (module.lessons ?? []).map((_, l) => `${m}-${l}`))
+  );
+  if (lessonIds.size === 0) return 0;
+
+  // Solo cuentan lecciones que aún existen: si se borró una lección vista no supera 100%
+  const completedCount = new Set(completedLessons.filter((id) => lessonIds.has(id))).size;
+  return Math.round((completedCount / lessonIds.size) * 100);
 }
 
 /**
