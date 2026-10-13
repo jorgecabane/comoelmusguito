@@ -36,8 +36,6 @@ function CheckoutCallbackContent() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [hasCourses, setHasCourses] = useState(false);
   const [courseSlug, setCourseSlug] = useState<string | null>(null);
-  const [customerEmail, setCustomerEmail] = useState<string | null>(null);
-  const [customerName, setCustomerName] = useState<string | null>(null);
   // Información de regalo
   const [isGift, setIsGift] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
@@ -99,14 +97,7 @@ function CheckoutCallbackContent() {
           if (data.commerceOrder) {
             fetchOrderDetails(data.commerceOrder);
           }
-          
-          // Guardar email y nombre para crear cuenta si es necesario
-          if (data.customerEmail) {
-            setCustomerEmail(data.customerEmail);
-          }
-          if (data.customerName) {
-            setCustomerName(data.customerName);
-          }
+
         } else if (data.paymentStatus === 3) {
           setStatus('error');
           setMessage('El pago no pudo ser procesado. No te preocupes, tu dinero está seguro. Por favor, intenta nuevamente o contáctanos si el problema persiste.');
@@ -153,12 +144,6 @@ function CheckoutCallbackContent() {
               setCourseSlug(courses[0].slug);
             }
           }
-        }
-        if (data.customerEmail) {
-          setCustomerEmail(data.customerEmail);
-        }
-        if (data.customerName) {
-          setCustomerName(data.customerName);
         }
         // Información de regalo
         if (data.isGift) {
@@ -318,7 +303,7 @@ function CheckoutCallbackContent() {
                           )}
                         </p>
                         <p className="text-xs text-gray/60 mb-3">
-                          Al crear tu cuenta con el mismo email ({customerEmail || 'tu email'}), tu curso se vinculará automáticamente.
+                          Al crear tu cuenta con el mismo email que usaste en la compra, tu curso se vinculará automáticamente.
                         </p>
                       </>
                     )}
@@ -339,7 +324,7 @@ function CheckoutCallbackContent() {
                             </Link>
                           )}
                           <Link
-                            href={`/auth/register${customerEmail ? `?email=${encodeURIComponent(customerEmail)}${customerName ? `&name=${encodeURIComponent(customerName)}` : ''}` : ''}`}
+                            href="/auth/register"
                           >
                             <Button variant="secondary" size="sm" className="w-full sm:w-auto">
                               Crear mi Cuenta

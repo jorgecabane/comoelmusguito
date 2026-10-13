@@ -153,7 +153,9 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error(`[Webhook PayPal] ${timestamp} | Error handling event ${eventType}:`, error);
-    // Always return 200 — PayPal retries on non-2xx
+    // Fallo transitorio (Sanity caído): 500 para que PayPal reintente. Es seguro porque
+    // processSuccessfulPayment es idempotente y los cambios de estado se pueden repetir.
+    return NextResponse.json({ received: false }, { status: 500 });
   }
 
   return ok();
