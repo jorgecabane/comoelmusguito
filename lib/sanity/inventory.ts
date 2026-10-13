@@ -277,7 +277,7 @@ export async function decreaseWorkshopSpots(
     }
 
     const newSpots = currentSpots - quantityToDeduct;
-    const status = newSpots > 0 ? 'available' : 'soldOut';
+    const status = newSpots > 0 ? 'available' : 'sold_out';
 
     // Actualizar el array de fechas
     const updatedDates = [...dates];
