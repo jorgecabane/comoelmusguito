@@ -121,8 +121,7 @@ describe('createUser', () => {
     expect(create.mock.calls[0][0]).toMatchObject({ emailVerified: true });
   });
 
-  // BUG: tokens come from Math.random(), which is not a CSPRNG; verification/reset tokens are predictable.
-  it.skip('uses a cryptographically secure token generator', async () => {
+  it('uses a cryptographically secure token generator', async () => {
     const spy = vi.spyOn(Math, 'random');
     await createUser({ email: 'a@x.cl', password: 'p' });
     expect(spy).not.toHaveBeenCalled();

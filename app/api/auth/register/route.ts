@@ -78,18 +78,11 @@ export async function POST(request: NextRequest) {
     }
 
     const sanitizedName = name ? sanitizeString(name) : undefined;
-    const sanitizedPassword = sanitizeString(password);
 
-    if (!sanitizedPassword || sanitizedPassword.length < 6) {
+    // La contraseña se hashea tal cual se escribió (el login la compara sin transformar)
+    if (typeof password !== 'string' || password.length < 8) {
       return NextResponse.json(
-        { error: 'Contraseña debe tener al menos 6 caracteres' },
-        { status: 400 }
-      );
-    }
-
-    if (!password || password.length < 6) {
-      return NextResponse.json(
-        { error: 'La contraseña debe tener al menos 6 caracteres' },
+        { error: 'La contraseña debe tener al menos 8 caracteres' },
         { status: 400 }
       );
     }
@@ -140,7 +133,7 @@ export async function POST(request: NextRequest) {
     const user = await createUser({
       email: sanitizedEmail,
       name: sanitizedName,
-      password: sanitizedPassword,
+      password,
       provider: 'credentials',
       skipEmailVerification: !requireEmailVerification, // Si no se requiere, saltar verificación
     });

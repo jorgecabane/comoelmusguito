@@ -71,14 +71,13 @@ describe('validation', () => {
     expect(await res.json()).toEqual({ error: 'Email válido requerido' });
   });
 
-  it.each([['12345'], [''], [undefined], ['<<<<<<<12']])('rejects short password %j', async (password) => {
+  it.each([['1234567'], [''], [undefined], [12345678]])('rejects short or non-string password %j', async (password) => {
     const res = await POST(req({ ...valid, password }));
     expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'La contraseña debe tener al menos 8 caracteres' });
   });
 
-  // BUG: sanitizeString strips "<" and ">" from the password before hashing, but login compares the raw
-  // password, so a user registering with "abc<def>123" can never sign in.
-  it.skip('hashes the password exactly as typed', async () => {
+  it('hashes the password exactly as typed', async () => {
     await POST(req({ ...valid, password: 'abc<def>123' }));
     expect(m.createUser).toHaveBeenCalledWith(expect.objectContaining({ password: 'abc<def>123' }));
   });

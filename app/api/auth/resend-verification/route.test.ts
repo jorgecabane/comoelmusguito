@@ -52,14 +52,19 @@ describe('POST /api/auth/resend-verification', () => {
 
   it('does nothing for already verified users', async () => {
     m.getUserByEmail.mockResolvedValue({ emailVerified: true });
-    expect(await (await post({ email: 'a@x.cl' })).json()).toEqual({ success: true, message: 'Tu email ya está verificado.' });
+    expect((await post({ email: 'a@x.cl' })).status).toBe(200);
     expect(m.regenerateVerificationToken).not.toHaveBeenCalled();
   });
 
-  // BUG: unknown emails and verified accounts get different messages, which leaks account existence.
-  it.skip('responds identically for unknown and verified emails', async () => {
-    m.getUserByEmail.mockResolvedValueOnce(null).mockResolvedValueOnce({ emailVerified: true });
-    expect(await (await post({ email: 'a@x.cl' })).json()).toEqual(await (await post({ email: 'b@x.cl' })).json());
+  it('responds identically for unknown, verified and pending emails', async () => {
+    m.getUserByEmail
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ emailVerified: true })
+      .mockResolvedValueOnce({ email: 'c@x.cl', emailVerified: false });
+    m.regenerateVerificationToken.mockResolvedValue('vt');
+    const unknown = await (await post({ email: 'a@x.cl' })).json();
+    expect(await (await post({ email: 'b@x.cl' })).json()).toEqual(unknown);
+    expect(await (await post({ email: 'c@x.cl' })).json()).toEqual(unknown);
   });
 
   it('regenerates the token and emails it', async () => {

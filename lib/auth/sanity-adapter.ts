@@ -6,6 +6,7 @@
 import 'server-only';
 import { client, writeClient } from '@/sanity/lib/client';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'node:crypto';
 
 export type AuthMethod = 'credentials' | 'google';
 
@@ -64,12 +65,10 @@ export function hasPassword(user: SanityUser | null): boolean {
 }
 
 /**
- * Generar token de verificación único
+ * Generar token aleatorio criptográficamente seguro (verificación y reset)
  */
-function generateVerificationToken(): string {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15) + 
-         Date.now().toString(36);
+function generateToken(): string {
+  return randomBytes(32).toString('hex');
 }
 
 /**
@@ -111,7 +110,7 @@ export async function createUser(data: {
   } else {
     // Generar token de verificación para email/password
     userDoc.emailVerified = false;
-    userDoc.emailVerificationToken = generateVerificationToken();
+    userDoc.emailVerificationToken = generateToken();
     // Token expira en 48 horas
     const expires = new Date();
     expires.setHours(expires.getHours() + 48);
@@ -226,15 +225,6 @@ export async function getUserByVerificationToken(
 }
 
 /**
- * Generar token de reset de contraseña
- */
-function generateResetToken(): string {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15) + 
-         Date.now().toString(36);
-}
-
-/**
  * Crear token de reset de contraseña para un usuario
  */
 export async function createPasswordResetToken(email: string): Promise<string | null> {
@@ -246,7 +236,7 @@ export async function createPasswordResetToken(email: string): Promise<string | 
     // Nota: usuarios OAuth sin passwordHash también pueden solicitar el token.
     // El flujo de reset crea (inicializa) la contraseña en ese caso.
 
-    const resetToken = generateResetToken();
+    const resetToken = generateToken();
     const expires = new Date();
     expires.setHours(expires.getHours() + 1); // Expira en 1 hora
 
@@ -335,7 +325,7 @@ export async function regenerateVerificationToken(email: string): Promise<string
       return null;
     }
 
-    const verificationToken = generateVerificationToken();
+    const verificationToken = generateToken();
     const expires = new Date();
     expires.setHours(expires.getHours() + 48); // Expira en 48 horas
 

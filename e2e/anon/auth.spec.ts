@@ -25,6 +25,11 @@ test.describe('login', () => {
     await expect(page.getByText('Email o contraseña incorrectos')).toBeVisible();
   });
 
+  test('email con mayúsculas inicia sesión igual', async ({ page }) => {
+    await login(page, USERS.customer.email.toUpperCase(), USERS.customer.password);
+    await expect(page).toHaveURL(/\/mi-cuenta/);
+  });
+
   test('respeta el callbackUrl', async ({ page }) => {
     await page.goto('/mi-cuenta?filter=courses');
     await expect(page).toHaveURL(/callbackUrl=/);
