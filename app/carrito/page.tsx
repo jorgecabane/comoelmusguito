@@ -7,8 +7,9 @@
 
 import { useEffect, useState } from 'react';
 import { useCartStore } from '@/lib/store/useCartStore';
+import { useCartPriceSync } from '@/lib/store/useCartPriceSync';
 import { Button, Badge } from '@/components/ui';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, AlertTriangle, Info } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -21,10 +22,14 @@ function unavailabilityKey(id: string, type: string, selectedDate?: string): str
 export default function CarritoPage() {
   const { items, itemCount, subtotal, updateQuantity, removeItem, clearCart } = useCartStore();
   const [unavailable, setUnavailable] = useState<Record<string, string>>({});
+  const pricesUpdated = useCartPriceSync();
 
   useEffect(() => {
-    const workshopItems = items.filter((i) => i.type === 'workshop' && i.selectedDate?.date);
-    if (workshopItems.length === 0) {
+    // Cursos son digitales: siempre disponibles. Talleres sin fecha no se pueden validar.
+    const stockItems = items.filter(
+      (i) => i.type !== 'course' && (i.type !== 'workshop' || i.selectedDate?.date),
+    );
+    if (stockItems.length === 0) {
       setUnavailable({});
       return;
     }
@@ -32,16 +37,16 @@ export default function CarritoPage() {
     let cancelled = false;
 
     Promise.all(
-      workshopItems.map(async (item) => {
+      stockItems.map(async (item) => {
         try {
           const res = await fetch('/api/cart/validate-stock', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               itemId: item.id,
-              itemType: 'workshop',
+              itemType: item.type,
               quantity: item.quantity,
-              selectedDate: item.selectedDate!.date,
+              selectedDate: item.selectedDate?.date,
             }),
           });
           const data = await res.json();
@@ -58,7 +63,7 @@ export default function CarritoPage() {
         const { item, data } = result;
         if (!data?.available) {
           const key = unavailabilityKey(item.id, item.type, item.selectedDate?.date);
-          next[key] = data?.message ?? 'Esta fecha ya no tiene cupos disponibles';
+          next[key] = data?.message ?? data?.error ?? 'Este producto ya no está disponible';
         }
       }
       setUnavailable(next);
@@ -161,6 +166,13 @@ export default function CarritoPage() {
           </div>
         </div>
 
+        {pricesUpdated && (
+          <div className="mb-6 flex items-start gap-2 rounded-lg border border-ambar/30 bg-ambar/10 p-3 text-sm text-forest">
+            <Info size={18} className="shrink-0 mt-0.5" />
+            <span>Actualizamos los precios de tu carrito con los valores vigentes.</span>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Lista de productos */}
           <div className="lg:col-span-2 space-y-6">
@@ -177,6 +189,7 @@ export default function CarritoPage() {
                       item={item}
                       onUpdateQuantity={updateQuantity}
                       onRemove={removeItem}
+                      unavailableMessage={unavailable[unavailabilityKey(item.id, item.type)]}
                     />
                   ))}
                 </div>
@@ -237,6 +250,7 @@ export default function CarritoPage() {
                       item={item}
                       onUpdateQuantity={updateQuantity}
                       onRemove={removeItem}
+                      unavailableMessage={unavailable[unavailabilityKey(item.id, item.type)]}
                     />
                   ))}
                 </div>

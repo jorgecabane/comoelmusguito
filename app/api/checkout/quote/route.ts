@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     const userCurrency = await getUserCurrency();
 
-    const { total, currency } = await calculateOrderTotals({
+    const { validatedItems, total, currency } = await calculateOrderTotals({
       items,
       gateway,
       isGift: !!isGift,
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       skipAvailabilityChecks: true,
     });
 
-    return NextResponse.json({ total, currency });
+    return NextResponse.json({ total, currency, items: validatedItems });
   } catch (err) {
     if (err instanceof CheckoutValidationError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
