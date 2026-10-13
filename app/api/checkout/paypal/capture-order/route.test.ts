@@ -16,10 +16,11 @@ const post = (body: unknown) =>
 
 const pending = { orderId: 'ORD-1', paymentStatus: 1, paymentProvider: 'paypal', paypalOrderId: 'PP-1', total: 45.5, currency: 'USD' };
 const ids = { orderId: 'ORD-1', paypalOrderId: 'PP-1' };
+const okCapture = { id: 'CAP-1', status: 'COMPLETED', create_time: '2026-01-01T00:00:00Z', amount: { currency_code: 'USD', value: '45.50' } };
 const completed = (capture?: object) => ({
   id: 'PP-1',
   status: 'COMPLETED',
-  purchase_units: capture ? [{ payments: { captures: [capture] } }] : [],
+  purchase_units: capture ? [{ payments: { captures: [{ ...okCapture, ...capture }] } }] : [],
 });
 
 beforeEach(() => {
@@ -58,7 +59,7 @@ describe('POST /api/checkout/paypal/capture-order', () => {
   });
 
   it('captura COMPLETED → procesa el pago con captureId y fecha de PayPal', async () => {
-    m(capturePayPalOrder).mockResolvedValue(completed({ id: 'CAP-1', create_time: '2026-01-01T00:00:00Z' }));
+    m(capturePayPalOrder).mockResolvedValue(completed({}));
     expect(await (await post(ids)).json()).toEqual({ success: true, alreadyProcessed: false });
     expect(capturePayPalOrder).toHaveBeenCalledWith('PP-1');
     expect(processSuccessfulPayment).toHaveBeenCalledWith({
@@ -68,10 +69,10 @@ describe('POST /api/checkout/paypal/capture-order', () => {
     });
   });
 
-  it('COMPLETED sin datos de captura usa la fecha actual', async () => {
-    m(capturePayPalOrder).mockResolvedValue(completed());
+  it('COMPLETED sin create_time usa la fecha actual', async () => {
+    m(capturePayPalOrder).mockResolvedValue(completed({ create_time: undefined }));
     await post(ids);
-    expect(processSuccessfulPayment).toHaveBeenCalledWith({ orderId: 'ORD-1', paymentDate: expect.any(String), providerOrderId: undefined });
+    expect(processSuccessfulPayment).toHaveBeenCalledWith({ orderId: 'ORD-1', paymentDate: expect.any(String), providerOrderId: 'CAP-1' });
   });
 
   it('captura no completada marca la orden rechazada (3)', async () => {
@@ -88,20 +89,27 @@ describe('POST /api/checkout/paypal/capture-order', () => {
     expect(updateOrderPaymentStatus).not.toHaveBeenCalled();
   });
 
-  // BUG (dinero): app/api/checkout/paypal/capture-order/route.ts:52 captura el paypalOrderId que
-  // manda el cliente sin compararlo con order.paypalOrderId ni validar el monto capturado.
-  // Se puede pagar una orden PayPal barata y usar su id para marcar como pagada otra más cara.
-  it.skip('BUG: debería rechazar un paypalOrderId distinto al de la orden', async () => {
-    const res = await post({ orderId: 'ORD-1', paypalOrderId: 'PP-DE-OTRA-ORDEN' });
+  it.each([
+    ['otro paypalOrderId', { ...pending }, 'PP-DE-OTRA-ORDEN'],
+    ['orden sin paypalOrderId guardado', { ...pending, paypalOrderId: undefined }, 'PP-1'],
+  ])('409 sin capturar si el paypalOrderId no es el de la orden (%s)', async (_, order, paypalOrderId) => {
+    m(getOrderByOrderId).mockResolvedValue(order);
+    const res = await post({ orderId: 'ORD-1', paypalOrderId });
     expect(res.status).toBe(409);
     expect(capturePayPalOrder).not.toHaveBeenCalled();
+    expect(processSuccessfulPayment).not.toHaveBeenCalled();
   });
 
-  it.skip('BUG: debería rechazar una captura cuyo monto no coincide con order.total', async () => {
-    m(capturePayPalOrder).mockResolvedValue(
-      completed({ id: 'CAP', create_time: 'd', amount: { currency_code: 'USD', value: '1.00' } }),
-    );
-    await post(ids);
+  it.each([
+    ['monto menor', completed({ amount: { currency_code: 'USD', value: '1.00' } })],
+    ['otra moneda', completed({ amount: { currency_code: 'EUR', value: '45.50' } })],
+    ['captura no COMPLETED', completed({ status: 'PENDING' })],
+    ['sin datos de captura', completed()],
+  ])('COMPLETED con %s: rechaza (3), 400 y no marca pagada', async (_, result) => {
+    m(capturePayPalOrder).mockResolvedValue(result);
+    const res = await post(ids);
+    expect(res.status).toBe(400);
+    expect(updateOrderPaymentStatus).toHaveBeenCalledWith('ORD-1', 3);
     expect(processSuccessfulPayment).not.toHaveBeenCalled();
   });
 });

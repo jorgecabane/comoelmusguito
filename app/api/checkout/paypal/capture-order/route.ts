@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server'
 import { capturePayPalOrder } from '@/lib/paypal'
+import { amountMatchesOrder } from '@/lib/paypal/amount'
 import {
   getOrderByOrderId,
   updateOrderPaymentStatus,
@@ -49,12 +50,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Order is not in pending state' }, { status: 409 })
     }
 
-    const result = await capturePayPalOrder(paypalOrderId)
+    // Only capture the PayPal order we created for this order (create-order)
+    if (paypalOrderId !== order.paypalOrderId) {
+      console.warn(`[PayPal] paypalOrderId mismatch for order ${orderId}, refusing capture`)
+      return NextResponse.json({ error: 'PayPal order does not match' }, { status: 409 })
+    }
 
-    if (result.status === 'COMPLETED') {
-      const capture = result.purchase_units?.[0]?.payments?.captures?.[0]
-      const captureId = capture?.id
-      const captureDate = capture?.create_time ?? new Date().toISOString()
+    const result = await capturePayPalOrder(paypalOrderId)
+    const capture = result.purchase_units?.[0]?.payments?.captures?.[0]
+
+    if (result.status === 'COMPLETED' && capture?.status === 'COMPLETED' && amountMatchesOrder(capture.amount, order)) {
+      const captureId = capture.id
+      const captureDate = capture.create_time ?? new Date().toISOString()
 
       console.log(`[PayPal] Payment captured for order ${orderId}, captureId: ${captureId}`)
 
@@ -67,8 +74,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, alreadyProcessed: false })
     }
 
-    // Payment not completed — mark as rejected
-    console.warn(`[PayPal] Capture status ${result.status} for order ${orderId}`)
+    // Not completed, or captured amount/currency differs from the order — mark as rejected
+    console.warn(
+      `[PayPal] Capture not accepted for order ${orderId}: status ${result.status}/${capture?.status}, ` +
+        `amount ${capture?.amount?.value} ${capture?.amount?.currency_code} vs ${order.total} ${order.currency}`
+    )
     await updateOrderPaymentStatus(orderId, 3)
 
     return NextResponse.json(

@@ -27,7 +27,13 @@ const post = (body: unknown, headers: Record<string, string> = sigHeaders) =>
     }),
   );
 const captureEvent = (type: string, resource: object) => ({ id: 'WH', event_type: type, resource });
-const related = (orderId?: string) => ({ id: 'CAP-1', create_time: 'd1', supplementary_data: { related_ids: { order_id: orderId } } });
+const usd = { currency_code: 'USD', value: '45.50' };
+const related = (orderId?: string, amount: object = usd) => ({
+  id: 'CAP-1',
+  create_time: 'd1',
+  amount,
+  supplementary_data: { related_ids: { order_id: orderId } },
+});
 
 async function expectOk(res: Response) {
   expect(res.status).toBe(200);
@@ -38,7 +44,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   for (const k of ['log', 'warn', 'error'] as const) vi.spyOn(console, k).mockImplementation(() => {});
   m(verifyPayPalWebhook).mockResolvedValue(true);
-  fetchOrder.mockResolvedValue({ orderId: 'ORD-1' });
+  fetchOrder.mockResolvedValue({ orderId: 'ORD-1', total: 45.5, currency: 'USD' });
 });
 
 describe('POST /api/webhooks/paypal — seguridad', () => {
@@ -73,7 +79,7 @@ describe('PAYMENT.CAPTURE.COMPLETED', () => {
   });
 
   it('idempotente: omite órdenes con email ya enviado', async () => {
-    fetchOrder.mockResolvedValue({ orderId: 'ORD-1', emailSent: true });
+    fetchOrder.mockResolvedValue({ orderId: 'ORD-1', total: 45.5, currency: 'USD', emailSent: true });
     await expectOk(await post(captureEvent('PAYMENT.CAPTURE.COMPLETED', related('PP-1'))));
     expect(processSuccessfulPayment).not.toHaveBeenCalled();
   });
@@ -83,6 +89,15 @@ describe('PAYMENT.CAPTURE.COMPLETED', () => {
     fetchOrder.mockResolvedValue(null);
     await expectOk(await post(captureEvent('PAYMENT.CAPTURE.COMPLETED', related('PP-X'))));
     expect(fetchOrder).toHaveBeenCalledTimes(1);
+    expect(processSuccessfulPayment).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['monto distinto', { currency_code: 'USD', value: '1.00' }],
+    ['otra moneda', { currency_code: 'EUR', value: '45.50' }],
+    ['monto sin valor', { currency_code: 'USD' }],
+  ])('%s al total de la orden: no marca pagada', async (_, amount) => {
+    await expectOk(await post(captureEvent('PAYMENT.CAPTURE.COMPLETED', related('PP-1', amount))));
     expect(processSuccessfulPayment).not.toHaveBeenCalled();
   });
 
