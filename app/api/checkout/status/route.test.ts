@@ -50,20 +50,25 @@ describe('POST /api/checkout/status', () => {
       currency: 'USD',
       commerceOrder: 'ORD-P',
       paymentDate: 'd',
-      customerEmail: 'a@b.cl',
-      customerName: 'Ana',
     });
     expect(getPaymentStatus).not.toHaveBeenCalled();
     expect(getPaymentStatusByOrder).not.toHaveBeenCalled();
   });
 
-  it('con token consulta Flow por token y agrega datos del cliente', async () => {
+  it('con token consulta Flow sin exponer datos personales (email, nombre, payer)', async () => {
     m(getPaymentStatus).mockResolvedValue(flowStatus);
-    m(getOrderByOrderId).mockResolvedValue({ customerEmail: 'a@b.cl', customerName: 'Ana' });
     const body = await (await post({ token: 'tk' })).json();
     expect(getPaymentStatus).toHaveBeenCalledWith('tk');
-    expect(getOrderByOrderId).toHaveBeenCalledWith('ORD-1');
-    expect(body).toEqual({ success: true, paymentStatus: 2, ...flowStatus, status: undefined, customerEmail: 'a@b.cl', customerName: 'Ana' });
+    expect(getOrderByOrderId).not.toHaveBeenCalled();
+    expect(body).toEqual({
+      success: true,
+      paymentStatus: 2,
+      amount: 25990,
+      currency: 'CLP',
+      commerceOrder: 'ORD-1',
+      flowOrder: 'F1',
+      paymentDate: flowStatus.paymentDate,
+    });
   });
 
   it('token tiene prioridad sobre orderId en órdenes Flow', async () => {
@@ -83,27 +88,10 @@ describe('POST /api/checkout/status', () => {
     expect(body).not.toHaveProperty('customerEmail');
   });
 
-  it('no falla si no puede leer la orden para el email', async () => {
-    m(getPaymentStatus).mockResolvedValue(flowStatus);
-    m(getOrderByOrderId).mockRejectedValue(new Error('down'));
-    const res = await post({ token: 'tk' });
-    expect(res.status).toBe(200);
-    expect((await res.json()).customerEmail).toBeUndefined();
-  });
-
-  it('no busca la orden si Flow no devuelve commerceOrder', async () => {
-    m(getPaymentStatus).mockResolvedValue({ ...flowStatus, commerceOrder: '' });
-    await post({ token: 'tk' });
-    expect(getOrderByOrderId).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    [new Error('Flow caído'), 'Flow caído'],
-    ['raro', 'Error al consultar estado del pago'],
-  ])('500 si Flow falla (%s)', async (err, msg) => {
-    m(getPaymentStatus).mockRejectedValue(err);
+  it('500 genérico si Flow falla, sin filtrar el mensaje interno', async () => {
+    m(getPaymentStatus).mockRejectedValue(new Error('FLOW_SECRET_KEY no está configurada'));
     const res = await post({ token: 'tk' });
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: msg });
+    expect(await res.json()).toEqual({ error: 'Error al consultar estado del pago' });
   });
 });

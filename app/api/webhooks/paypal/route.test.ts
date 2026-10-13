@@ -101,9 +101,16 @@ describe('PAYMENT.CAPTURE.COMPLETED', () => {
     expect(processSuccessfulPayment).not.toHaveBeenCalled();
   });
 
-  it('errores de procesamiento igual responden 200', async () => {
+  it('fallo transitorio al procesar el pago: 500 para que PayPal reintente', async () => {
     m(processSuccessfulPayment).mockRejectedValue(new Error('down'));
-    await expectOk(await post(captureEvent('PAYMENT.CAPTURE.COMPLETED', related('PP-1'))));
+    const res = await post(captureEvent('PAYMENT.CAPTURE.COMPLETED', related('PP-1')));
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ received: false });
+  });
+
+  it('fallo transitorio leyendo la orden: 500', async () => {
+    fetchOrder.mockRejectedValue(new Error('Sanity 503'));
+    expect((await post(captureEvent('PAYMENT.CAPTURE.DENIED', related('PP-1')))).status).toBe(500);
   });
 });
 
