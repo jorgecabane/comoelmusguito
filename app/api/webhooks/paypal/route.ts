@@ -13,6 +13,7 @@ import {
   processSuccessfulPayment,
 } from '@/lib/sanity/orders';
 import type { SanityOrder } from '@/lib/sanity/orders';
+import { amountMatchesOrder } from '@/lib/paypal/amount';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,7 +81,19 @@ export async function POST(request: NextRequest) {
           break;
         }
 
-        const capture = resource as { create_time?: string; id?: string };
+        const capture = resource as {
+          create_time?: string;
+          id?: string;
+          amount?: { currency_code?: string; value?: string };
+        };
+        if (!amountMatchesOrder(capture.amount, order)) {
+          console.warn(
+            `[Webhook PayPal] PAYMENT.CAPTURE.COMPLETED | Amount mismatch for order ${order.orderId}: ` +
+              `${capture.amount?.value} ${capture.amount?.currency_code} vs ${order.total} ${order.currency} — not marking paid`
+          );
+          break;
+        }
+
         await processSuccessfulPayment({
           orderId: order.orderId,
           paymentDate: capture.create_time,
