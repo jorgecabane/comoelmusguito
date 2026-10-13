@@ -586,15 +586,15 @@ export async function processSuccessfulPayment(params: {
   return { success: true, alreadyProcessed: !claimed };
 }
 /**
- * Crear acceso a curso cuando se compra
- * Es idempotente: si ya existe el acceso, no crea duplicado
+ * Crear acceso a curso cuando se compra.
+ * Es idempotente: si ya existe el acceso, no crea duplicado y retorna false.
+ * El acceso y el incremento atómico de enrollmentCount van en una sola transacción.
  */
 export async function createCourseAccess(
   userId: string,
   courseId: string,
   orderSanityId: string // _id de la orden en Sanity, no orderId
-): Promise<void> {
-  // Verificar si ya existe el acceso (idempotencia)
+): Promise<boolean> {
   const existingAccess = await client.fetch(
     `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
     { userId, courseId }
@@ -602,57 +602,26 @@ export async function createCourseAccess(
 
   if (existingAccess) {
     console.log(`Acceso a curso ${courseId} ya existe para usuario ${userId}, saltando creación`);
-    return;
+    return false;
   }
 
   const now = new Date().toISOString();
 
-  const accessDoc = {
-    _type: 'courseAccess',
-    user: {
-      _type: 'reference',
-      _ref: userId,
-    },
-    course: {
-      _type: 'reference',
-      _ref: courseId,
-    },
-    order: {
-      _type: 'reference',
-      _ref: orderSanityId,
-    },
-    accessGrantedAt: now,
-    progress: {
-      completedLessons: [],
-      totalWatchTime: 0,
-    },
-  };
-
-  // Usar writeClient para operaciones de escritura
-  await writeClient.create(accessDoc);
+  await writeClient
+    .transaction()
+    .create({
+      _type: 'courseAccess',
+      user: { _type: 'reference', _ref: userId },
+      course: { _type: 'reference', _ref: courseId },
+      order: { _type: 'reference', _ref: orderSanityId },
+      accessGrantedAt: now,
+      progress: { completedLessons: [], totalWatchTime: 0 },
+    })
+    .patch(courseId, (p) =>
+      p.setIfMissing({ enrollmentCount: 0 }).inc({ enrollmentCount: 1 }).set({ updatedAt: now })
+    )
+    .commit();
   console.log(`✅ Acceso a curso ${courseId} creado para usuario ${userId}`);
-
-  // Incrementar enrollmentCount del curso
-  try {
-    const course = await client.fetch(
-      `*[_type == "course" && _id == $courseId][0]`,
-      { courseId }
-    );
-
-    if (course) {
-      const currentEnrollmentCount = course.enrollmentCount || 0;
-      await writeClient
-        .patch(courseId)
-        .set({
-          enrollmentCount: currentEnrollmentCount + 1,
-          updatedAt: new Date().toISOString(),
-        })
-        .commit();
-      console.log(`✅ enrollmentCount del curso ${courseId} incrementado a ${currentEnrollmentCount + 1}`);
-    }
-  } catch (error) {
-    console.error(`Error incrementando enrollmentCount del curso ${courseId}:`, error);
-    // No fallar la creación del acceso si hay error incrementando el contador
-  }
+  return true;
 }
 

@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/auth/get-session', () => ({ getSession: vi.fn() }));
 vi.mock('@/lib/auth/sanity-adapter', () => ({ getUserByEmail: vi.fn() }));
-vi.mock('@/sanity/lib/client', () => ({ client: { fetch: vi.fn() }, writeClient: {} }));
 vi.mock('@/lib/sanity/orders', () => ({ createCourseAccess: vi.fn() }));
 vi.mock('@/lib/sanity/gifts', () => ({ getOrderByGiftToken: vi.fn(), markGiftAsRedeemed: vi.fn() }));
 vi.mock('@/lib/rate-limit/upstash', () => ({
@@ -12,7 +11,6 @@ vi.mock('@/lib/rate-limit/upstash', () => ({
 
 import { getSession } from '@/lib/auth/get-session';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
-import { client } from '@/sanity/lib/client';
 import { createCourseAccess } from '@/lib/sanity/orders';
 import { getOrderByGiftToken, markGiftAsRedeemed } from '@/lib/sanity/gifts';
 import { applyRateLimit } from '@/lib/rate-limit/upstash';
@@ -36,7 +34,7 @@ beforeEach(() => {
   vi.mocked(getSession).mockResolvedValue({ user: { email: 'dest@b.cl' } } as never);
   vi.mocked(getUserByEmail).mockResolvedValue({ _id: 'u2' } as never);
   vi.mocked(getOrderByGiftToken).mockResolvedValue(order([course]) as never);
-  vi.mocked(client.fetch).mockResolvedValue(null as never);
+  vi.mocked(createCourseAccess).mockResolvedValue(true);
 });
 
 describe('POST /api/gifts/redeem', () => {
@@ -84,7 +82,6 @@ describe('POST /api/gifts/redeem', () => {
   it('grants course access to the redeemer and marks the gift redeemed', async () => {
     const { status, json } = await post();
     expect(status).toBe(200);
-    expect(client.fetch).toHaveBeenCalledWith(expect.any(String), { userId: 'u2', courseId: 'c1' });
     expect(createCourseAccess).toHaveBeenCalledWith('u2', 'c1', 'o1');
     expect(markGiftAsRedeemed).toHaveBeenCalledWith('ORD-1', 'u2');
     expect(json).toEqual({
@@ -119,10 +116,10 @@ describe('POST /api/gifts/redeem', () => {
     vi.mocked(getOrderByGiftToken).mockResolvedValue(order([
       course, { id: 'c2', type: 'course', name: 'Dos' }, { id: 'c3', type: 'course', name: 'Tres' },
     ]) as never);
-    vi.mocked(client.fetch).mockResolvedValueOnce({ _id: 'existing' } as never);
     vi.mocked(createCourseAccess)
+      .mockResolvedValueOnce(false)
       .mockRejectedValueOnce(new Error('write failed'))
-      .mockResolvedValueOnce(undefined as never);
+      .mockResolvedValueOnce(true);
     const { json } = await post();
     expect(json.errors).toEqual(['Ya tienes acceso al curso "Curso Musgo"', 'Error al crear acceso a "Dos"']);
     expect(json.accesses).toEqual(['Curso: Tres']);
@@ -134,18 +131,22 @@ describe('POST /api/gifts/redeem', () => {
     expect((await post()).json.success).toBe(true);
   });
 
-  it('does not mark the gift when nothing was processed', async () => {
-    vi.mocked(client.fetch).mockResolvedValue({ _id: 'existing' } as never);
-    const { json } = await post();
+  it('409 without marking the gift when the user already owns every course', async () => {
+    vi.mocked(createCourseAccess).mockResolvedValue(false);
+    const { status, json } = await post();
+    expect(status).toBe(409);
+    expect(json).toEqual({ error: 'Ya tienes acceso a todos los cursos de este regalo' });
     expect(markGiftAsRedeemed).not.toHaveBeenCalled();
-    expect(json.accesses).toEqual([]);
   });
 
-  // BUG: si no se procesó ningún item (todos los cursos ya los tenía o fallaron), igual responde
-  // success:true con "Regalo canjeado exitosamente" aunque no se canjeó nada.
-  it.skip('does not report success when nothing was redeemed', async () => {
-    vi.mocked(client.fetch).mockResolvedValue({ _id: 'existing' } as never);
-    expect((await post()).json.success).not.toBe(true);
+  it('500 without marking the gift when no course access could be created', async () => {
+    vi.mocked(getOrderByGiftToken).mockResolvedValue(order([course, { id: 'c2', type: 'course', name: 'Dos' }]) as never);
+    vi.mocked(createCourseAccess).mockResolvedValueOnce(false).mockRejectedValueOnce(new Error('write failed'));
+    const { status, json } = await post();
+    expect(status).toBe(500);
+    expect(json.success).toBeUndefined();
+    expect(json.error).toMatch(/No pudimos canjear el regalo/);
+    expect(markGiftAsRedeemed).not.toHaveBeenCalled();
   });
 
   it('500 on malformed JSON', async () => {

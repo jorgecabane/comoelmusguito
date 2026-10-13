@@ -10,11 +10,23 @@ import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 const m = vi.hoisted(() => {
   const fn = vi.fn<(...a: any[]) => any>;
   const b = { set: fn(() => b), ifRevisionId: fn(() => b), commit: fn(async () => ({})) };
-  return { ...b, patch: fn(() => b), fetch: fn(), create: fn() };
+  const create = fn();
+  const txPatch = fn();
+  // writeClient.transaction(): delega create a m.create y commit espera ese create
+  const transaction = () => {
+    let pending: unknown;
+    const tx = {
+      create: (doc: unknown) => ((pending = create(doc)), tx),
+      patch: (...a: unknown[]) => (txPatch(...a), tx),
+      commit: async () => pending,
+    };
+    return tx;
+  };
+  return { ...b, patch: fn(() => b), fetch: fn(), create, transaction };
 });
 
 vi.mock('@/sanity/lib/client', () => {
-  const c = { fetch: m.fetch, create: m.create, patch: m.patch };
+  const c = { fetch: m.fetch, create: m.create, patch: m.patch, transaction: m.transaction };
   return { client: c, writeClient: c };
 });
 vi.mock('@/lib/resend/client', () => ({ sendOrderConfirmationEmail: vi.fn(), sendGiftEmail: vi.fn() }));

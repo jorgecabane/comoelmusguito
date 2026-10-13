@@ -7,11 +7,22 @@ const m = vi.hoisted(() => {
   const patch = vi.fn<(...a: any[]) => any>(() => ({ set }));
   const fetch = vi.fn<(...a: any[]) => any>();
   const create = vi.fn<(...a: any[]) => any>(async (doc: any) => ({ _id: 'new-id', ...doc }));
-  return { commit, set, patch, fetch, create };
+  const txPatch = vi.fn<(...a: any[]) => any>();
+  // writeClient.transaction(): delega create a m.create y commit espera ese create
+  const transaction = () => {
+    let pending: unknown;
+    const tx = {
+      create: (doc: unknown) => ((pending = create(doc)), tx),
+      patch: (...a: unknown[]) => (txPatch(...a), tx),
+      commit: async () => pending,
+    };
+    return tx;
+  };
+  return { commit, set, patch, fetch, create, txPatch, transaction };
 });
 
 vi.mock('@/sanity/lib/client', () => {
-  const c = { fetch: m.fetch, create: m.create, patch: m.patch };
+  const c = { fetch: m.fetch, create: m.create, patch: m.patch, transaction: m.transaction };
   return { client: c, writeClient: c };
 });
 vi.mock('@/lib/resend/client', () => ({ sendOrderConfirmationEmail: vi.fn(), sendGiftEmail: vi.fn() }));
@@ -220,14 +231,14 @@ describe('simple order queries', () => {
 describe('createCourseAccess', () => {
   it('is idempotent: skips creation when access exists', async () => {
     m.fetch.mockResolvedValueOnce({ _id: 'acc' });
-    await createCourseAccess('u1', 'c1', 'ord1');
+    await expect(createCourseAccess('u1', 'c1', 'ord1')).resolves.toBe(false);
     expect(m.fetch).toHaveBeenCalledWith(ACCESS_Q, { userId: 'u1', courseId: 'c1' });
     expect(m.create).not.toHaveBeenCalled();
   });
 
-  it('creates the access and increments enrollmentCount', async () => {
-    m.fetch.mockResolvedValueOnce(null).mockResolvedValueOnce({ enrollmentCount: 4 });
-    await createCourseAccess('u1', 'c1', 'ord1');
+  it('creates the access and atomically increments enrollmentCount in the same transaction', async () => {
+    m.fetch.mockResolvedValueOnce(null);
+    await expect(createCourseAccess('u1', 'c1', 'ord1')).resolves.toBe(true);
     expect(m.create.mock.calls[0][0]).toMatchObject({
       _type: 'courseAccess',
       user: { _ref: 'u1' },
@@ -235,30 +246,16 @@ describe('createCourseAccess', () => {
       order: { _ref: 'ord1' },
       progress: { completedLessons: [], totalWatchTime: 0 },
     });
-    expect(m.patch).toHaveBeenCalledWith('c1');
-    expect(m.set.mock.calls[0][0]).toMatchObject({ enrollmentCount: 5 });
+    const [id, build] = m.txPatch.mock.calls[0];
+    expect(id).toBe('c1');
+    const p = { setIfMissing: vi.fn(() => p), inc: vi.fn(() => p), set: vi.fn(() => p) };
+    build(p);
+    expect(p.setIfMissing).toHaveBeenCalledWith({ enrollmentCount: 0 });
+    expect(p.inc).toHaveBeenCalledWith({ enrollmentCount: 1 });
+    expect(m.fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('starts enrollmentCount at 1 when undefined', async () => {
-    m.fetch.mockResolvedValueOnce(null).mockResolvedValueOnce({});
-    await createCourseAccess('u1', 'c1', 'ord1');
-    expect(m.set.mock.calls[0][0].enrollmentCount).toBe(1);
-  });
-
-  it('skips the counter when the course is missing', async () => {
-    m.fetch.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
-    await createCourseAccess('u1', 'c1', 'ord1');
-    expect(m.create).toHaveBeenCalled();
-    expect(m.patch).not.toHaveBeenCalled();
-  });
-
-  it('does not fail when incrementing the counter throws', async () => {
-    m.fetch.mockResolvedValueOnce(null).mockRejectedValueOnce(new Error('boom'));
-    await expect(createCourseAccess('u1', 'c1', 'ord1')).resolves.toBeUndefined();
-    expect(console.error).toHaveBeenCalled();
-  });
-
-  it('propagates create failures', async () => {
+  it('propagates write failures', async () => {
     m.fetch.mockResolvedValueOnce(null);
     m.create.mockRejectedValueOnce(new Error('write failed'));
     await expect(createCourseAccess('u1', 'c1', 'ord1')).rejects.toThrow('write failed');
