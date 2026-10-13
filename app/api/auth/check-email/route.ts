@@ -1,6 +1,7 @@
 /**
- * API Route: Verificar si email existe y está verificado
+ * API Route: ¿El email tiene una cuenta pendiente de verificación?
  * GET /api/auth/check-email?email=...
+ * Usado por el login para avisar "email no verificado". Rate-limited por IP.
  * 
  * Endpoint privado: Solo devuelve información genérica para prevenir enumeración de usuarios
  */
@@ -41,25 +42,9 @@ export async function GET(request: NextRequest) {
 
     const user = await getUserByEmail(sanitizedEmail);
 
-    // Siempre devolver la misma estructura para prevenir enumeración
-    // No revelar si el email existe o no
-    if (!user) {
-      return NextResponse.json({
-        exists: false,
-        verified: false,
-        // Mensaje genérico
-        message: 'Si el email existe y no está verificado, puedes solicitar un nuevo enlace de verificación.',
-      });
-    }
-
-    // Si el usuario existe, devolver información de verificación
-    return NextResponse.json({
-      exists: true,
-      verified: user.emailVerified || false,
-      message: user.emailVerified
-        ? 'Email verificado'
-        : 'Email no verificado. Puedes solicitar un nuevo enlace de verificación.',
-    });
+    // Solo se distingue "cuenta pendiente de verificación" (lo que necesita el login).
+    // Email inexistente y cuenta verificada responden igual para no permitir enumerar cuentas.
+    return NextResponse.json({ pendingVerification: !!user && !user.emailVerified });
   } catch (error) {
     console.error('Error verificando email:', error);
     // No revelar detalles del error

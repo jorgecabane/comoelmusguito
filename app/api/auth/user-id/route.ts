@@ -52,10 +52,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error obteniendo userId:', error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : 'Error obteniendo userId',
-      },
+      { error: 'Error obteniendo userId' },
       { status: 500 }
     );
   }

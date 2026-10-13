@@ -173,16 +173,11 @@ describe('account creation', () => {
     expect(m.linkOrdersToUser).not.toHaveBeenCalled();
   });
 
-  it('returns 500 with the error message on unexpected failure', async () => {
+  it('returns a generic 500 without internal details on unexpected failure', async () => {
     m.createUser.mockRejectedValue(new Error('sanity down'));
     const res = await POST(req(valid));
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'sanity down' });
-  });
-
-  it('returns a generic 500 for non-Error throws', async () => {
-    m.createUser.mockRejectedValue('x');
-    expect(await (await POST(req(valid))).json()).toEqual({ error: 'Error al registrar usuario' });
+    expect(await res.json()).toEqual({ error: 'Error al registrar usuario' });
   });
 });
 

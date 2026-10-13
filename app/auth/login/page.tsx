@@ -51,7 +51,7 @@ function LoginContent() {
             const checkResponse = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
             if (checkResponse.ok) {
               const checkData = await checkResponse.json();
-              if (checkData.exists && !checkData.verified) {
+              if (checkData.pendingVerification) {
                 setError('Tu email no ha sido verificado. Por favor, revisa tu correo y haz clic en el enlace de verificación.');
               } else {
                 setError('Email o contraseña incorrectos');

@@ -82,9 +82,8 @@ test.describe('checkout', () => {
     await payButton(page).click();
     expect((await checkoutResponse).status()).toBe(500);
 
-    // BUG: el mensaje expone configuración interna ("FLOW_API_KEY no está configurada en .env.local"),
-    // app/api/checkout/route.ts:301 devuelve error.message tal cual.
-    await expect(page.getByText(/no está configurada|Error al procesar el pago/).filter({ visible: true })).toBeVisible();
+    await expect(page.getByText('Error al procesar el pago').filter({ visible: true })).toBeVisible();
+    await expect(page.getByText(/no está configurada/)).toHaveCount(0);
     await expect(payButton(page)).toBeEnabled();
     const orders = await sanity.fetch<number>(`count(*[_type == "order" && customerEmail == $email])`, { email });
     expect(orders).toBe(0);
