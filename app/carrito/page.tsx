@@ -14,7 +14,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, AlertTriangle, Info } from
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { formatWorkshopDateTime } from '@/lib/sanity/utils';
+import { formatWorkshopDateTime, formatDateLong } from '@/lib/sanity/utils';
 
 function unavailabilityKey(id: string, type: string, selectedDate?: string): string {
   return `${type}|${id}|${selectedDate ?? ''}`;
@@ -426,11 +426,7 @@ function CartItemCard({
               📅 {(() => {
                 // Usar el campo time si está disponible (ya formateado), sino calcularlo
                 const time = item.selectedDate.time || formatWorkshopDateTime(item.selectedDate.date).time;
-                const fullDate = new Date(item.selectedDate.date).toLocaleDateString('es-CL', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                });
+                const fullDate = formatDateLong(item.selectedDate.date);
                 return `${fullDate} a las ${time}`;
               })()}
             </p>
@@ -442,6 +438,7 @@ function CartItemCard({
               <button
                 onClick={() => onUpdateQuantity(item.id, item.type, item.quantity - 1, item.selectedDate?.date)}
                 disabled={item.quantity <= 1}
+                aria-label="Disminuir cantidad"
                 className="w-8 h-8 rounded-lg border border-gray/20 flex items-center justify-center hover:bg-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Minus size={16} />
@@ -450,6 +447,7 @@ function CartItemCard({
               <button
                 onClick={() => onUpdateQuantity(item.id, item.type, item.quantity + 1, item.selectedDate?.date)}
                 disabled={item.maxQuantity != null && item.quantity >= item.maxQuantity}
+                aria-label="Aumentar cantidad"
                 className="w-8 h-8 rounded-lg border border-gray/20 flex items-center justify-center hover:bg-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Plus size={16} />

@@ -9,10 +9,7 @@ test.beforeEach(async ({ page }) => {
   await page.route(/youtube\.com|ytimg\.com|googlevideo\.com|vimeo\.com/, (route) => route.abort());
 });
 
-// BUG: components/auth/LazyRecaptchaProvider.tsx:103-107 — remonta <SessionProvider> y useSession() queda sin sesión
-// (ver e2e/customer/account.spec.ts), así que app/cursos/[slug]/CourseAccessRedirect.tsx nunca llama a check-access
-// y el comprador ve la página de venta en vez de ser redirigido a sus lecciones.
-test.fixme('el detalle de un curso comprado redirige a las lecciones', async ({ page }) => {
+test('el detalle de un curso comprado redirige a las lecciones', async ({ page }) => {
   await page.goto(`/cursos/${COURSE.slug}`);
   await expect(page).toHaveURL(new RegExp(`/cursos/${COURSE.slug}/leccion/\\d+/\\d+`));
 });

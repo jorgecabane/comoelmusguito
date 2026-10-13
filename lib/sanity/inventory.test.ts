@@ -182,7 +182,7 @@ describe('decreaseWorkshopSpots', () => {
     m.fetch.mockResolvedValue(workshop());
     m.commit.mockResolvedValueOnce(after(0));
     await decreaseWorkshopSpots('w1', D1, 5);
-    expect(m.set).toHaveBeenLastCalledWith({ 'dates[_key=="a"].status': 'soldOut' });
+    expect(m.set).toHaveBeenLastCalledWith({ 'dates[_key=="a"].status': 'sold_out' });
     expect(console.warn).not.toHaveBeenCalled();
   });
 
@@ -201,9 +201,7 @@ describe('decreaseWorkshopSpots', () => {
     expect(m.inc).toHaveBeenCalledWith({ [SPOTS]: -0 });
   });
 
-  // BUG: inventory.ts escribe status 'soldOut', pero el schema (sanity/schemas/workshop.ts)
-  // y los lectores (checkWorkshopSpots, WorkshopDetail, talleres/[slug]) esperan 'sold_out'.
-  it.skip('uses the schema value sold_out when spots run out', async () => {
+  it('uses the schema value sold_out when spots run out', async () => {
     m.fetch.mockResolvedValue(workshop());
     m.commit.mockResolvedValueOnce(after(0));
     await decreaseWorkshopSpots('w1', D1, 5);

@@ -7,7 +7,7 @@
 
 import Image from 'next/image';
 import { Calendar, MapPin } from 'lucide-react';
-import { getImageUrl } from '@/lib/sanity/utils';
+import { getImageUrl, formatDateLong } from '@/lib/sanity/utils';
 import type { BlogPost } from '@/types/sanity';
 import { FadeIn } from '@/components/animations';
 
@@ -15,14 +15,6 @@ interface BlogHeroProps {
   post: BlogPost;
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-CL', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
 
 export function BlogHero({ post }: BlogHeroProps) {
   const imageUrl = getImageUrl(post.featuredImage, { width: 1920, height: 1080 });
@@ -56,7 +48,7 @@ export function BlogHero({ post }: BlogHeroProps) {
                   {post.projectDate && (
                     <div className="flex items-center gap-2">
                       <Calendar size={18} />
-                      <span className="text-sm md:text-base">{formatDate(post.projectDate)}</span>
+                      <span className="text-sm md:text-base">{formatDateLong(post.projectDate)}</span>
                     </div>
                   )}
                   {post.location && (

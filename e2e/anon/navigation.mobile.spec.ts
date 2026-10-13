@@ -5,18 +5,20 @@ import { expectCartCount } from '../helpers/ui';
 test('menú móvil abre, navega y se cierra', async ({ page }) => {
   await page.goto('/');
   const header = page.getByRole('banner');
-  // A11Y: el botón se llama "Toggle menu" (inglés) y no expone aria-expanded (components/shared/Header.tsx:171).
-  const toggle = header.getByRole('button', { name: 'Toggle menu' });
+  const open = header.getByRole('button', { name: 'Abrir menú' });
+  const close = header.getByRole('button', { name: 'Cerrar menú' });
 
-  await toggle.click();
+  await expect(open).toHaveAttribute('aria-expanded', 'false');
+  await open.click();
+  await expect(close).toHaveAttribute('aria-expanded', 'true');
   await header.getByRole('button', { name: 'Aprender' }).click();
   await header.getByRole('link', { name: 'Cursos Online' }).click();
   await expect(page).toHaveURL('/cursos');
   await expect(header.getByRole('button', { name: 'Aprender' })).toBeHidden();
 
-  await toggle.click();
+  await open.click();
   await expect(header.getByRole('button', { name: 'Iniciar Sesión' })).toBeVisible();
-  await toggle.click();
+  await close.click();
   await expect(header.getByRole('button', { name: 'Tienda' })).toBeHidden();
 });
 

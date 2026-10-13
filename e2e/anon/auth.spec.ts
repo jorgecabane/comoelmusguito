@@ -4,7 +4,7 @@ import { createVerifiedUser, deleteUserByEmail, getUserByEmail, uniqueEmail } fr
 import { login } from '../helpers/ui';
 
 test.describe('rutas protegidas', () => {
-  for (const path of ['/mi-cuenta', '/mis-cursos', '/mis-pedidos']) {
+  for (const path of ['/mi-cuenta', '/mi-cuenta?filter=courses']) {
     test(`${path} redirige al login`, async ({ page }) => {
       await page.goto(path);
       await expect(page).toHaveURL(/\/auth\/login\?callbackUrl=/);

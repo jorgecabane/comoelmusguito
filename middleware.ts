@@ -22,9 +22,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: [
-    '/mi-cuenta/:path*',
-    '/mis-cursos/:path*',
-    '/mis-pedidos/:path*',
-  ],
+  matcher: ['/mi-cuenta/:path*'],
 };

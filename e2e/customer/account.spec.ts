@@ -82,12 +82,7 @@ test.describe('cursos sin compra', () => {
   });
 });
 
-// BUG: components/auth/LazyRecaptchaProvider.tsx:103-107 — al montar cambia el wrapper de `<>{children}</>` a
-// `<RecaptchaProviderLazy>` (next/dynamic ssr:false), lo que desmonta y remonta <SessionProvider>. Si /api/auth/session
-// responde antes de que cargue el chunk, next-auth guarda la sesión en __NEXTAUTH._session pero el provider remontado
-// no vuelve a pedirla y queda "unauthenticated": el checkout y el header muestran al cliente como visitante.
-// (Verificado: retrasando /api/auth/session 1.5s la sesión sí aparece.)
-test.fixme('checkout con sesión: contacto prellenado', async ({ page }) => {
+test('checkout con sesión: contacto prellenado', async ({ page }) => {
   await seedCart(page, [terrariumCartItem()]);
   await page.goto('/checkout');
   await expect(page.getByText(`Sesión iniciada como ${USERS.customer.email}`)).toBeVisible();

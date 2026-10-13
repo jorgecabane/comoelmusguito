@@ -15,7 +15,7 @@ const { handler, options } = middleware as unknown as Wrapped;
 
 describe('middleware', () => {
   it('protects only the account areas', () => {
-    expect(config.matcher).toEqual(['/mi-cuenta/:path*', '/mis-cursos/:path*', '/mis-pedidos/:path*']);
+    expect(config.matcher).toEqual(['/mi-cuenta/:path*']);
   });
 
   it('authorizes only when a JWT token is present', () => {

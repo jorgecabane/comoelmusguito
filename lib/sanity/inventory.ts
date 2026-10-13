@@ -202,7 +202,7 @@ export async function decreaseWorkshopSpots(
     await writeClient
       .patch(workshopId)
       .inc({ [spotsPath]: -newSpots })
-      .set({ [`${path}.status`]: 'soldOut' })
+      .set({ [`${path}.status`]: 'sold_out' })
       .commit();
   } catch (error) {
     console.error(`Error descontando cupos de taller ${workshopId}:`, error);

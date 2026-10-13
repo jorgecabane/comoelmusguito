@@ -54,9 +54,7 @@ test.describe('carrito', () => {
     await expect(page.getByRole('heading', { name: 'Tu carrito está vacío' })).toBeVisible();
   });
 
-  // A11Y: los botones +/- de cantidad no tienen nombre accesible (app/carrito/page.tsx:441-455,
-  // solo un ícono). Se esperan "Disminuir cantidad" / "Aumentar cantidad".
-  test.fixme('cambiar cantidad respeta el stock máximo', async ({ page }) => {
+  test('cambiar cantidad respeta el stock máximo', async ({ page }) => {
     await seedCart(page, [terrariumCartItem()]);
     await page.goto('/carrito');
     const increase = page.getByRole('button', { name: 'Aumentar cantidad' });
