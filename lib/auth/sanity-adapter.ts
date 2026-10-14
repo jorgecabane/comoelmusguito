@@ -4,7 +4,7 @@
  */
 
 import 'server-only';
-import { client, writeClient } from '@/sanity/lib/client';
+import { client, newPrivateId, writeClient } from '@/sanity/lib/client';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
 
@@ -118,7 +118,7 @@ export async function createUser(data: {
   }
 
   // Usar writeClient para operaciones de escritura
-  const created = await writeClient.create(userDoc);
+  const created = await writeClient.create({ _id: newPrivateId(), ...userDoc });
   return created as SanityUser;
 }
 

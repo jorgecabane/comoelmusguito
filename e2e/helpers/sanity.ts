@@ -38,6 +38,7 @@ export function getUserByEmail(email: string) {
 export async function createVerifiedUser(email: string, password: string) {
   const now = new Date().toISOString();
   return sanity.create({
+    _id: `private.e2e-${crypto.randomUUID()}`,
     _type: 'user',
     email,
     name: 'Usuario Temporal E2E',

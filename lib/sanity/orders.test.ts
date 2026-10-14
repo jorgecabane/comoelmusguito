@@ -23,7 +23,7 @@ const m = vi.hoisted(() => {
 
 vi.mock('@/sanity/lib/client', () => {
   const c = { fetch: m.fetch, create: m.create, patch: m.patch, transaction: m.transaction };
-  return { client: c, writeClient: c };
+  return { client: c, writeClient: c, newPrivateId: () => 'private.nuevo' };
 });
 vi.mock('@/lib/resend/client', () => ({ sendOrderConfirmationEmail: vi.fn(), sendGiftEmail: vi.fn() }));
 vi.mock('@/lib/sanity/gifts', () => ({ markGiftAsRedeemed: vi.fn() }));
@@ -95,6 +95,7 @@ describe('saveOrderToSanity', () => {
     });
 
     const doc = m.create.mock.calls[0][0];
+    expect(doc._id).toBe('private.nuevo');
     expect(doc).toMatchObject({
       _type: 'order',
       orderId: 'ORD-1',
@@ -113,7 +114,7 @@ describe('saveOrderToSanity', () => {
     expect(doc.items[0]._key).toMatch(/^p1-0-\d+$/);
     // only the ISO date is persisted (spots/price are dropped)
     expect(doc.items[1].selectedDate).toEqual({ date: '2026-01-01T15:00:00Z' });
-    expect(created._id).toBe('new-id');
+    expect(created._id).toBe('private.nuevo');
   });
 
   it('applies defaults when optional fields are missing', async () => {
