@@ -48,8 +48,10 @@ test.describe('progreso', () => {
     await expect(completed).toBeVisible();
     await expect(page.getByRole('button', { name: 'Marcar como Completada' })).toHaveCount(0);
 
-    const access = await sanity.getDocument<{ progress: { completedLessons: string[] } }>(BUYER_COURSE_ACCESS.id);
-    expect(access?.progress.completedLessons).toEqual(expect.arrayContaining(['0-0', '0-1']));
+    // poll: la lectura directa a Sanity puede ir un instante detrás de la escritura de la app.
+    await expect
+      .poll(async () => (await sanity.getDocument<{ progress: { completedLessons: string[] } }>(BUYER_COURSE_ACCESS.id))?.progress.completedLessons)
+      .toEqual(expect.arrayContaining(['0-0', '0-1']));
   });
 
   test('la API rechaza un lessonId mal formado', async ({ request }) => {

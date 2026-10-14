@@ -45,7 +45,7 @@ test('historial lista solo órdenes pagadas, con total y detalle', async ({ page
 
 test.describe('canjear regalo', () => {
   test.afterEach(async () => {
-    // Deja el regalo como lo sembró scripts/seed-e2e.ts.
+    // Deja el regalo como lo sembró e2e/global-setup.ts (por si el test se reintenta).
     await sanity.delete({
       query: `*[_type == "courseAccess" && user._ref == $user && course._ref == $course]`,
       params: { user: USERS.buyer.id, course: GIFT_COURSE.id },

@@ -1,25 +1,15 @@
 /**
- * Seed idempotente del dataset `test` para los E2E (npm run e2e:seed).
- * Usa `_id` fijos con prefijo `e2e-` + createOrReplace: no borra el dataset (CI y local lo comparten).
- * Re-sembrar también "des-canjea" el regalo y restaura el progreso del curso del buyer.
+ * Seed idempotente del CATÁLOGO E2E en el dataset `test` (npm run e2e:seed), antes del build.
+ * Varias corridas (CI + locales) comparten el dataset: cada doc lleva `seedHash` de su contenido y
+ * solo se reescribe si cambió, así re-sembrar no altera lo que lee una corrida concurrente.
+ * Los fixtures mutables (usuarios, pedidos, accesos) son por corrida: ver e2e/global-setup.ts.
  */
+import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import path from 'node:path';
 import { createClient, type IdentifiedSanityDocumentStub } from '@sanity/client';
-import bcrypt from 'bcryptjs';
 import { config } from 'dotenv';
-import {
-  BLOG_POST,
-  BUYER_COURSE_ACCESS,
-  COURSE,
-  GIFT_COURSE,
-  ORDERS,
-  SUPPLY,
-  TERRARIUM,
-  TERRARIUM_SOLD_OUT,
-  USERS,
-  WORKSHOP,
-} from '../e2e/fixtures';
+import { BLOG_POST, COURSE, GIFT_COURSE, SUPPLY, TERRARIUM, TERRARIUM_SOLD_OUT, WORKSHOP } from '../e2e/fixtures';
 
 config({ path: '.env.local', quiet: true }); // sin override: e2e/env.ts ya fijó el dataset
 
@@ -38,8 +28,6 @@ const client = createClient({
   useCdn: false,
 });
 
-const DAY = 24 * 60 * 60 * 1000;
-const inDays = (days: number) => new Date(Date.now() + days * DAY).toISOString();
 const ref = (id: string) => ({ _type: 'reference', _ref: id });
 const block = (key: string, text: string, style = 'normal') => ({
   _type: 'block',
@@ -71,27 +59,8 @@ function lesson(key: string, title: string, order: number, isFree = false) {
   };
 }
 
-function orderItem(key: string, item: { id: string; slug: string; name: string; price: number }, type: string, quantity = 1) {
-  return {
-    _key: key,
-    id: item.id,
-    type,
-    name: item.name,
-    slug: item.slug,
-    price: item.price,
-    currency: 'CLP',
-    quantity,
-    snapshot: { image: '/images/placeholder.jpg', description: `Snapshot de ${item.name}` },
-  };
-}
-
 async function buildDocs(): Promise<IdentifiedSanityDocumentStub[]> {
   const image = await uploadPlaceholder();
-  const now = new Date().toISOString();
-  const [customerHash, buyerHash] = await Promise.all([
-    bcrypt.hash(USERS.customer.password, 10),
-    bcrypt.hash(USERS.buyer.password, 10),
-  ]);
 
   const terrariumBase = {
     _type: 'terrarium',
@@ -106,19 +75,6 @@ async function buildDocs(): Promise<IdentifiedSanityDocumentStub[]> {
     shippingAvailable: true,
     localPickupOnly: false,
   };
-
-  const user = (u: (typeof USERS)[keyof typeof USERS], passwordHash: string) => ({
-    _id: u.id,
-    _type: 'user',
-    email: u.email,
-    name: u.name,
-    passwordHash,
-    provider: 'credentials',
-    authMethods: ['credentials'],
-    emailVerified: true,
-    createdAt: now,
-    updatedAt: now,
-  });
 
   return [
     {
@@ -221,9 +177,10 @@ async function buildDocs(): Promise<IdentifiedSanityDocumentStub[]> {
       description: 'Taller presencial de terrarios con musgo nativo.',
       images: [image(WORKSHOP.name, 'i1')],
       // La fecha llena es la más próxima: la UI debe saltarla y preseleccionar la siguiente.
+      // Fechas fijas (no relativas a "ahora") para que el contenido, y su seedHash, sea estable.
       dates: [
-        { _type: 'workshopDate', _key: 'full', date: inDays(20), spotsAvailable: 0, spotsTotal: 8, status: 'sold_out' },
-        { _type: 'workshopDate', _key: 'open', date: inDays(30), spotsAvailable: WORKSHOP.openSpots, spotsTotal: 8, status: 'available' },
+        { _type: 'workshopDate', _key: 'full', date: '2099-03-10T15:00:00.000Z', spotsAvailable: 0, spotsTotal: 8, status: 'sold_out' },
+        { _type: 'workshopDate', _key: 'open', date: '2099-03-20T15:00:00.000Z', spotsAvailable: WORKSHOP.openSpots, spotsTotal: 8, status: 'available' },
       ],
       location: { venue: 'Estudio Musguito', address: 'Av. Providencia 123', city: 'Santiago', region: 'Región Metropolitana' },
       price: WORKSHOP.price,
@@ -252,97 +209,25 @@ async function buildDocs(): Promise<IdentifiedSanityDocumentStub[]> {
       featured: true,
       order: -100,
     },
-    user(USERS.customer, customerHash),
-    user(USERS.buyer, buyerHash),
-    {
-      _id: ORDERS.paid.id,
-      _type: 'order',
-      orderId: ORDERS.paid.orderId,
-      flowOrder: '999001',
-      customerEmail: USERS.buyer.email,
-      customerName: USERS.buyer.name,
-      userId: ref(USERS.buyer.id),
-      items: [orderItem('course', COURSE, 'course'), { ...orderItem('terr', TERRARIUM, 'terrarium'), shippingPreference: 'pickup' }],
-      total: ORDERS.paid.total,
-      currency: 'CLP',
-      paymentStatus: 2,
-      paymentDate: '2025-09-01T15:05:00.000Z',
-      paymentProvider: 'flow',
-      createdAt: '2025-09-01T15:00:00.000Z',
-      updatedAt: '2025-09-01T15:05:00.000Z',
-      emailSent: true,
-      isGift: false,
-      requiresShipping: false,
-    },
-    {
-      _id: ORDERS.pending.id,
-      _type: 'order',
-      orderId: ORDERS.pending.orderId,
-      customerEmail: USERS.buyer.email,
-      customerName: USERS.buyer.name,
-      userId: ref(USERS.buyer.id),
-      items: [orderItem('supply', SUPPLY, 'supply', 2)],
-      total: ORDERS.pending.total,
-      currency: 'CLP',
-      paymentStatus: 1,
-      paymentProvider: 'flow',
-      createdAt: '2025-10-01T15:00:00.000Z',
-      updatedAt: '2025-10-01T15:00:00.000Z',
-      isGift: false,
-      requiresShipping: false,
-    },
-    {
-      // Regalo pagado por alguien sin cuenta, para el buyer. createOrReplace lo deja sin canjear.
-      _id: ORDERS.gift.id,
-      _type: 'order',
-      orderId: ORDERS.gift.orderId,
-      customerEmail: 'amigo@e2e.test',
-      customerName: 'Amigo E2E',
-      items: [orderItem('course', GIFT_COURSE, 'course')],
-      total: GIFT_COURSE.price,
-      currency: 'CLP',
-      paymentStatus: 2,
-      paymentDate: '2025-09-15T12:00:00.000Z',
-      paymentProvider: 'flow',
-      createdAt: '2025-09-15T11:55:00.000Z',
-      updatedAt: '2025-09-15T12:00:00.000Z',
-      isGift: true,
-      recipientEmail: USERS.buyer.email,
-      recipientName: USERS.buyer.name,
-      giftMessage: '¡Que lo disfrutes!',
-      giftToken: ORDERS.gift.token,
-      requiresShipping: false,
-    },
-    {
-      _id: BUYER_COURSE_ACCESS.id,
-      _type: 'courseAccess',
-      user: ref(USERS.buyer.id),
-      course: ref(COURSE.id),
-      order: ref(ORDERS.paid.id),
-      accessGrantedAt: '2025-09-01T15:05:00.000Z',
-      progress: { ...BUYER_COURSE_ACCESS.initialProgress, lastWatchedAt: '2025-09-02T10:00:00.000Z', totalWatchTime: 5 },
-    },
   ];
 }
 
+const seedHash = (doc: IdentifiedSanityDocumentStub) => createHash('sha256').update(JSON.stringify(doc)).digest('hex');
+
 async function main() {
-  const docs = await buildDocs();
-  const tx = client.transaction();
-  for (const doc of docs) tx.createOrReplace(doc);
-  await tx.commit();
-
-  // Restos de corridas anteriores: acceso creado al canjear el regalo y usuarios/suscriptores
-  // de un solo uso con más de 1 hora (no tocar los de una corrida concurrente).
-  const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  await client.delete({
-    query: `*[
-      (_type == "courseAccess" && user._ref == $buyer && course._ref == $giftCourse) ||
-      (_type in ["user", "newsletterSubscriber"] && string::startsWith(email, "e2e+") && _createdAt < $cutoff)
-    ]`,
-    params: { buyer: USERS.buyer.id, giftCourse: GIFT_COURSE.id, cutoff },
+  const docs = (await buildDocs()).map((doc) => ({ ...doc, seedHash: seedHash(doc) }));
+  const current = await client.fetch<{ _id: string; seedHash?: string }[]>(`*[_id in $ids]{ _id, seedHash }`, {
+    ids: docs.map((d) => d._id),
   });
+  const upToDate = new Set(current.filter((c) => docs.some((d) => d._id === c._id && d.seedHash === c.seedHash)).map((c) => c._id));
+  const changed = docs.filter((d) => !upToDate.has(d._id));
 
-  console.log(`✅ seed-e2e: ${docs.length} documentos en dataset "test"`);
+  if (changed.length) {
+    const tx = client.transaction();
+    for (const doc of changed) tx.createOrReplace(doc);
+    await tx.commit();
+  }
+  console.log(`✅ seed-e2e: catálogo al día (${changed.length}/${docs.length} documentos escritos) en dataset "test"`);
 }
 
 main().catch((error) => {

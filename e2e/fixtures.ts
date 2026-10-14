@@ -1,17 +1,27 @@
 /**
- * Datos fijos que siembra scripts/seed-e2e.ts. Los specs importan de aquí en vez de hardcodear.
- * Todos los `_id` llevan prefijo `e2e-` para que el seed sea idempotente (createOrReplace).
+ * Datos de prueba. Los specs importan de aquí en vez de hardcodear.
+ *
+ * - Catálogo (productos, cursos, taller, blog): `_id` fijos `e2e-`, compartidos por todas las
+ *   corridas y sembrados por scripts/seed-e2e.ts. Los tests solo los LEEN.
+ * - Por corrida (USERS, ORDERS, BUYER_COURSE_ACCESS): `_id` `e2e-run-<runId>-…` y emails con el
+ *   runId, creados por e2e/global-setup.ts y borrados en e2e/global-teardown.ts. Son los únicos
+ *   fixtures que un test puede mutar.
  */
+import { E2E_RUN_ID } from './env';
+
+export const RUN_ID_PREFIX = 'e2e-run-';
+const runId = (name: string) => `${RUN_ID_PREFIX}${E2E_RUN_ID}-${name}`;
+
 export const USERS = {
   customer: {
-    id: 'e2e-user-customer',
-    email: 'customer@e2e.test',
+    id: runId('user-customer'),
+    email: `customer+${E2E_RUN_ID}@e2e.test`,
     password: 'Customer-e2e-123',
     name: 'Cliente E2E',
   },
   buyer: {
-    id: 'e2e-user-buyer',
-    email: 'buyer@e2e.test',
+    id: runId('user-buyer'),
+    email: `buyer+${E2E_RUN_ID}@e2e.test`,
     password: 'Buyer-e2e-123',
     name: 'Comprador E2E',
   },
@@ -69,14 +79,16 @@ export const BLOG_POST = {
   name: 'Proyecto E2E Jardín Vertical',
 } as const;
 
+const RUN_TAG = E2E_RUN_ID.replace(/[^a-z0-9]/gi, '').toUpperCase(); // el token de regalo solo admite [A-Z0-9]
+
 export const ORDERS = {
-  paid: { id: 'e2e-order-paid', orderId: 'E2E-ORD-PAID', total: COURSE.price + TERRARIUM.price },
-  pending: { id: 'e2e-order-pending', orderId: 'E2E-ORD-PENDING', total: SUPPLY.price * 2 },
-  gift: { id: 'e2e-order-gift', orderId: 'E2E-ORD-GIFT', token: 'GIFT-E2E1-0123456789ABCDEF' },
+  paid: { id: runId('order-paid'), orderId: `E2E-${RUN_TAG}-PAID`, total: COURSE.price + TERRARIUM.price },
+  pending: { id: runId('order-pending'), orderId: `E2E-${RUN_TAG}-PENDING`, total: SUPPLY.price * 2 },
+  gift: { id: runId('order-gift'), orderId: `E2E-${RUN_TAG}-GIFT`, token: `GIFT-${RUN_TAG}-0123456789ABCDEF` },
 } as const;
 
 export const BUYER_COURSE_ACCESS = {
-  id: 'e2e-access-buyer-course',
+  id: runId('access-buyer-course'),
   initialProgress: { completedLessons: ['0-0'], lastWatched: '0-0' },
 } as const;
 
