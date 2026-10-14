@@ -10,7 +10,7 @@ const { fetch, create, patch, set, commit } = vi.hoisted(() => {
 
 vi.mock('@/sanity/lib/client', () => {
   const c = { fetch, create, patch };
-  return { client: c, writeClient: c };
+  return { client: c, writeClient: c, newPrivateId: () => 'private.nuevo' };
 });
 
 import {
@@ -103,11 +103,12 @@ describe('createUser', () => {
   it('credentials user: lowercases email, hashes password, issues 48h verification token', async () => {
     const created = await createUser({ email: 'Ana@X.cl', password: 'secret123', name: 'Ana' });
     const doc = create.mock.calls[0][0];
+    expect(doc._id).toBe('private.nuevo');
     expect(doc).toMatchObject({ email: 'ana@x.cl', provider: 'credentials', authMethods: ['credentials'], emailVerified: false });
     expect(await bcrypt.compare('secret123', doc.passwordHash)).toBe(true);
     expect(doc.emailVerificationToken).toMatch(/^[a-z0-9]{10,}$/);
     expect(doc.emailVerificationExpires).toBe(new Date(NOW.getTime() + 48 * 3600e3).toISOString());
-    expect(created._id).toBe('new');
+    expect(created._id).toBe('private.nuevo');
   });
 
   it('google user is pre-verified and has no password or token', async () => {
