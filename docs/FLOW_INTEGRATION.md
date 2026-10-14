@@ -138,10 +138,10 @@ Todos los requests a Flow deben estar firmados con `SecretKey`:
 
 1. Ordenar parámetros alfabéticamente (excepto `s`)
 2. Concatenar: `nombre=valor&nombre2=valor2`
-3. Firmar con SHA256: `SHA256(concatenated + secretKey)`
+3. Firmar con HMAC-SHA256 usando `secretKey` como clave
 4. Agregar firma como parámetro `s`
 
-La función `signFlowRequest()` en `lib/flow/utils.ts` maneja esto automáticamente.
+`lib/flow/client.ts` firma cada request con HMAC-SHA256 automáticamente.
 
 ## 💱 Conversión de Monedas
 

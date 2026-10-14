@@ -168,7 +168,8 @@ export function Header() {
                 setShowAccountMenu(false); // Reset account menu cuando se cierra/abre el menú principal
               }}
               className="lg:hidden p-2 text-forest hover:text-musgo transition-colors"
-              aria-label="Toggle menu"
+              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>

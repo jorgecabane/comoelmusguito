@@ -346,6 +346,13 @@ export default defineType({
       description: 'Indica si ya se envió el email de confirmación de compra',
       initialValue: false,
     }),
+    defineField({
+      name: 'paymentProcessedAt',
+      title: 'Pago Procesado (accesos e inventario)',
+      type: 'datetime',
+      description: 'Se escribe una sola vez al confirmar el pago; evita descontar stock o crear accesos dos veces',
+      readOnly: true,
+    }),
     // Campos de Regalo
     defineField({
       name: 'isGift',

@@ -7,6 +7,12 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CartState, CartItem, CartItemType } from '@/types/cart';
 
+const DEFAULT_MAX_QUANTITY = 999;
+
+/** Una línea del carrito = id + tipo (+ fecha, para talleres). Sin `date` coincide con cualquier fecha. */
+const isLine = (item: CartItem, id: string, type: CartItemType, date?: string) =>
+  item.id === id && item.type === type && (date === undefined || item.selectedDate?.date === date);
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -15,75 +21,57 @@ export const useCartStore = create<CartState>()(
       
       // Computed values (como propiedades normales que se actualizan)
       itemCount: 0,
-      subtotal: 0,
       
       // Actions
       addItem: (item: CartItem) => {
         const items = get().items;
+        const date = item.selectedDate?.date;
         const existingItem = items.find(
-          (i) => i.id === item.id && i.type === item.type
+          (i) => isLine(i, item.id, item.type) && i.selectedDate?.date === date
         );
-        
-        let newItems = items;
-        
-        if (existingItem) {
-          // Si ya existe, incrementar cantidad (respetando stock)
-          const newQuantity = existingItem.quantity + item.quantity;
-          const maxQuantity = item.maxQuantity || 999;
-          
-          if (newQuantity <= maxQuantity) {
-            newItems = items.map((i) =>
-              i.id === item.id && i.type === item.type
-                ? { ...i, quantity: newQuantity }
-                : i
-            );
-          } else {
-            // Stock insuficiente
-            console.warn('Stock insuficiente');
-            return;
-          }
-        } else {
-          // Agregar nuevo item
-          newItems = [...items, item];
+
+        // Respetar stock tanto al agregar como al fusionar
+        const newQuantity = (existingItem?.quantity ?? 0) + item.quantity;
+        if (newQuantity > (item.maxQuantity ?? DEFAULT_MAX_QUANTITY)) {
+          console.warn('Stock insuficiente');
+          return;
         }
+
+        const newItems = existingItem
+          ? items.map((i) => (i === existingItem ? { ...i, quantity: newQuantity } : i))
+          : [...items, item];
         
         // Recalcular valores computados
         const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
-        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
         
         set({
           items: newItems,
           itemCount,
-          subtotal,
           isOpen: true,
         });
       },
       
-      removeItem: (id: string, type: CartItemType) => {
-        const newItems = get().items.filter(
-          (item) => !(item.id === id && item.type === type)
-        );
+      removeItem: (id: string, type: CartItemType, date?: string) => {
+        const newItems = get().items.filter((item) => !isLine(item, id, type, date));
         
         const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
-        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
         
         set({
           items: newItems,
           itemCount,
-          subtotal,
         });
       },
       
-      updateQuantity: (id: string, type: CartItemType, quantity: number) => {
+      updateQuantity: (id: string, type: CartItemType, quantity: number, date?: string) => {
         if (quantity <= 0) {
           // Si la cantidad es 0 o negativa, eliminar el item
-          get().removeItem(id, type);
+          get().removeItem(id, type, date);
           return;
         }
         
         const newItems = get().items.map((item) => {
-          if (item.id === id && item.type === type) {
-            const maxQuantity = item.maxQuantity || 999;
+          if (isLine(item, id, type, date)) {
+            const maxQuantity = item.maxQuantity ?? DEFAULT_MAX_QUANTITY;
             const newQuantity = Math.min(quantity, maxQuantity);
             return { ...item, quantity: newQuantity };
           }
@@ -91,12 +79,10 @@ export const useCartStore = create<CartState>()(
         });
         
         const itemCount = newItems.reduce((total, item) => total + item.quantity, 0);
-        const subtotal = newItems.reduce((total, item) => total + (item.price * item.quantity), 0);
         
         set({
           items: newItems,
           itemCount,
-          subtotal,
         });
       },
       
@@ -114,10 +100,7 @@ export const useCartStore = create<CartState>()(
 
         if (!changed) return false;
 
-        set({
-          items: newItems,
-          subtotal: newItems.reduce((total, item) => total + item.price * item.quantity, 0),
-        });
+        set({ items: newItems });
 
         return true;
       },
@@ -126,8 +109,7 @@ export const useCartStore = create<CartState>()(
         set({ 
           items: [], 
           itemCount: 0,
-          subtotal: 0,
-          isOpen: false 
+              isOpen: false 
         });
       },
       
@@ -158,7 +140,6 @@ export const useCartStore = create<CartState>()(
         if (state) {
           const items = state.items;
           state.itemCount = items.reduce((total, item) => total + item.quantity, 0);
-          state.subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
         }
       },
     }

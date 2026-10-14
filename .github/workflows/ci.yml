@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+# Una ejecución por rama: un push nuevo cancela la anterior.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, typecheck y unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:coverage
+
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    needs: quality
+    # ponytail: un solo dataset `test` compartido por todas las corridas, sin serializar: el catálogo
+    # es de solo lectura y los fixtures mutables van namespaced por E2E_RUN_ID (e2e/global-setup.ts).
+    # Si algún día hace falta aislar también el catálogo, datasets efímeros por PR (plan pago de Sanity).
+    env:
+      CI: true
+      E2E_RUN_ID: gh${{ github.run_id }}-${{ github.run_attempt }}
+      NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Seed + build con el entorno E2E
+        run: npx tsx scripts/e2e-env-run.ts "npm run e2e:seed && npm run build"
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

@@ -7,7 +7,8 @@
 import { useState } from 'react';
 import { X, Gift, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useDialogFocus } from '@/lib/hooks/useDialogFocus';
 
 interface RedeemGiftModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const dialogRef = useDialogFocus<HTMLDivElement>(isOpen, onClose);
 
   const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +83,11 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="redeem-gift-title"
+        tabIndex={-1}
         className="bg-white rounded-2xl shadow-natural-xl max-w-md w-full p-6 md:p-8 relative"
       >
         {/* Botón cerrar */}
@@ -88,6 +95,7 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
           onClick={onClose}
           className="absolute top-4 right-4 text-gray hover:text-forest transition-colors"
           disabled={loading}
+          aria-label="Cerrar"
         >
           <X size={24} />
         </button>
@@ -98,7 +106,7 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
             <Gift className="text-musgo" size={24} />
           </div>
           <div>
-            <h2 className="font-display text-2xl font-bold text-forest">
+            <h2 id="redeem-gift-title" className="font-display text-2xl font-bold text-forest">
               Canjear Regalo
             </h2>
             <p className="text-sm text-gray">
@@ -135,7 +143,7 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
                 placeholder="GIFT-XXXXX-XXXXXXXX"
                 disabled={loading}
                 className="font-mono"
-                autoFocus
+                data-autofocus
               />
               <p className="text-xs text-gray mt-2">
                 El token fue enviado al email del destinatario cuando se confirmó el pago
@@ -143,7 +151,7 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
             </div>
 
             {error && (
-              <div className="bg-error/10 border border-error/20 rounded-lg p-3 flex items-start gap-2">
+              <div role="alert" className="bg-error/10 border border-error/20 rounded-lg p-3 flex items-start gap-2">
                 <AlertCircle className="text-error mt-0.5 flex-shrink-0" size={18} />
                 <p className="text-sm text-error">{error}</p>
               </div>

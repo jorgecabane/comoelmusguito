@@ -17,7 +17,7 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
 /**
  * Obtener IP del request
  */
-export function getClientIP(request: Request): string {
+export function getClientIP(request: Pick<Request, 'headers'>): string {
   // En Vercel, usar x-forwarded-for
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
@@ -86,19 +86,6 @@ export const checkoutRateLimit = redis
   : null;
 
 /**
- * Rate limiter para check-email
- * 10 verificaciones por hora por IP
- */
-export const checkEmailRateLimit = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(10, '1 h'),
-      analytics: true,
-      prefix: '@upstash/ratelimit/check-email',
-    })
-  : null;
-
-/**
  * Rate limiter para resend-verification
  * 3 solicitudes por hora por IP
  */
@@ -121,6 +108,19 @@ export const redeemGiftRateLimit = redis
       limiter: Ratelimit.slidingWindow(5, '15 m'),
       analytics: true,
       prefix: '@upstash/ratelimit/redeem-gift',
+    })
+  : null;
+
+/**
+ * Rate limiter para el formulario de contacto
+ * 5 mensajes por hora por IP
+ */
+export const contactRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(5, '1 h'),
+      analytics: true,
+      prefix: '@upstash/ratelimit/contact',
     })
   : null;
 

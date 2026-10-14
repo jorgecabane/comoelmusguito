@@ -106,6 +106,7 @@ export function NewsletterForm({ source = 'footer-home', variant = 'footer' }: N
       <div className="flex gap-3">
         <Input
           type="email"
+          aria-label="Email para el newsletter"
           placeholder="tu@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}

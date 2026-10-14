@@ -59,19 +59,19 @@ Si el refresh falla (token completamente expirado):
 3. Actualiza `INSTAGRAM_ACCESS_TOKEN` en tus variables de entorno
 
 #### Opción 2: Endpoint de Refresh (Recomendado)
-Llama periódicamente a `/api/instagram/refresh`:
+Llama periódicamente a `/api/instagram/refresh` (protegido con `CRON_SECRET`):
 
 ```bash
 # Ejemplo: Refrescar cada 50 días
-curl https://comoelmusguito.cl/api/instagram/refresh
+curl -H "Authorization: Bearer $CRON_SECRET" https://comoelmusguito.cl/api/instagram/refresh
 ```
 
-El endpoint retorna el nuevo token para que lo actualices.
+El endpoint confirma el refresh y la expiración. **Nunca** retorna el token.
 
 #### Opción 3: Automatización con Cron (Producción)
 Configura un cron job que:
-1. Llame a `/api/instagram/refresh` cada 50 días
-2. Actualice automáticamente la variable de entorno en tu plataforma
+1. Llame a `/api/instagram/refresh-auto` cada 50 días
+2. Actualice automáticamente la variable de entorno en Vercel
 
 **Ejemplo para Vercel:**
 ```bash
@@ -79,7 +79,7 @@ Configura un cron job que:
 # vercel.json
 {
   "crons": [{
-    "path": "/api/instagram/refresh",
+    "path": "/api/instagram/refresh-auto",
     "schedule": "0 0 */50 * *"
   }]
 }
@@ -105,12 +105,11 @@ Configura un cron job que:
 
 ```bash
 # Refrescar token manualmente
-curl http://localhost:3000/api/instagram/refresh
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/instagram/refresh
 
 # Respuesta esperada:
 {
   "success": true,
-  "token": "nuevo_token_aqui",
   "expiresInDays": 60,
   "expiresAt": "2024-03-15T00:00:00.000Z"
 }

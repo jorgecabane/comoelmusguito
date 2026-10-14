@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sendContactEmail } from '@/lib/resend/client';
+import { contactRateLimit, getClientIP, applyRateLimit } from '@/lib/rate-limit/upstash';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,8 +17,30 @@ interface ContactRequest {
   message: string;
 }
 
+const MAX_LENGTHS: Record<keyof ContactRequest, number> = {
+  name: 100,
+  email: 254,
+  phone: 30,
+  subject: 200,
+  message: 5000,
+};
+
+function isTooLong(body: ContactRequest): boolean {
+  return (Object.keys(MAX_LENGTHS) as (keyof ContactRequest)[]).some(
+    (field) => String(body[field] ?? '').length > MAX_LENGTHS[field]
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResult = await applyRateLimit(contactRateLimit, getClientIP(request));
+    if (rateLimitResult && !rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Demasiados mensajes. Por favor, espera un momento antes de intentar nuevamente.' },
+        { status: 429 }
+      );
+    }
+
     const body: ContactRequest = await request.json();
     const { name, email, phone, subject, message } = body;
 
@@ -29,6 +52,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (isTooLong(body)) {
+      return NextResponse.json(
+        { error: 'Uno o más campos superan el largo máximo permitido' },
+        { status: 400 }
+      );
+    }
+
     if (!email.includes('@')) {
       return NextResponse.json(
         { error: 'Email inválido' },
@@ -36,7 +66,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Enviar email
+    // Enviar email (el HTML se escapa al renderizar en lib/resend/client.ts)
     try {
       await sendContactEmail({
         name,
@@ -62,11 +92,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error procesando formulario de contacto:', error);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Error al procesar el formulario',
-      },
+      { error: 'Error al procesar el formulario' },
       { status: 500 }
     );
   }
 }
-

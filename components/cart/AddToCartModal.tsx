@@ -12,6 +12,7 @@ import { Button } from '@/components/ui';
 import { useCartStore } from '@/lib/store/useCartStore';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useDialogFocus } from '@/lib/hooks/useDialogFocus';
 
 export function AddToCartModal() {
   const { isOpen, closeCart, items } = useCartStore();
@@ -25,21 +26,13 @@ export function AddToCartModal() {
     router.push('/carrito');
   };
 
-  // Cerrar modal con ESC
+  const dialogRef = useDialogFocus<HTMLDivElement>(isOpen && !!lastItem, closeCart);
+
+  // Auto-cerrar después de 5 segundos
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeCart();
-    };
-    
-    if (isOpen) {
-      window.addEventListener('keydown', handleEsc);
-      // Auto-cerrar después de 5 segundos
-      const timer = setTimeout(() => closeCart(), 5000);
-      return () => {
-        window.removeEventListener('keydown', handleEsc);
-        clearTimeout(timer);
-      };
-    }
+    if (!isOpen) return;
+    const timer = setTimeout(() => closeCart(), 5000);
+    return () => clearTimeout(timer);
   }, [isOpen, closeCart]);
 
   return (
@@ -61,6 +54,11 @@ export function AddToCartModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', duration: 0.5 }}
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-to-cart-title"
+            tabIndex={-1}
             className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md"
           >
             <div className="bg-white rounded-2xl shadow-natural-xl p-6 md:p-8 m-4 relative overflow-hidden">
@@ -84,6 +82,7 @@ export function AddToCartModal() {
                   delay: 0.1,
                 }}
                 className="text-6xl text-center mb-4"
+                aria-hidden="true"
               >
                 🌱
               </motion.div>
@@ -95,7 +94,7 @@ export function AddToCartModal() {
                 transition={{ delay: 0.3 }}
                 className="text-center mb-6"
               >
-                <h2 className="font-display text-2xl font-bold text-forest mb-2">
+                <h2 id="add-to-cart-title" className="font-display text-2xl font-bold text-forest mb-2">
                   ¡Producto Agregado!
                 </h2>
                 <p className="text-gray">

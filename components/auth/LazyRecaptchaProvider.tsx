@@ -8,15 +8,10 @@
 
 import { ReactNode, useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import dynamic from 'next/dynamic';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
-// Lazy load del provider de reCAPTCHA
-const RecaptchaProviderLazy = dynamic(
-  () => import('./RecaptchaProvider').then((mod) => ({
-    default: mod.RecaptchaProvider,
-  })),
-  { ssr: false }
-);
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? '';
+const SCRIPT_PROPS = { async: true, defer: true, appendTo: 'head' } as const;
 
 interface LazyRecaptchaProviderProps {
   children: ReactNode;
@@ -33,15 +28,12 @@ const ROUTES_WITH_FORMS = [
 
 export function LazyRecaptchaProvider({ children }: LazyRecaptchaProviderProps) {
   const [shouldLoad, setShouldLoad] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
   // Array de dependencias constante usando useMemo para evitar cambios
   const emptyDeps = useMemo(() => [], []);
 
   useEffect(() => {
-    setMounted(true);
-
     // Estrategia 1: Verificar si la ruta actual tiene formularios conocidos
     // Cargar inmediatamente en estas rutas (no esperar a que el formulario esté en el DOM)
     const isKnownFormRoute = pathname && ROUTES_WITH_FORMS.some(route => pathname.startsWith(route));
@@ -99,10 +91,15 @@ export function LazyRecaptchaProvider({ children }: LazyRecaptchaProviderProps) 
     };
   }, [pathname, emptyDeps]);
 
-  // Si no está montado o no hay formularios, renderizar sin reCAPTCHA
-  if (!mounted || !shouldLoad) {
-    return <>{children}</>;
-  }
-
-  return <RecaptchaProviderLazy>{children}</RecaptchaProviderLazy>;
+  // Árbol estable: el provider se renderiza siempre. Cambiar el wrapper tras
+  // montar remontaba SessionProvider (sesión "unauthenticated" por caché de
+  // next-auth). El script de Google solo se inyecta cuando hay reCaptchaKey.
+  return (
+    <GoogleReCaptchaProvider
+      reCaptchaKey={shouldLoad ? RECAPTCHA_SITE_KEY : ''}
+      scriptProps={SCRIPT_PROPS}
+    >
+      {children}
+    </GoogleReCaptchaProvider>
+  );
 }

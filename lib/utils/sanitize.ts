@@ -16,6 +16,21 @@ export function sanitizeString(input: unknown): string {
     .slice(0, 10000); // Limitar longitud
 }
 
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+/**
+ * Escapar texto para interpolarlo en HTML (contenido o atributos entre comillas)
+ */
+export function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+}
+
 /**
  * Sanitizar email: validar formato y normalizar
  */

@@ -6,7 +6,12 @@ import { MetadataRoute } from 'next';
  */
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
-  
+
+  // dev.comoelmusguito.cl y previews comparten datos de producción: no deben indexarse.
+  if (process.env.VERCEL_ENV === 'preview') {
+    return { rules: [{ userAgent: '*', disallow: '/' }] };
+  }
+
   return {
     rules: [
       {

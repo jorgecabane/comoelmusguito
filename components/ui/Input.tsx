@@ -4,7 +4,7 @@
  */
 
 import { cn } from '@/lib/utils/cn';
-import { InputHTMLAttributes, ReactNode, forwardRef } from 'react';
+import { InputHTMLAttributes, ReactNode, forwardRef, useId } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -15,12 +15,15 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helperText, icon, className, ...props }, ref) => {
+    const autoId = useId();
+    const id = props.id ?? autoId;
+    const descriptionId = error || helperText ? `${id}-description` : undefined;
     return (
       <div className="w-full space-y-2">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-forest">
+          <label htmlFor={id} className="block text-sm font-medium text-forest">
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="text-error ml-1" aria-hidden="true">*</span>}
           </label>
         )}
 
@@ -39,24 +42,27 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               'focus:outline-none focus:ring-2 focus:ring-musgo focus:ring-offset-2 focus:border-musgo',
               'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray/10',
               error
-                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                ? 'border-error focus:ring-error focus:border-error'
                 : 'border-gray',
               icon && 'pl-10',
               className
             )}
             {...props}
+            id={id}
+            aria-invalid={error ? true : props['aria-invalid']}
+            aria-describedby={[descriptionId, props['aria-describedby']].filter(Boolean).join(' ') || undefined}
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-500 flex items-center gap-1">
-            <span>⚠</span>
+          <p id={descriptionId} className="text-sm text-error flex items-center gap-1">
+            <span aria-hidden="true">⚠</span>
             {error}
           </p>
         )}
 
         {helperText && !error && (
-          <p className="text-sm text-gray">{helperText}</p>
+          <p id={descriptionId} className="text-sm text-gray">{helperText}</p>
         )}
       </div>
     );

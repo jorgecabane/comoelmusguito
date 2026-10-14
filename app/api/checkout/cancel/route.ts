@@ -1,9 +1,14 @@
 /**
  * Explicit order cancellation endpoint
  * Called when the user closes the PayPal popup or abandons checkout
+ *
+ * Guest orders: knowing the orderId (only the buyer's browser has it) is enough.
+ * Orders linked to an account: only that account's session can cancel them.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth/get-session';
+import { isOrderOwner } from '@/lib/auth/order-owner';
 import { getOrderByOrderId, updateOrderPaymentStatus } from '@/lib/sanity/orders';
 
 export const dynamic = 'force-dynamic';
@@ -30,6 +35,11 @@ export async function POST(request: NextRequest) {
     if (!order) {
       console.warn(`[Cancel] ${timestamp} | Order not found: ${orderId}`);
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    if (order.userId?._ref && !isOrderOwner(order, await getSession())) {
+      console.warn(`[Cancel] ${timestamp} | Order ${orderId} not owned by requester`);
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     if (order.paymentStatus === 2) {

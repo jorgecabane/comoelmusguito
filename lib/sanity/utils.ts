@@ -185,7 +185,10 @@ const CHILE_TZ = 'America/Santiago';
 
 function toValidDate(dateString: string | undefined | null): Date | null {
   if (!dateString) return null;
-  const d = new Date(dateString);
+  // Una fecha sin hora ('2025-06-01', campo `date` de Sanity) es un día de calendario:
+  // se ancla a mediodía UTC para que en Chile no se muestre el día anterior.
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(dateString);
+  const d = new Date(isDateOnly ? `${dateString}T12:00:00Z` : dateString);
   return isNaN(d.getTime()) ? null : d;
 }
 

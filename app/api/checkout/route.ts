@@ -3,6 +3,7 @@
  * POST /api/checkout
  */
 
+import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentOrder } from '@/lib/flow/client';
 import { getUserCurrency } from '@/lib/utils/geolocation';
@@ -13,7 +14,6 @@ import { sanitizeEmail, sanitizeString } from '@/lib/utils/sanitize';
 import type { CartItem } from '@/types/cart';
 
 // Límites de seguridad
-const MAX_QUANTITY_PER_ITEM = 10;
 const MAX_ITEMS_PER_ORDER = 20;
 
 export const dynamic = 'force-dynamic';
@@ -144,15 +144,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    for (const item of items) {
-      if (item.quantity > MAX_QUANTITY_PER_ITEM) {
-        return NextResponse.json(
-          { error: `Máximo ${MAX_QUANTITY_PER_ITEM} unidades por producto` },
-          { status: 400 }
-        );
-      }
-    }
-
     // Detectar moneda del usuario (basada en headers de Vercel)
     const userCurrency = await getUserCurrency();
 
@@ -190,8 +181,8 @@ export async function POST(request: NextRequest) {
       throw err;
     }
 
-    // Generar ID único para la orden
-    const commerceOrder = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // ID único de la orden (30 caracteres; Flow acepta commerceOrder de hasta 45)
+    const commerceOrder = `ORD-${Date.now()}-${randomUUID().replace(/-/g, '').slice(0, 12)}`;
 
     // Crear descripción del pedido
     const subject = items.length === 1
@@ -298,7 +289,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error en checkout:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Error al procesar el pago' },
+      { error: 'Error al procesar el pago' },
       { status: 500 }
     );
   }

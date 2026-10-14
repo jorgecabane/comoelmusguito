@@ -12,6 +12,12 @@ import { Loader2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
+// Errores que lanza authorize() en app/api/auth/[...nextauth]/route.ts
+const LOGIN_ERRORS: Record<string, string> = {
+  EmailNotVerified: 'Tu email no ha sido verificado. Por favor, revisa tu correo y haz clic en el enlace de verificación.',
+  TooManyAttempts: 'Demasiados intentos, espera unos minutos.',
+};
+
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,27 +50,7 @@ function LoginContent() {
       });
 
       if (result?.error) {
-        // Mensajes específicos según el tipo de error
-        if (result.error === 'CredentialsSignin' || result.error === 'EmailNotVerified') {
-          // Verificar si es por email no verificado consultando el usuario
-          try {
-            const checkResponse = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
-            if (checkResponse.ok) {
-              const checkData = await checkResponse.json();
-              if (checkData.exists && !checkData.verified) {
-                setError('Tu email no ha sido verificado. Por favor, revisa tu correo y haz clic en el enlace de verificación.');
-              } else {
-                setError('Email o contraseña incorrectos');
-              }
-            } else {
-              setError('Email o contraseña incorrectos');
-            }
-          } catch {
-            setError('Email o contraseña incorrectos');
-          }
-        } else {
-          setError('Email o contraseña incorrectos');
-        }
+        setError(LOGIN_ERRORS[result.error] ?? 'Email o contraseña incorrectos');
         setLoading(false);
       } else {
         router.push(callbackUrl);

@@ -11,6 +11,11 @@ import { sanitizeEmail } from '@/lib/utils/sanitize';
 
 export const dynamic = 'force-dynamic';
 
+const GENERIC_RESPONSE = {
+  success: true,
+  message: 'Si el email existe y no está verificado, recibirás un nuevo enlace de verificación.',
+};
+
 export async function POST(request: NextRequest) {
   try {
     // Aplicar rate limiting
@@ -41,20 +46,9 @@ export async function POST(request: NextRequest) {
     // Verificar si el usuario existe
     const user = await getUserByEmail(sanitizedEmail);
     
-    if (!user) {
-      // No revelar si el email existe o no
-      return NextResponse.json({
-        success: true,
-        message: 'Si el email existe y no está verificado, recibirás un nuevo enlace de verificación.',
-      });
-    }
-
-    // Si el email ya está verificado, no hacer nada
-    if (user.emailVerified) {
-      return NextResponse.json({
-        success: true,
-        message: 'Tu email ya está verificado.',
-      });
+    // Email inexistente o ya verificado: misma respuesta que el caso exitoso (no revela cuentas)
+    if (!user || user.emailVerified) {
+      return NextResponse.json(GENERIC_RESPONSE);
     }
 
     // Regenerar token de verificación
@@ -76,10 +70,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Email de verificación reenviado exitosamente',
-    });
+    return NextResponse.json(GENERIC_RESPONSE);
   } catch (error) {
     console.error('Error en resend-verification:', error);
     return NextResponse.json(

@@ -36,15 +36,16 @@ export function HeroImmersive() {
             
             {/* Círculo glassmorphism */}
             <div className="relative bg-white/5 backdrop-blur-md rounded-full p-8 md:p-10 lg:p-12 border-2 border-white/30 shadow-2xl">
-              <div className="relative w-26 h-26 md:w-32 md:h-32 lg:w-40 lg:h-40">
+              <h1 className="relative w-26 h-26 md:w-32 md:h-32 lg:w-40 lg:h-40">
                 <Image
                   src="/logo/logo-white.svg"
-                  alt="comoelmusguito logo"
+                  alt="comoelmusguito"
                   fill
                   className="object-contain"
                   priority
                 />
-              </div>
+                <span className="sr-only">: terrarios artesanales, cursos y talleres</span>
+              </h1>
             </div>
           </div>
         </motion.div>
@@ -67,7 +68,7 @@ export function HeroImmersive() {
             nextSection.scrollIntoView({ behavior: 'smooth' });
           }
         }}
-        className="absolute bottom-25 left-1/2 -translate-x-1/2 z-20 cursor-pointer focus:outline-none"
+        className="absolute bottom-25 left-1/2 -translate-x-1/2 z-20 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         aria-label="Scroll hacia abajo"
       >
         <ChevronDown 

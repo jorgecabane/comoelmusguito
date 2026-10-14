@@ -17,6 +17,7 @@ import { getUserByEmail } from '@/lib/auth/sanity-adapter';
 
 export interface SanityOrder {
   _id?: string;
+  _rev?: string;
   _type: 'order';
   orderId: string;
   flowOrder?: string | number; // Flow puede devolver string o number, pero siempre se guarda como string
@@ -64,6 +65,7 @@ export interface SanityOrder {
   refundReason?: string;
   refundAmount?: number;
   emailSent?: boolean;
+  paymentProcessedAt?: string; // Marca atómica: accesos e inventario ya aplicados
   // Campos de Regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -181,6 +183,36 @@ export async function saveOrderToSanity(data: {
 }
 
 /**
+ * Campos a escribir al cambiar el estado de pago de una orden
+ */
+function paymentStatusUpdates(
+  order: SanityOrder,
+  paymentStatus: number,
+  paymentDate?: string,
+  flowOrder?: string | number
+): Partial<SanityOrder> {
+  const updates: Partial<SanityOrder> = {
+    paymentStatus,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (paymentDate) {
+    updates.paymentDate = paymentDate;
+  } else if (paymentStatus === 2 && !order.paymentDate) {
+    // Red de seguridad: si la pasarela no informa la fecha, la orden queda pagada
+    // sin fecha y desaparece de los reportes. El webhook llega segundos después
+    // del pago, así que "ahora" es una aproximación fiel.
+    updates.paymentDate = new Date().toISOString();
+  }
+
+  if (flowOrder !== undefined) {
+    updates.flowOrder = String(flowOrder);
+  }
+
+  return updates;
+}
+
+/**
  * Actualizar estado de pago de una orden
  */
 export async function updateOrderPaymentStatus(
@@ -197,29 +229,11 @@ export async function updateOrderPaymentStatus(
     throw new Error(`Orden ${orderId} no encontrada`);
   }
 
-  const updates: Partial<SanityOrder> = {
-    paymentStatus,
-    updatedAt: new Date().toISOString(),
-  };
-
-  if (paymentDate) {
-    updates.paymentDate = paymentDate;
-  } else if (paymentStatus === 2 && !order.paymentDate) {
-    // Red de seguridad: si la pasarela no informa la fecha, la orden queda pagada
-    // sin fecha y desaparece de los reportes. El webhook llega segundos después
-    // del pago, así que "ahora" es una aproximación fiel.
-    updates.paymentDate = new Date().toISOString();
-  }
-
-  if (flowOrder !== undefined) {
-    // Convertir a string si es number
-    updates.flowOrder = typeof flowOrder === 'number' ? String(flowOrder) : flowOrder;
-  }
-
-  // Usar writeClient para operaciones de escritura
-  await writeClient.patch(order._id).set(updates).commit();
+  await writeClient
+    .patch(order._id)
+    .set(paymentStatusUpdates(order, paymentStatus, paymentDate, flowOrder))
+    .commit();
 }
-
 /**
  * Marcar email como enviado en una orden
  */
@@ -258,7 +272,7 @@ export async function getOrdersByEmail(
 ): Promise<SanityOrder[]> {
   const emailLower = email.toLowerCase();
   
-  let query = `*[_type == "order" && customerEmail == $email`;
+  let query = `*[_type == "order" && lower(customerEmail) == $email`;
   
   if (!includeLinked) {
     query += ` && !defined(userId)`;
@@ -357,132 +371,126 @@ export async function getLastShippingAddressByUserId(userId: string): Promise<Sa
   return result?.shippingAddress ?? null;
 }
 
+const MAX_CLAIM_ATTEMPTS = 3;
+
 /**
- * Procesar un pago exitoso (status=2) de forma idempotente.
- * Compartido entre webhooks de Flow, PayPal, y cualquier gateway futuro.
- *
- * Pasos:
- * 1. Verificar idempotencia (emailSent)
- * 2. Actualizar estado de pago
- * 3. Crear accesos a cursos (regalo o compra directa)
- * 4. Descontar inventario (terrarios, insumos, talleres)
- * 5. Enviar emails (confirmación + regalo si aplica)
- * 6. Marcar email como enviado
+ * Reclama la orden de forma atómica: la marca pagada (paymentStatus=2) y con
+ * `paymentProcessedAt` usando `ifRevisionId` (bloqueo optimista de Sanity).
+ * Sólo una entrega concurrente gana (`claimed: true`); las demás reciben 409,
+ * releen y ven la orden ya reclamada.
  */
-export async function processSuccessfulPayment(params: {
-  orderId: string;
-  paymentDate?: string;
-  providerOrderId?: string;
-}): Promise<{ success: boolean; alreadyProcessed: boolean }> {
-  const { orderId, paymentDate, providerOrderId } = params;
+async function claimPayment(
+  orderId: string,
+  paymentDate?: string,
+  providerOrderId?: string
+): Promise<{ order: SanityOrder; claimed: boolean }> {
+  for (let attempt = 1; ; attempt++) {
+    const order = await getOrderByOrderId(orderId);
+    if (!order?._id || !order._rev) {
+      throw new Error(`Orden ${orderId} no encontrada en Sanity`);
+    }
+    // emailSent sin paymentProcessedAt = orden procesada antes de existir el marcador
+    if (order.paymentProcessedAt || order.emailSent) {
+      return { order, claimed: false };
+    }
 
-  // 1. Obtener la orden
-  const savedOrder = await getOrderByOrderId(orderId);
-  if (!savedOrder) {
-    throw new Error(`Orden ${orderId} no encontrada en Sanity`);
-  }
-
-  // 2. Idempotencia: si ya se procesó, retornar sin hacer nada
-  if (savedOrder.emailSent) {
-    return { success: true, alreadyProcessed: true };
-  }
-
-  // 3. Actualizar estado de pago
-  if (savedOrder.paymentStatus !== 2) {
     try {
-      await updateOrderPaymentStatus(orderId, 2, paymentDate, providerOrderId);
+      await writeClient
+        .patch(order._id)
+        .ifRevisionId(order._rev)
+        .set({
+          ...paymentStatusUpdates(order, 2, paymentDate, providerOrderId),
+          paymentProcessedAt: new Date().toISOString(),
+        })
+        .commit();
+      return { order, claimed: true };
     } catch (error) {
-      console.error('Error actualizando estado de la orden:', error);
+      const isRevisionConflict = (error as { statusCode?: number }).statusCode === 409;
+      if (!isRevisionConflict || attempt >= MAX_CLAIM_ATTEMPTS) throw error;
     }
-  } else if (paymentDate && !savedOrder.paymentDate) {
+  }
+}
+
+/**
+ * Crear accesos a cursos (regalo al destinatario o compra directa al comprador)
+ */
+async function grantCourseAccess(order: SanityOrder & { _id: string }): Promise<void> {
+  if (!(order.isGift && order.recipientEmail && order.giftToken)) {
+    const buyerId = order.userId?._ref;
+    if (!buyerId) return;
+    for (const item of order.items) {
+      if (item.type !== 'course') continue;
+      try {
+        await createCourseAccess(buyerId, item.id, order._id);
+      } catch (error) {
+        console.error(`Error creando acceso a curso ${item.id}:`, error);
+      }
+    }
+    return;
+  }
+
+  const recipientUser = await getUserByEmail(order.recipientEmail);
+  if (!recipientUser?._id) {
+    console.log(`[processSuccessfulPayment] Destinatario no tiene cuenta, acceso se creará al registrarse o canjear token`);
+    return;
+  }
+
+  let coursesCreated = 0;
+  for (const item of order.items) {
+    if (item.type !== 'course') continue;
     try {
-      await updateOrderPaymentStatus(orderId, 2, paymentDate, providerOrderId);
+      const existingAccess = await client.fetch(
+        `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
+        { userId: recipientUser._id, courseId: item.id }
+      );
+      if (existingAccess) {
+        console.log(`⚠️ Destinatario ya tiene acceso a curso ${item.id}`);
+        continue;
+      }
+      await createCourseAccess(recipientUser._id, item.id, order._id);
+      coursesCreated++;
     } catch (error) {
-      console.error('Error actualizando paymentDate:', error);
+      console.error(`Error creando acceso a curso ${item.id} para destinatario:`, error);
     }
   }
 
-  // 4. Crear accesos a cursos
-  if (savedOrder.isGift && savedOrder.recipientEmail && savedOrder.giftToken) {
-    // Regalo: crear acceso para el destinatario si tiene cuenta
-    const recipientUser = await getUserByEmail(savedOrder.recipientEmail);
-
-    if (recipientUser?._id && savedOrder._id) {
-      let coursesCreated = 0;
-      for (const item of savedOrder.items) {
-        if (item.type === 'course') {
-          try {
-            const existingAccess = await client.fetch(
-              `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
-              { userId: recipientUser._id, courseId: item.id }
-            );
-
-            if (!existingAccess) {
-              await createCourseAccess(recipientUser._id, item.id, savedOrder._id);
-              coursesCreated++;
-              console.log(`✅ Acceso a curso ${item.id} creado para destinatario ${savedOrder.recipientEmail}`);
-            } else {
-              console.log(`⚠️ Destinatario ya tiene acceso a curso ${item.id}`);
-            }
-          } catch (error) {
-            console.error(`Error creando acceso a curso ${item.id} para destinatario:`, error);
-          }
-        }
-      }
-
-      if (coursesCreated > 0) {
-        try {
-          await markGiftAsRedeemed(savedOrder.orderId, recipientUser._id);
-          console.log(`✅ Regalo ${savedOrder.orderId} marcado como canjeado automáticamente para destinatario ${savedOrder.recipientEmail}`);
-        } catch (error) {
-          console.error(`Error marcando regalo como canjeado:`, error);
-        }
-      }
-    } else {
-      console.log(`[processSuccessfulPayment] Destinatario no tiene cuenta, acceso se creará al registrarse o canjear token`);
-    }
-  } else {
-    // Compra directa: crear acceso para el comprador
-    if (savedOrder.userId?._ref && savedOrder._id) {
-      for (const item of savedOrder.items) {
-        if (item.type === 'course') {
-          try {
-            await createCourseAccess(savedOrder.userId._ref, item.id, savedOrder._id);
-          } catch (error) {
-            console.error(`Error creando acceso a curso ${item.id}:`, error);
-          }
-        }
-      }
-    }
+  if (coursesCreated === 0) return;
+  try {
+    await markGiftAsRedeemed(order.orderId, recipientUser._id);
+  } catch (error) {
+    console.error(`Error marcando regalo como canjeado:`, error);
   }
+}
 
-  // 5. Descontar inventario
-  for (const item of savedOrder.items) {
-    if (item.type === 'terrarium') {
-      try {
-        await decreaseTerrariumStock(item.id, item.quantity);
-      } catch (error) {
-        console.error(`Error descontando stock de terrario ${item.id}:`, error);
-      }
-    }
-    if (item.type === 'supply') {
-      try {
-        await decreaseSupplyStock(item.id, item.quantity);
-      } catch (error) {
-        console.error(`Error descontando stock de insumo ${item.id}:`, error);
-      }
-    }
-    if (item.type === 'workshop' && item.selectedDate) {
-      try {
+/**
+ * Descontar inventario (terrarios, insumos, cupos de talleres)
+ */
+async function decreaseInventory(order: SanityOrder): Promise<void> {
+  for (const item of order.items) {
+    try {
+      if (item.type === 'terrarium') await decreaseTerrariumStock(item.id, item.quantity);
+      if (item.type === 'supply') await decreaseSupplyStock(item.id, item.quantity);
+      if (item.type === 'workshop' && item.selectedDate) {
         await decreaseWorkshopSpots(item.id, item.selectedDate.date, item.quantity);
-      } catch (error) {
-        console.error(`Error descontando cupos de taller ${item.id}:`, error);
       }
+    } catch (error) {
+      console.error(`Error descontando inventario de ${item.type} ${item.id}:`, error);
     }
   }
+}
 
-  // 6. Enviar emails
-  const orderItems: EmailOrderItem[] = savedOrder.items.map((item) => ({
+/**
+ * Enviar emails (regalo + confirmación) y marcar `emailSent` sólo si la
+ * confirmación salió, para que un reintento la vuelva a enviar.
+ */
+async function sendPaymentEmails(
+  order: SanityOrder,
+  paymentDate?: string,
+  providerOrderId?: string
+): Promise<void> {
+  if (!order.customerEmail) return;
+
+  const orderItems: EmailOrderItem[] = order.items.map((item) => ({
     name: item.name,
     type: item.type,
     quantity: item.quantity,
@@ -491,82 +499,102 @@ export async function processSuccessfulPayment(params: {
     slug: item.slug,
     selectedDate: item.selectedDate ? { date: item.selectedDate.date } : undefined,
   }));
+  const resolvedProviderOrder = providerOrderId ?? order.flowOrder;
 
-  const hasAccount = !!savedOrder.userId?._ref;
-  const resolvedProviderOrder = providerOrderId ?? savedOrder.flowOrder;
-
-  const emailData: EmailOrderData = {
-    orderId: savedOrder.orderId,
-    flowOrder: resolvedProviderOrder ? String(resolvedProviderOrder) : undefined,
-    customerEmail: savedOrder.customerEmail,
-    customerName: savedOrder.customerName,
-    items: orderItems,
-    total: savedOrder.total,
-    currency: savedOrder.currency,
-    paymentDate: paymentDate ?? new Date().toISOString(),
-    hasAccount,
-    isGift: savedOrder.isGift ?? false,
-    recipientName: savedOrder.recipientName,
-    recipientEmail: savedOrder.recipientEmail,
-    giftMessage: savedOrder.giftMessage,
-    requiresShipping: savedOrder.requiresShipping ?? false,
-    shippingAddress: savedOrder.shippingAddress,
-  };
-
-  if (emailData.customerEmail) {
+  if (order.isGift && order.recipientEmail && order.giftToken) {
     try {
-      // Email de regalo al destinatario
-      if (savedOrder.isGift && savedOrder.recipientEmail && savedOrder.giftToken) {
-        const giftEmailData: GiftEmailData = {
-          giftToken: savedOrder.giftToken,
-          recipientName: savedOrder.recipientName,
-          recipientEmail: savedOrder.recipientEmail,
-          senderName: savedOrder.customerName,
-          senderEmail: savedOrder.customerEmail,
-          giftMessage: savedOrder.giftMessage,
-          items: orderItems,
-          orderId: savedOrder.orderId,
-          requiresShipping: savedOrder.requiresShipping ?? false,
-          shippingAddress: savedOrder.shippingAddress,
-        };
-
-        try {
-          await sendGiftEmail(giftEmailData);
-          console.log(`✅ Email de regalo enviado a ${savedOrder.recipientEmail}`);
-        } catch (giftEmailError) {
-          console.error('Error enviando email de regalo:', giftEmailError);
-        }
-      }
-
-      // Email de confirmación al comprador (siempre)
-      await sendOrderConfirmationEmail(emailData);
-      console.log(`✅ Email de confirmación enviado a ${emailData.customerEmail}`);
-
-      // 7. Marcar email como enviado (idempotencia)
-      try {
-        await markOrderEmailSent(orderId);
-        console.log(`✅ Email marcado como enviado para orden ${orderId}`);
-      } catch (error) {
-        console.error('Error marcando email como enviado:', error);
-      }
-    } catch (emailError) {
-      console.error('Error enviando emails:', emailError);
+      await sendGiftEmail({
+        giftToken: order.giftToken,
+        recipientName: order.recipientName,
+        recipientEmail: order.recipientEmail,
+        senderName: order.customerName,
+        senderEmail: order.customerEmail,
+        giftMessage: order.giftMessage,
+        items: orderItems,
+        orderId: order.orderId,
+        requiresShipping: order.requiresShipping ?? false,
+        shippingAddress: order.shippingAddress,
+      });
+    } catch (giftEmailError) {
+      console.error('Error enviando email de regalo:', giftEmailError);
     }
   }
 
-  return { success: true, alreadyProcessed: false };
+  const emailData: EmailOrderData = {
+    orderId: order.orderId,
+    flowOrder: resolvedProviderOrder ? String(resolvedProviderOrder) : undefined,
+    customerEmail: order.customerEmail,
+    customerName: order.customerName,
+    items: orderItems,
+    total: order.total,
+    currency: order.currency,
+    paymentDate: paymentDate ?? order.paymentDate ?? new Date().toISOString(),
+    hasAccount: !!order.userId?._ref,
+    isGift: order.isGift ?? false,
+    recipientName: order.recipientName,
+    recipientEmail: order.recipientEmail,
+    giftMessage: order.giftMessage,
+    requiresShipping: order.requiresShipping ?? false,
+    shippingAddress: order.shippingAddress,
+  };
+
+  try {
+    await sendOrderConfirmationEmail(emailData);
+  } catch (emailError) {
+    console.error('Error enviando emails:', emailError);
+    return;
+  }
+
+  try {
+    await markOrderEmailSent(order.orderId);
+  } catch (error) {
+    console.error('Error marcando email como enviado:', error);
+  }
 }
 
 /**
- * Crear acceso a curso cuando se compra
- * Es idempotente: si ya existe el acceso, no crea duplicado
+ * Procesar un pago exitoso (status=2) de forma idempotente.
+ * Compartido entre webhooks de Flow, PayPal, y cualquier gateway futuro.
+ *
+ * 1. Reclamar la orden atómicamente (claimPayment). Sólo el ganador crea accesos
+ *    y descuenta inventario, así entregas concurrentes o reintentos no duplican nada.
+ * 2. Enviar emails si aún no se marcaron (`emailSent`): un reintento tras un fallo
+ *    de email reenvía el email sin volver a tocar el stock.
+ */
+export async function processSuccessfulPayment(params: {
+  orderId: string;
+  paymentDate?: string;
+  providerOrderId?: string;
+}): Promise<{ success: boolean; alreadyProcessed: boolean }> {
+  const { orderId, paymentDate, providerOrderId } = params;
+
+  const { order, claimed } = await claimPayment(orderId, paymentDate, providerOrderId);
+  if (order.emailSent) {
+    return { success: true, alreadyProcessed: true };
+  }
+
+  if (claimed) {
+    await grantCourseAccess(order as SanityOrder & { _id: string });
+    await decreaseInventory(order);
+  }
+
+  // ponytail: dos entregas concurrentes pueden enviar el email de confirmación dos
+  // veces (el perdedor no sabe si el ganador ya lo envió). Duplicar un email es
+  // preferible a no enviarlo nunca si el proceso muere entre reclamar y enviar.
+  await sendPaymentEmails(order, paymentDate, providerOrderId);
+
+  return { success: true, alreadyProcessed: !claimed };
+}
+/**
+ * Crear acceso a curso cuando se compra.
+ * Es idempotente: si ya existe el acceso, no crea duplicado y retorna false.
+ * El acceso y el incremento atómico de enrollmentCount van en una sola transacción.
  */
 export async function createCourseAccess(
   userId: string,
   courseId: string,
   orderSanityId: string // _id de la orden en Sanity, no orderId
-): Promise<void> {
-  // Verificar si ya existe el acceso (idempotencia)
+): Promise<boolean> {
   const existingAccess = await client.fetch(
     `*[_type == "courseAccess" && user._ref == $userId && course._ref == $courseId][0]`,
     { userId, courseId }
@@ -574,57 +602,26 @@ export async function createCourseAccess(
 
   if (existingAccess) {
     console.log(`Acceso a curso ${courseId} ya existe para usuario ${userId}, saltando creación`);
-    return;
+    return false;
   }
 
   const now = new Date().toISOString();
 
-  const accessDoc = {
-    _type: 'courseAccess',
-    user: {
-      _type: 'reference',
-      _ref: userId,
-    },
-    course: {
-      _type: 'reference',
-      _ref: courseId,
-    },
-    order: {
-      _type: 'reference',
-      _ref: orderSanityId,
-    },
-    accessGrantedAt: now,
-    progress: {
-      completedLessons: [],
-      totalWatchTime: 0,
-    },
-  };
-
-  // Usar writeClient para operaciones de escritura
-  await writeClient.create(accessDoc);
+  await writeClient
+    .transaction()
+    .create({
+      _type: 'courseAccess',
+      user: { _type: 'reference', _ref: userId },
+      course: { _type: 'reference', _ref: courseId },
+      order: { _type: 'reference', _ref: orderSanityId },
+      accessGrantedAt: now,
+      progress: { completedLessons: [], totalWatchTime: 0 },
+    })
+    .patch(courseId, (p) =>
+      p.setIfMissing({ enrollmentCount: 0 }).inc({ enrollmentCount: 1 }).set({ updatedAt: now })
+    )
+    .commit();
   console.log(`✅ Acceso a curso ${courseId} creado para usuario ${userId}`);
-
-  // Incrementar enrollmentCount del curso
-  try {
-    const course = await client.fetch(
-      `*[_type == "course" && _id == $courseId][0]`,
-      { courseId }
-    );
-
-    if (course) {
-      const currentEnrollmentCount = course.enrollmentCount || 0;
-      await writeClient
-        .patch(courseId)
-        .set({
-          enrollmentCount: currentEnrollmentCount + 1,
-          updatedAt: new Date().toISOString(),
-        })
-        .commit();
-      console.log(`✅ enrollmentCount del curso ${courseId} incrementado a ${currentEnrollmentCount + 1}`);
-    }
-  } catch (error) {
-    console.error(`Error incrementando enrollmentCount del curso ${courseId}:`, error);
-    // No fallar la creación del acceso si hay error incrementando el contador
-  }
+  return true;
 }
 

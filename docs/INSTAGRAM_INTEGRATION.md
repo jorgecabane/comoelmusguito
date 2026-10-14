@@ -192,16 +192,18 @@ GET /api/instagram/feed?limit=8
 #### 2. Refresh Manual del Token
 ```
 GET /api/instagram/refresh
+Authorization: Bearer <CRON_SECRET>
 ```
-- Refresca el token manualmente (sin autorización del usuario)
+- Refresca el token manualmente (requiere el header con `CRON_SECRET`)
 - Útil para renovar el token antes de que expire
-- Retorna el nuevo token para que lo actualices en Vercel
+- **No** retorna el token, solo su expiración. Para actualizar la variable en Vercel usa `refresh-auto`
 
 #### 3. Refresh Automático (Cron)
 ```
-GET /api/instagram/refresh-auto?secret=xxx
+GET /api/instagram/refresh-auto
+Authorization: Bearer <CRON_SECRET>
 ```
-- Endpoint protegido para el cron job de Vercel
+- Endpoint protegido para el cron job de Vercel (Vercel envía el header solo)
 - Refresca el token y actualiza automáticamente en Vercel
 - No debe llamarse manualmente (usa el endpoint de refresh manual)
 
@@ -211,10 +213,9 @@ GET /api/instagram/refresh-auto?secret=xxx
 
 **Opción A: Si el token aún no expiró completamente**
 ```bash
-# Llamar al endpoint de refresh
-curl https://comoelmusguito.cl/api/instagram/refresh
+# Refresca y actualiza INSTAGRAM_ACCESS_TOKEN en Vercel
+curl -H "Authorization: Bearer $CRON_SECRET" https://comoelmusguito.cl/api/instagram/refresh-auto
 ```
-Copia el `token` de la respuesta JSON.
 
 **Opción B: Si el token expiró completamente**
 ```bash

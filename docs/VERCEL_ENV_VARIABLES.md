@@ -80,11 +80,8 @@ Si quieres automatizar la actualización (avanzado):
    - Guárdalo como `VERCEL_TOKEN` en tus variables de entorno
 
 2. **Usar el endpoint de refresh de Instagram**
-   - El endpoint `/api/instagram/refresh` retorna el nuevo token
-   - Puedes crear un script que:
-     1. Llame a `/api/instagram/refresh`
-     2. Use la API de Vercel para actualizar la variable
-     3. Redesplegue automáticamente
+   - `/api/instagram/refresh-auto` (con `Authorization: Bearer <CRON_SECRET>`) refresca el token y actualiza la variable en Vercel
+   - `/api/instagram/refresh` solo refresca y reporta la expiración; nunca retorna el token
 
 **Ejemplo de script (avanzado):**
 ```typescript
@@ -115,9 +112,9 @@ async function updateVercelEnv(token: string) {
 
 **Opción A: Usar endpoint de refresh** (si el token aún no expiró completamente)
 ```bash
-curl https://comoelmusguito.cl/api/instagram/refresh
+curl -H "Authorization: Bearer $CRON_SECRET" https://comoelmusguito.cl/api/instagram/refresh-auto
 ```
-Copia el `token` de la respuesta.
+Actualiza `INSTAGRAM_ACCESS_TOKEN` en Vercel automáticamente.
 
 **Opción B: Obtener token nuevo** (si expiró completamente)
 ```bash

@@ -7,6 +7,20 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getUserByEmail, createUser, verifyPassword, updateUser } from '@/lib/auth/sanity-adapter';
 import { linkOrdersToUser } from '@/lib/sanity/orders';
+import { applyRateLimit, getClientIP, loginRateLimit } from '@/lib/rate-limit/upstash';
+
+async function findUserWithValidPassword(email: string, password: string) {
+  try {
+    const user = await getUserByEmail(email);
+    if (!user?.passwordHash) {
+      return null;
+    }
+    return (await verifyPassword(password, user.passwordHash)) ? user : null;
+  } catch (error) {
+    console.error('Error en autenticación:', error);
+    return null;
+  }
+}
 
 const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -17,45 +31,38 @@ const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Contraseña', type: 'password' },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+      async authorize(credentials, req) {
+        const email = credentials?.email?.trim().toLowerCase();
+        const password = credentials?.password;
+        if (!email || !password) {
           return null;
         }
 
-        try {
-          const user = await getUserByEmail(credentials.email as string);
-          if (!user || !user.passwordHash) {
-            return null;
-          }
+        // Fuerza bruta: limitar intentos por IP + email (sin Upstash se permite, ver applyRateLimit)
+        const ip = getClientIP({ headers: new Headers(req?.headers) });
+        const rateLimit = await applyRateLimit(loginRateLimit, `${ip}:${email}`);
+        if (rateLimit?.success === false) {
+          throw new Error('TooManyAttempts');
+        }
 
-          // Verificar si el email está verificado (solo si está habilitado)
-          const requireEmailVerification = process.env.REQUIRE_EMAIL_VERIFICATION !== 'false';
-          if (requireEmailVerification && !user.emailVerified) {
-            // Si se requiere verificación y el email no está verificado, rechazar login
-            console.warn(`⚠️ Intento de login con email no verificado: ${credentials.email}`);
-            // Lanzar error específico para que NextAuth lo capture
-            throw new Error('EmailNotVerified');
-          }
-
-          const isValid = await verifyPassword(
-            credentials.password as string,
-            user.passwordHash
-          );
-
-          if (!isValid) {
-            return null;
-          }
-
-          return {
-            id: user._id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-          };
-        } catch (error) {
-          console.error('Error en autenticación:', error);
+        const user = await findUserWithValidPassword(email, password);
+        if (!user) {
           return null;
         }
+
+        // Solo tras validar la contraseña, para no revelar cuentas pendientes a terceros
+        const requireEmailVerification = process.env.REQUIRE_EMAIL_VERIFICATION !== 'false';
+        if (requireEmailVerification && !user.emailVerified) {
+          // NextAuth expone el mensaje como `error` al cliente (login muestra el aviso de verificación)
+          throw new Error('EmailNotVerified');
+        }
+
+        return {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
       },
     }),
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET

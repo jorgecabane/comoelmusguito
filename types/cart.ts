@@ -43,13 +43,12 @@ export interface CartState {
   isOpen: boolean; // Para modal de confirmación
   
   // Computed values
-  itemCount: number;
-  subtotal: number;
+  itemCount: number; // Los totales en dinero se agrupan por moneda en la UI (carrito/checkout)
   
   // Actions
   addItem: (item: CartItem) => void;
-  removeItem: (id: string, type: CartItemType) => void;
-  updateQuantity: (id: string, type: CartItemType, quantity: number) => void;
+  removeItem: (id: string, type: CartItemType, date?: string) => void;
+  updateQuantity: (id: string, type: CartItemType, quantity: number, date?: string) => void;
   clearCart: () => void;
   /** Reemplaza precios locales por los del servidor. Devuelve true si algo cambió. */
   syncPrices: (serverItems: Pick<CartItem, 'id' | 'type' | 'price' | 'currency'>[]) => boolean;

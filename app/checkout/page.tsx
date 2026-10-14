@@ -93,9 +93,17 @@ export default function CheckoutPage() {
   const hasShippableItems = shippableItems.length > 0;
   const hasSelectedShipping = shippingGroupPreference === 'shipping' && hasShippableItems;
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Totales por moneda solo para mostrar (igual que /carrito); el cobro lo calcula el servidor.
+  const totalsByCurrency = Object.entries(
+    items.reduce<Record<string, number>>((acc, item) => {
+      acc[item.currency] = (acc[item.currency] ?? 0) + item.price * item.quantity;
+      return acc;
+    }, {}),
+  );
+  const totalLabel = totalsByCurrency
+    .map(([cur, amount]) => `$${amount.toLocaleString('es-CL')} ${cur}`)
+    .join(' + ');
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const currency = items[0]?.currency || 'CLP';
   const availableCommunes = shippingRegion ? getCommunesByRegion(shippingRegion) : [];
 
   // Pre-llenar desde sesión y último despacho anterior
@@ -112,7 +120,7 @@ export default function CheckoutPage() {
           .then((data) => {
             if (data.userId) {
               setUserId(data.userId);
-              return fetch(`/api/checkout/last-shipping?userId=${encodeURIComponent(data.userId)}`);
+              return fetch('/api/checkout/last-shipping');
             }
           })
           .then((res) => res?.json())
@@ -459,7 +467,7 @@ export default function CheckoutPage() {
             Procesando...
           </>
         ) : (
-          `Pagar $${total.toLocaleString('es-CL')} ${currency}`
+          `Pagar ${totalLabel}`
         )}
       </Button>
     );
@@ -484,7 +492,7 @@ export default function CheckoutPage() {
             />
           </span>
           <span className="font-bold text-forest text-sm">
-            ${total.toLocaleString('es-CL')} {currency}
+            {totalLabel}
           </span>
         </button>
         <AnimatePresence>
@@ -513,7 +521,7 @@ export default function CheckoutPage() {
                 <div className="border-t border-gray/20 pt-2.5 flex justify-between font-bold text-forest">
                   <span>Total</span>
                   <span>
-                    ${total.toLocaleString('es-CL')} {currency}
+                    {totalLabel}
                   </span>
                 </div>
               </div>
@@ -561,6 +569,7 @@ export default function CheckoutPage() {
                   <div className="space-y-3">
                     <Input
                       id="email"
+                      aria-label="Correo electrónico"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -570,6 +579,7 @@ export default function CheckoutPage() {
                     />
                     <Input
                       id="customerName"
+                      aria-label="Nombre completo"
                       type="text"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
@@ -600,6 +610,7 @@ export default function CheckoutPage() {
                         >
                           <Input
                             id="password"
+                            aria-label="Contraseña"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -609,6 +620,7 @@ export default function CheckoutPage() {
                           />
                           <Input
                             id="confirmPassword"
+                            aria-label="Confirmar contraseña"
                             type="password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -770,6 +782,7 @@ export default function CheckoutPage() {
                       {/* Contacto de entrega */}
                       <Input
                         id="shippingContactEmail"
+                        aria-label="Email de contacto"
                         type="email"
                         value={shippingContactEmail}
                         onChange={(e) => setShippingContactEmail(e.target.value)}
@@ -781,6 +794,7 @@ export default function CheckoutPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <Input
                           id="shippingPhone"
+                          aria-label="Teléfono"
                           type="tel"
                           value={shippingPhone}
                           onChange={(e) => setShippingPhone(e.target.value)}
@@ -790,6 +804,7 @@ export default function CheckoutPage() {
                         />
                         <Input
                           id="shippingRut"
+                          aria-label="RUT"
                           type="text"
                           value={shippingRut}
                           onChange={(e) => setShippingRut(e.target.value)}
@@ -802,6 +817,7 @@ export default function CheckoutPage() {
                       {/* Región y comuna */}
                       <select
                         id="shippingRegion"
+                        aria-label="Región"
                         value={shippingRegion}
                         onChange={(e) => {
                           setShippingRegion(e.target.value);
@@ -822,6 +838,7 @@ export default function CheckoutPage() {
                       {shippingRegion && (
                         <select
                           id="shippingComuna"
+                          aria-label="Comuna"
                           value={shippingComuna}
                           onChange={(e) => setShippingComuna(e.target.value)}
                           required={hasSelectedShipping}
@@ -842,6 +859,7 @@ export default function CheckoutPage() {
                         <div className="col-span-2">
                           <Input
                             id="shippingAddress"
+                            aria-label="Calle / Avenida"
                             type="text"
                             value={shippingAddress}
                             onChange={(e) => setShippingAddress(e.target.value)}
@@ -852,6 +870,7 @@ export default function CheckoutPage() {
                         </div>
                         <Input
                           id="shippingNumber"
+                          aria-label="Número"
                           type="text"
                           value={shippingNumber}
                           onChange={(e) => setShippingNumber(e.target.value)}
@@ -863,6 +882,7 @@ export default function CheckoutPage() {
 
                       <Input
                         id="shippingDetails"
+                        aria-label="Depto, piso, referencias"
                         type="text"
                         value={shippingDetails}
                         onChange={(e) => setShippingDetails(e.target.value)}
@@ -912,6 +932,7 @@ export default function CheckoutPage() {
                     >
                       <Input
                         id="recipientEmail"
+                        aria-label="Email del destinatario"
                         type="email"
                         value={recipientEmail}
                         onChange={(e) => setRecipientEmail(e.target.value)}
@@ -921,6 +942,7 @@ export default function CheckoutPage() {
                       />
                       <Input
                         id="recipientName"
+                        aria-label="Nombre del destinatario"
                         type="text"
                         value={recipientName}
                         onChange={(e) => setRecipientName(e.target.value)}
@@ -930,6 +952,7 @@ export default function CheckoutPage() {
                       <div>
                         <textarea
                           id="giftMessage"
+                          aria-label="Mensaje personalizado"
                           value={giftMessage}
                           onChange={(e) => setGiftMessage(e.target.value)}
                           placeholder="Mensaje personalizado... (opcional)"
@@ -1026,7 +1049,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-sm text-gray">
                   <span>Subtotal</span>
                   <span>
-                    ${total.toLocaleString('es-CL')} {currency}
+                    {totalLabel}
                   </span>
                 </div>
                 {hasSelectedShipping && (
@@ -1038,10 +1061,14 @@ export default function CheckoutPage() {
                 <div className="border-t border-gray/20 pt-3 flex justify-between items-baseline">
                   <span className="font-display font-bold text-forest text-base">Total</span>
                   <div className="text-right">
-                    <span className="font-display text-2xl font-bold text-forest">
-                      ${total.toLocaleString('es-CL')}
-                    </span>
-                    <span className="text-sm text-gray ml-1">{currency}</span>
+                    {totalsByCurrency.map(([cur, amount]) => (
+                      <div key={cur}>
+                        <span className="font-display text-2xl font-bold text-forest">
+                          ${amount.toLocaleString('es-CL')}
+                        </span>
+                        <span className="text-sm text-gray ml-1">{cur}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1058,8 +1085,8 @@ export default function CheckoutPage() {
                 <PaymentMethodSelector
                   selectedGateway={selectedGateway}
                   onGatewayChange={setSelectedGateway}
-                  flowAmount={`$${total.toLocaleString('es-CL')}`}
-                  flowCurrency="CLP"
+                  flowAmount={totalLabel}
+                  flowCurrency=""
                   paypalAmount={
                     paypalQuoteLoading || paypalTotal === 0
                       ? 'Calculando…'
@@ -1088,8 +1115,8 @@ export default function CheckoutPage() {
             <PaymentMethodSelector
               selectedGateway={selectedGateway}
               onGatewayChange={setSelectedGateway}
-              flowAmount={`$${total.toLocaleString('es-CL')}`}
-              flowCurrency="CLP"
+              flowAmount={totalLabel}
+              flowCurrency=""
               paypalAmount={
                 paypalQuoteLoading || paypalTotal === 0
                   ? 'Calculando…'
