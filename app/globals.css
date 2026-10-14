@@ -28,6 +28,9 @@
   --forest: #1A1F16;
   --gray: #6B7566;
   --white: #FFFFFF;
+
+  /* Estados (contraste ≥4.5:1 sobre blanco/cream) */
+  --error: #B42318;
   
   /* Espaciado (Base-8) */
   --space-1: 0.25rem;   /* 4px */
@@ -84,6 +87,7 @@
   --color-forest: var(--forest);
   --color-gray: var(--gray);
   --color-white: var(--white);
+  --color-error: var(--error);
   
   /* Fuentes */
   --font-display: var(--font-display);

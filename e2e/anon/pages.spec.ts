@@ -36,8 +36,8 @@ test.describe('páginas públicas', () => {
 
   test('home muestra las secciones con contenido sembrado', async ({ page }) => {
     const assertNoErrors = await visit(page, '/');
-    // A11Y: la home no tiene <h1> (components/sections/home/HeroImmersive.tsx), solo el logo.
-    await expect(page.getByRole('img', { name: 'comoelmusguito logo' }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 1, name: /^comoelmusguito/ })).toBeVisible();
     for (const heading of [/^Cada Terrario/, /^Tú También Puedes/, /^Aprende con las/, /^Todo lo que Necesitas/, /^¿Qué Crearás/]) {
       await expect(page.getByRole('heading', { name: heading })).toBeAttached();
     }

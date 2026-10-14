@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils/cn';
+import { useDialogFocus } from '@/lib/hooks/useDialogFocus';
 
 interface ImageLightboxProps {
   images: string[];
@@ -27,6 +28,7 @@ export function ImageLightbox({
   onClose,
 }: ImageLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const dialogRef = useDialogFocus<HTMLDivElement>(isOpen, onClose);
 
   // Declarar antes de los efectos que las usan
   const goToPrevious = () => {
@@ -49,9 +51,7 @@ export function ImageLightbox({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      } else if (e.key === 'ArrowLeft') {
+      if (e.key === 'ArrowLeft') {
         goToPrevious();
       } else if (e.key === 'ArrowRight') {
         goToNext();
@@ -62,7 +62,7 @@ export function ImageLightbox({
     return () => window.removeEventListener('keydown', handleKeyDown);
   // goToPrevious y goToNext son estables (no dependen de estado externo)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!images || images.length === 0) return null;
 
@@ -84,6 +84,11 @@ export function ImageLightbox({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Galería: ${alt}`}
+            tabIndex={-1}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
             onClick={(e) => {
               // Cerrar si se hace click fuera del contenedor de la imagen
@@ -170,6 +175,8 @@ export function ImageLightbox({
                   <button
                     key={index}
                     onClick={() => setCurrentIndex(index)}
+                    aria-label={`Ver imagen ${index + 1}`}
+                    aria-current={currentIndex === index}
                     className={cn(
                       'relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all shrink-0',
                       currentIndex === index
@@ -179,7 +186,7 @@ export function ImageLightbox({
                   >
                     <Image
                       src={image}
-                      alt={`Thumbnail ${index + 1}`}
+                      alt=""
                       fill
                       className="object-cover"
                       sizes="80px"

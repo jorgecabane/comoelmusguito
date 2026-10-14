@@ -29,6 +29,22 @@ test.describe('carrito', () => {
     await expectCartCount(page, 1);
   });
 
+  test('el modal de agregado es un diálogo: Escape lo cierra y el foco vuelve al botón', async ({ page }) => {
+    // Curso: se agrega sin validar stock, así el botón nunca se deshabilita y conserva el foco.
+    await page.goto(`/cursos/${COURSE.slug}`);
+    const trigger = page.getByRole('button', { name: 'Comenzar mi Viaje' }).first();
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: '¡Producto Agregado!' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute('aria-modal', 'true');
+    await expect(dialog.getByRole('button', { name: 'Cerrar' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(dialog.getByRole('button', { name: 'Ver Carrito' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
   test('agregar curso (sin validación de stock)', async ({ page }) => {
     await page.goto(`/cursos/${COURSE.slug}`);
     await page.getByRole('button', { name: 'Comenzar mi Viaje' }).first().click();

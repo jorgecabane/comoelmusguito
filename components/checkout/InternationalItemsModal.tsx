@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui';
+import { useDialogFocus } from '@/lib/hooks/useDialogFocus';
 
 interface InternationalItemsModalProps {
   open: boolean;
@@ -26,22 +27,15 @@ export function InternationalItemsModal({
   onMarkAsGift,
   onRemoveItems,
 }: InternationalItemsModalProps) {
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    },
-    [onClose],
-  );
+  const dialogRef = useDialogFocus<HTMLDivElement>(!!open, onClose);
 
   useEffect(() => {
     if (!open) return;
-    document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [open, handleKeyDown]);
+  }, [open]);
 
   return (
     <AnimatePresence>
@@ -53,9 +47,11 @@ export function InternationalItemsModal({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Productos solo disponibles en Chile"
+          tabIndex={-1}
+          aria-labelledby="international-items-title"
         >
           <motion.div
             className="mx-4 max-w-md rounded-2xl bg-white p-6 shadow-xl"
@@ -65,7 +61,7 @@ export function InternationalItemsModal({
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-3 font-display text-xl font-semibold text-forest">
+            <h2 id="international-items-title" className="mb-3 font-display text-xl font-semibold text-forest">
               Algunos productos solo se venden en Chile
             </h2>
 

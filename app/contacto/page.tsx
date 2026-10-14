@@ -277,7 +277,7 @@ export default function ContactoPage() {
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       placeholder="Escribe tu mensaje aquí..."
-                      className="w-full px-4 py-3 rounded-lg border border-gray/20 focus:border-musgo focus:ring-2 focus:ring-musgo/20 outline-none transition-colors text-forest placeholder:text-gray/50"
+                      className="w-full px-4 py-3 rounded-lg border border-gray/20 focus:border-musgo focus:ring-2 focus:ring-musgo outline-none transition-colors text-forest placeholder:text-gray/50"
                     />
                   </div>
 

@@ -24,12 +24,31 @@ test.describe('mi cuenta (sin compras)', () => {
     }
   });
 
-  test('historial de pedidos vacío', async ({ page }) => {
-    await page.getByRole('button', { name: 'Ver Historial' }).click();
-    await expect(page.getByRole('heading', { name: 'Historial de Pedidos' })).toBeVisible();
-    await expect(page.getByText('Aún no tienes pedidos confirmados')).toBeVisible();
+  test('historial de pedidos vacío (diálogo accesible)', async ({ page }) => {
+    const trigger = page.getByRole('button', { name: 'Ver Historial' });
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Historial de Pedidos' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute('aria-modal', 'true');
+    await expect(dialog.getByText('Aún no tienes pedidos confirmados')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Cerrar' })).toBeFocused();
+    // Tab queda atrapado: el único enfocable sigue con el foco.
+    await page.keyboard.press('Tab');
+    await expect(dialog.getByRole('button', { name: 'Cerrar' })).toBeFocused();
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('heading', { name: 'Historial de Pedidos' })).toBeHidden();
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
+  test('canjear regalo es un diálogo que cierra con Escape y devuelve el foco', async ({ page }) => {
+    const trigger = page.getByRole('button', { name: 'Canjear Regalo' });
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Canjear Regalo' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByLabel('Token de Regalo')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
   });
 
   test('canjear regalo: formato inválido', async ({ page }) => {

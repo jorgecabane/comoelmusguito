@@ -5,12 +5,12 @@
 
 'use client';
 
-import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift } from 'lucide-react';
 import { formatDateShort, formatCurrency } from '@/lib/sanity/utils';
 import { OrderItemDetail } from '@/components/orders/OrderItemDetail';
 import type { SanityOrder } from '@/lib/sanity/orders';
+import { useDialogFocus } from '@/lib/hooks/useDialogFocus';
 
 interface OrderHistoryModalProps {
   isOpen: boolean;
@@ -24,17 +24,7 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
   const allOrders = [...orders, ...giftsSent].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
-  // Cerrar con ESC
-  useEffect(() => {
-    if (!isOpen) return;
-    
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
+  const dialogRef = useDialogFocus<HTMLDivElement>(isOpen, onClose);
 
   return (
     <AnimatePresence>
@@ -55,12 +45,17 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', duration: 0.4 }}
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="order-history-title"
+            tabIndex={-1}
             className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-natural-xl overflow-hidden m-2 md:m-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray/20 px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="font-display text-2xl font-bold text-forest">
+              <h2 id="order-history-title" className="font-display text-2xl font-bold text-forest">
                 Historial de Pedidos
               </h2>
               <button
