@@ -57,7 +57,9 @@ describe('lookups', () => {
   it('getUserByEmail / getUserById pass params and return the doc', async () => {
     fetch.mockResolvedValue(user());
     expect(await getUserByEmail('ana@x.cl')).toMatchObject({ _id: 'u1' });
-    expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('email == $email'), { email: 'ana@x.cl' });
+    expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('lower(email) == $email'), { email: 'ana@x.cl' });
+    await getUserByEmail('Ana@X.cl');
+    expect(fetch).toHaveBeenLastCalledWith(expect.any(String), { email: 'ana@x.cl' });
     expect(await getUserById('u1')).toMatchObject({ _id: 'u1' });
     expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('_id == $id'), { id: 'u1' });
   });

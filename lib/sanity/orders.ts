@@ -272,7 +272,7 @@ export async function getOrdersByEmail(
 ): Promise<SanityOrder[]> {
   const emailLower = email.toLowerCase();
   
-  let query = `*[_type == "order" && customerEmail == $email`;
+  let query = `*[_type == "order" && lower(customerEmail) == $email`;
   
   if (!includeLinked) {
     query += ` && !defined(userId)`;

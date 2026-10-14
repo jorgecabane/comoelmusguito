@@ -34,8 +34,8 @@ export interface SanityUser {
  */
 export async function getUserByEmail(email: string): Promise<SanityUser | null> {
   try {
-    const query = `*[_type == "user" && email == $email][0]`;
-    const user = await client.fetch<SanityUser | null>(query, { email });
+    const query = `*[_type == "user" && lower(email) == $email][0]`;
+    const user = await client.fetch<SanityUser | null>(query, { email: email.toLowerCase() });
     return user;
   } catch (error) {
     console.error('Error obteniendo usuario:', error);
