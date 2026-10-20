@@ -13,7 +13,7 @@ export function ArtistSection() {
   return (
     <section className="relative py-32 bg-gradient-to-b from-bg to-surface overflow-hidden">
       {/* Background decorativo */}
-      <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0 opacity-5 pointer-events-none" aria-hidden="true">
         <div className="absolute top-20 left-10 w-64 h-64 bg-olivo rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent rounded-full blur-3xl" />
       </div>

@@ -156,8 +156,8 @@ export function AddToCartModal() {
               </motion.div>
 
               {/* Decoración de fondo */}
-              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-olivo/5 rounded-full blur-3xl" />
-              <div className="absolute -top-10 -left-10 w-40 h-40 bg-brand/5 rounded-full blur-3xl" />
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-olivo/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-brand/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
             </div>
           </motion.div>
         </>
