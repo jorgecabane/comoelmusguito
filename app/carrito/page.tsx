@@ -91,10 +91,10 @@ export default function CarritoPage() {
             >
               🌱
             </motion.div>
-            <h1 className="font-display text-3xl md:text-4xl font-bold text-forest mb-4">
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-fg mb-4">
               Tu carrito está vacío
             </h1>
-            <p className="text-gray text-lg mb-8">
+            <p className="text-muted text-lg mb-8">
               ¿Listo para crear vida? Explora nuestros productos
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -138,17 +138,17 @@ export default function CarritoPage() {
         <div className="mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-gray hover:text-musgo transition-colors mb-4"
+            className="inline-flex items-center gap-2 text-muted hover:text-brand transition-colors mb-4"
           >
             <ArrowLeft size={20} />
             Seguir comprando
           </Link>
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-forest">
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-fg">
                 Tu Carrito 🌱
               </h1>
-              <p className="text-gray mt-2">
+              <p className="text-muted mt-2">
                 {itemCount} {itemCount === 1 ? 'producto' : 'productos'} en tu jardín
               </p>
             </div>
@@ -168,7 +168,7 @@ export default function CarritoPage() {
         </div>
 
         {pricesUpdated && (
-          <div className="mb-6 flex items-start gap-2 rounded-lg border border-ambar/30 bg-ambar/10 p-3 text-sm text-forest">
+          <div className="mb-6 flex items-start gap-2 rounded-lg border border-terracota/30 bg-terracota/10 p-3 text-sm text-fg">
             <Info size={18} className="shrink-0 mt-0.5" />
             <span>Actualizamos los precios de tu carrito con los valores vigentes.</span>
           </div>
@@ -180,7 +180,7 @@ export default function CarritoPage() {
             {/* Terrarios */}
             {terrarios.length > 0 && (
               <div>
-                <h2 className="font-display text-xl font-semibold text-forest mb-4">
+                <h2 className="font-display text-xl font-semibold text-fg mb-4">
                   Terrarios
                 </h2>
                 <div className="space-y-4">
@@ -200,7 +200,7 @@ export default function CarritoPage() {
             {/* Cursos */}
             {cursos.length > 0 && (
               <div>
-                <h2 className="font-display text-xl font-semibold text-forest mb-4">
+                <h2 className="font-display text-xl font-semibold text-fg mb-4">
                   Cursos Online
                 </h2>
                 <div className="space-y-4">
@@ -219,7 +219,7 @@ export default function CarritoPage() {
             {/* Talleres */}
             {talleres.length > 0 && (
               <div>
-                <h2 className="font-display text-xl font-semibold text-forest mb-4">
+                <h2 className="font-display text-xl font-semibold text-fg mb-4">
                   Talleres Presenciales
                 </h2>
                 <div className="space-y-4">
@@ -241,7 +241,7 @@ export default function CarritoPage() {
             {/* Insumos */}
             {insumos.length > 0 && (
               <div>
-                <h2 className="font-display text-xl font-semibold text-forest mb-4">
+                <h2 className="font-display text-xl font-semibold text-fg mb-4">
                   Insumos
                 </h2>
                 <div className="space-y-4">
@@ -261,13 +261,13 @@ export default function CarritoPage() {
 
           {/* Resumen de compra */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-cream rounded-2xl p-6 space-y-6">
-              <h2 className="font-display text-2xl font-semibold text-forest">
+            <div className="sticky top-24 bg-bg rounded-2xl p-6 space-y-6">
+              <h2 className="font-display text-2xl font-semibold text-fg">
                 Resumen
               </h2>
 
-              <div className="space-y-3 py-4 border-y border-gray/20">
-                <div className="flex justify-between text-gray">
+              <div className="space-y-3 py-4 border-y border-line">
+                <div className="flex justify-between text-muted">
                   <span>Productos ({itemCount})</span>
                   <div className="text-right">
                     {Object.entries(totalesPorMoneda).map(([currency, total]) => (
@@ -277,22 +277,22 @@ export default function CarritoPage() {
                     ))}
                   </div>
                 </div>
-                <div className="flex justify-between text-gray">
+                <div className="flex justify-between text-muted">
                   <span>Envío</span>
                   <span>Calculado en checkout</span>
                 </div>
               </div>
 
-              <div className="py-4 border-b border-gray/20">
+              <div className="py-4 border-b border-line">
                 <div className="flex justify-between items-baseline">
-                  <span className="font-display text-xl font-semibold text-forest">
+                  <span className="font-display text-xl font-semibold text-fg">
                     Total
                   </span>
                   <div className="text-right">
                     {Object.entries(totalesPorMoneda).map(([currency, total]) => (
                       <div
                         key={currency}
-                        className="font-display text-2xl font-bold text-forest"
+                        className="font-display text-2xl font-bold text-fg"
                       >
                         ${total.toLocaleString('es-CL')} {currency}
                       </div>
@@ -333,7 +333,7 @@ export default function CarritoPage() {
                 </Link>
               )}
 
-              <div className="text-center text-sm text-gray">
+              <div className="text-center text-sm text-muted">
                 <p>Pago seguro con Flow</p>
                 <p className="mt-2">🔒 Tus datos están protegidos</p>
               </div>
@@ -359,8 +359,8 @@ function CartItemCard({
 }) {
   return (
     <div
-      className={`bg-white rounded-xl p-4 shadow-sm border ${
-        unavailableMessage ? 'border-error/40' : 'border-gray/10'
+      className={`bg-surface rounded-xl p-4 shadow-sm border ${
+        unavailableMessage ? 'border-error/40' : 'border-line'
       }`}
     >
       {unavailableMessage && (
@@ -388,15 +388,15 @@ function CartItemCard({
           <div className="flex items-start justify-between gap-2 mb-2">
             <Link
               href={`/${getTypeUrl(item.type)}/${item.slug}`}
-              className="hover:text-musgo transition-colors"
+              className="hover:text-brand transition-colors"
             >
-              <h3 className="font-semibold text-forest line-clamp-1">
+              <h3 className="font-semibold text-fg line-clamp-1">
                 {item.name}
               </h3>
             </Link>
             <button
               onClick={() => onRemove(item.id, item.type, item.selectedDate?.date)}
-              className="text-gray hover:text-error transition-colors p-1"
+              className="text-muted hover:text-error transition-colors p-1"
               aria-label="Eliminar"
             >
               <Trash2 size={18} />
@@ -422,7 +422,7 @@ function CartItemCard({
 
           {/* Fecha seleccionada (talleres) */}
           {item.selectedDate && (
-            <p className="text-sm text-gray mb-3">
+            <p className="text-sm text-muted mb-3">
               📅 {(() => {
                 // Usar el campo time si está disponible (ya formateado), sino calcularlo
                 const time = item.selectedDate.time || formatWorkshopDateTime(item.selectedDate.date).time;
@@ -439,7 +439,7 @@ function CartItemCard({
                 onClick={() => onUpdateQuantity(item.id, item.type, item.quantity - 1, item.selectedDate?.date)}
                 disabled={item.quantity <= 1}
                 aria-label="Disminuir cantidad"
-                className="w-8 h-8 rounded-lg border border-gray/20 flex items-center justify-center hover:bg-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded-lg border border-line flex items-center justify-center hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Minus size={16} />
               </button>
@@ -448,17 +448,17 @@ function CartItemCard({
                 onClick={() => onUpdateQuantity(item.id, item.type, item.quantity + 1, item.selectedDate?.date)}
                 disabled={item.maxQuantity != null && item.quantity >= item.maxQuantity}
                 aria-label="Aumentar cantidad"
-                className="w-8 h-8 rounded-lg border border-gray/20 flex items-center justify-center hover:bg-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded-lg border border-line flex items-center justify-center hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Plus size={16} />
               </button>
             </div>
             <div className="text-right">
-              <div className="font-semibold text-forest">
+              <div className="font-semibold text-fg">
                 ${(item.price * item.quantity).toLocaleString('es-CL')} {item.currency}
               </div>
               {item.quantity > 1 && (
-                <div className="text-sm text-gray">
+                <div className="text-sm text-muted">
                   ${item.price.toLocaleString('es-CL')} c/u
                 </div>
               )}

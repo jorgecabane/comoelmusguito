@@ -59,7 +59,7 @@ export function TerrariumCard({ item }: TerrariumCardProps) {
           />
           
           {/* Overlay con info al hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-forest/90 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
+          <div className="absolute inset-0 bg-gradient-to-t from-bosque-deep/90 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
             {terrarium?.plants && terrarium.plants.length > 0 && (
               <p className="text-sm mb-2 opacity-90">
                 {terrarium.plants.slice(0, 2).join(' • ')}
@@ -72,7 +72,7 @@ export function TerrariumCard({ item }: TerrariumCardProps) {
 
           {/* Badge de cantidad */}
           {item.quantity > 1 && (
-            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 text-sm font-semibold text-forest">
+            <div className="absolute top-4 right-4 bg-surface/90 backdrop-blur-sm rounded-full px-3 py-1.5 text-sm font-semibold text-fg">
               x{item.quantity}
             </div>
           )}
@@ -82,17 +82,17 @@ export function TerrariumCard({ item }: TerrariumCardProps) {
         <div className="p-6 space-y-4 flex flex-col flex-1">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-display text-xl font-bold text-forest group-hover:text-musgo transition-colors">
+              <h3 className="font-display text-xl font-bold text-fg group-hover:text-brand transition-colors">
                 {item.name}
               </h3>
               {item.isGift && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cream border border-musgo/30 text-musgo text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-bg border border-brand/30 text-brand text-xs font-medium">
                   <Gift size={12} />
                   Regalo
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray">
+            <p className="text-sm text-muted">
               {item.isGift && item.giftSenderName
                 ? `Regalo de ${item.giftSenderName} • ${formatDateShort(item.orderDate)}`
                 : `Comprado el ${formatDateShort(item.orderDate)}`}
@@ -101,30 +101,30 @@ export function TerrariumCard({ item }: TerrariumCardProps) {
 
           {/* Info del terrario */}
           {terrarium && (
-            <div className="space-y-3 pt-2 border-t border-gray/20">
+            <div className="space-y-3 pt-2 border-t border-line">
               {terrarium.size && (
-                <div className="flex items-center gap-2 text-sm text-gray">
+                <div className="flex items-center gap-2 text-sm text-muted">
                   <Info size={16} />
                   <span>Tamaño: {terrarium.size}</span>
                 </div>
               )}
               
               {terrarium.careLevel && (
-                <div className="flex items-center gap-2 text-sm text-gray">
+                <div className="flex items-center gap-2 text-sm text-muted">
                   <Sprout size={16} />
                   <span>Cuidado: {careLevelLabels[terrarium.careLevel] || terrarium.careLevel}</span>
                 </div>
               )}
 
               {terrarium.lightRequirement && (
-                <div className="flex items-center gap-2 text-sm text-gray">
+                <div className="flex items-center gap-2 text-sm text-muted">
                   <Sun size={16} />
                   <span>Luz: {lightLabels[terrarium.lightRequirement] || terrarium.lightRequirement}</span>
                 </div>
               )}
 
               {terrarium.wateringFrequency && (
-                <div className="flex items-center gap-2 text-sm text-gray">
+                <div className="flex items-center gap-2 text-sm text-muted">
                   <Droplet size={16} />
                   <span>Riego: {terrarium.wateringFrequency}</span>
                 </div>
@@ -133,7 +133,7 @@ export function TerrariumCard({ item }: TerrariumCardProps) {
           )}
 
           {/* CTA */}
-          <div className="pt-2 flex items-center gap-2 text-musgo font-medium group-hover:gap-3 transition-all">
+          <div className="pt-2 flex items-center gap-2 text-brand font-medium group-hover:gap-3 transition-all">
             <span>Ver cuidados completos</span>
             <ArrowRight size={18} />
           </div>

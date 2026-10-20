@@ -26,15 +26,15 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-musgo focus-visible:ring-offset-2';
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
 
   const variants = {
     primary:
-      'bg-musgo text-white hover:bg-musgo-dark active:scale-[0.98] shadow-natural-sm hover:shadow-natural-md',
+      'bg-accent text-on-accent hover:bg-accent-hover active:scale-[0.98] shadow-natural-sm hover:shadow-natural-md',
     secondary:
-      'bg-transparent text-tierra border-2 border-tierra hover:bg-tierra hover:text-white',
+      'bg-transparent text-accent-text border-2 border-accent-text hover:bg-accent hover:border-accent hover:text-on-accent',
     ghost:
-      'bg-transparent text-vida hover:text-vida-dark underline underline-offset-4 hover:decoration-2',
+      'bg-transparent text-brand hover:text-fg underline underline-offset-4 hover:decoration-2',
   };
 
   const sizes = {
@@ -57,7 +57,7 @@ export function Button({
       ) : (
         <>
           {icon && <span className="inline-flex">{icon}</span>}
-          {children && <span>{children}</span>}
+          {children && <span className="inline-flex items-center gap-2">{children}</span>}
         </>
       )}
     </button>

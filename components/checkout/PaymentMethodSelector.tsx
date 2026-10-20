@@ -34,11 +34,11 @@ function RadioCircle({ selected }: { selected: boolean }) {
     <span
       className={cn(
         'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200',
-        selected ? 'border-musgo' : 'border-gray',
+        selected ? 'border-brand' : 'border-line',
       )}
       aria-hidden="true"
     >
-      {selected && <span className="h-2.5 w-2.5 rounded-full bg-musgo" />}
+      {selected && <span className="h-2.5 w-2.5 rounded-full bg-accent" />}
     </span>
   );
 }
@@ -74,7 +74,7 @@ export function PaymentMethodSelector({
         aria-checked="true"
         tabIndex={0}
         className={cn(
-          'rounded-xl border-2 border-musgo p-4 shadow-[0_0_0_1px_theme(colors.musgo)] transition-all duration-200',
+          'rounded-xl border-2 border-brand p-4 shadow-[0_0_0_1px_var(--brand)] transition-all duration-200',
           disabled && 'pointer-events-none opacity-50',
         )}
       >
@@ -84,13 +84,13 @@ export function PaymentMethodSelector({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <MethodBadge {...current.badge} />
-                <span className="font-medium text-forest">{current.label}</span>
+                <span className="font-medium text-fg">{current.label}</span>
               </div>
-              <p className="text-sm text-gray">{current.description}</p>
+              <p className="text-sm text-muted">{current.description}</p>
             </div>
             <div className="text-right">
-              <p className="font-semibold text-musgo">{amount}</p>
-              {currency && <p className="text-xs text-gray">{currency}</p>}
+              <p className="font-semibold text-brand">{amount}</p>
+              {currency && <p className="text-xs text-muted">{currency}</p>}
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@ export function PaymentMethodSelector({
         type="button"
         disabled={disabled}
         onClick={() => onGatewayChange(otherGateway)}
-        className="mt-3 text-sm text-tierra transition-colors hover:text-tierra-light hover:underline disabled:opacity-50"
+        className="mt-3 text-sm text-terracota transition-colors hover:text-terracota-light hover:underline disabled:opacity-50"
       >
         {selectedGateway === 'flow'
           ? 'Tienes una tarjeta internacional? Pagar con PayPal'

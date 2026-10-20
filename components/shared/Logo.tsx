@@ -1,68 +1,62 @@
 /**
  * Logo Component
- * Componente centralizado para el logo del sitio
+ * Componente centralizado para el logo del sitio.
+ * Los archivos (crema, pensados para fondos oscuros) viven en /public/logo.
  */
 
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { cn } from '@/lib/utils/cn';
+
+type LogoVariant = 'default' | 'icon-only';
+type LogoSize = 'sm' | 'md' | 'lg';
 
 interface LogoProps {
-  variant?: 'default' | 'icon-only';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: LogoVariant;
+  size?: LogoSize;
   className?: string;
   href?: string;
 }
 
-const sizeMap = {
-  sm: { width: 120, height: 32 },
-  md: { width: 150, height: 40 },
-  lg: { width: 180, height: 48 },
+/** Proporciones reales de los PNG (ancho / alto) */
+const LOGO_FILES = {
+  default: { src: '/logo/logo-cream.png', ratio: 1800 / 857 },
+  'icon-only': { src: '/logo/snail-cream.png', ratio: 700 / 384 },
+} as const;
+
+/** Alto del logo en px por tamaño; el ancho sale de la proporción */
+const HEIGHT_BY_SIZE: Record<LogoSize, number> = {
+  sm: 36,
+  md: 48,
+  lg: 64,
 };
 
-interface LogoContentProps {
-  variant: 'default' | 'icon-only';
-  dimensions: { width: number; height: number };
-  className: string;
-}
+function LogoImage({ variant, size, className }: Required<Pick<LogoProps, 'variant' | 'size'>> & { className?: string }) {
+  const { src, ratio } = LOGO_FILES[variant];
+  const height = HEIGHT_BY_SIZE[size];
 
-function LogoContent({ variant, dimensions, className }: LogoContentProps) {
   return (
-    <div className={`flex items-center gap-0 ${className}`}>
-      <Image
-        src={variant === 'icon-only' ? '/logo/logo-icon.svg' : '/logo/logo.svg'}
-        alt="comoelmusguito"
-        width={variant === 'icon-only' ? dimensions.height : dimensions.width - 70}
-        height={dimensions.height}
-        className={className}
-        priority
-      />
-      {variant === 'default' && (
-        <span className="font-display font-bold text-forest" style={{ fontSize: `${dimensions.height * 0.5}px` }}>
-          comoelmusguito
-        </span>
-      )}
-    </div>
+    <Image
+      src={src}
+      alt="Como el musguito"
+      width={Math.round(height * ratio)}
+      height={height}
+      className={cn('w-auto', className)}
+      priority
+    />
   );
 }
 
-export function Logo({ 
-  variant = 'default', 
-  size = 'md',
-  className = '',
-  href = '/'
-}: LogoProps) {
-  const dimensions = sizeMap[size];
-
+export function Logo({ variant = 'default', size = 'md', className, href = '/' }: LogoProps) {
   if (href) {
     return (
-      <Link href={href} className="transition-opacity hover:opacity-80">
-        <LogoContent variant={variant} dimensions={dimensions} className={className} />
+      <Link href={href} className="inline-flex transition-opacity hover:opacity-80" aria-label="Como el musguito, ir al inicio">
+        <LogoImage variant={variant} size={size} className={className} />
       </Link>
     );
   }
 
-  return <LogoContent variant={variant} dimensions={dimensions} className={className} />;
+  return <LogoImage variant={variant} size={size} className={className} />;
 }
-

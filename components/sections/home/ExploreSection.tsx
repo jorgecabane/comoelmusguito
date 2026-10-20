@@ -22,19 +22,19 @@ export function ExploreSection({ terrarios }: ExploreSectionProps) {
   }
 
   return (
-    <section className="py-32 bg-white">
+    <section className="py-32 bg-surface">
       <div className="container">
         {/* Header */}
         <div className="text-center mb-20 space-y-6">
           <FadeIn>
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-forest">
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-fg">
               Cada Terrario
               <br />
-              Cuenta una <span className="text-musgo">Historia</span>
+              Cuenta una <span className="text-brand">Historia</span>
             </h2>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p className="text-xl text-gray max-w-2xl mx-auto">
+            <p className="text-xl text-muted max-w-2xl mx-auto">
               Explora ecosistemas únicos, cada uno hecho a mano con tiempo y dedicación.
               No hay dos iguales.
             </p>
@@ -61,7 +61,7 @@ export function ExploreSection({ terrarios }: ExploreSectionProps) {
                         />
                         
                         {/* Overlay info al hover */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-forest/90 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
+                        <div className="absolute inset-0 bg-gradient-to-t from-bosque-deep/90 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
                           {terrarium.plants && terrarium.plants.length > 0 && (
                             <p className="text-sm mb-2 opacity-90">
                               {terrarium.plants.slice(0, 2).join(' • ')}
@@ -80,26 +80,26 @@ export function ExploreSection({ terrarios }: ExploreSectionProps) {
                               ? `Stock: ${terrarium.stock}`
                               : 'Agotado'}
                           </Badge>
-                          <span className="text-xs text-gray uppercase tracking-wide">{sizeLabel}</span>
+                          <span className="text-xs text-muted uppercase tracking-wide">{sizeLabel}</span>
                         </div>
 
                         <div className="space-y-2">
-                          <h3 className="font-display text-2xl font-semibold text-forest group-hover:text-musgo transition-colors">
+                          <h3 className="font-display text-2xl font-semibold text-fg group-hover:text-brand transition-colors">
                             {terrarium.name}
                           </h3>
-                          <p className="text-gray line-clamp-2">
+                          <p className="text-muted line-clamp-2">
                             {terrarium.description}
                           </p>
                         </div>
 
                         <div className="flex items-center justify-between pt-4 mt-auto">
-                          <div className="text-2xl font-display font-bold text-forest">
+                          <div className="text-2xl font-display font-bold text-fg">
                             {formatPrice(terrarium.price, terrarium.currency)}
                           </div>
                           <Button
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
-                            className="text-musgo"
+                            className="text-brand"
                           >
                             Ver más
                           </Button>

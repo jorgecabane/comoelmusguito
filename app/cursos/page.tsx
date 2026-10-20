@@ -3,7 +3,7 @@
  * Datos desde Sanity CMS
  */
 
-import { Card, Badge, Button } from '@/components/ui';
+import { Card, Badge, Button, CtaBanner } from '@/components/ui';
 import { Play, Clock, BookOpen, ArrowRight } from 'lucide-react';
 import { getAllCourses } from '@/lib/sanity/fetch';
 import { getImageUrl, formatPriceWithSale, getSlugString, levelLabels, getCoursePrice } from '@/lib/sanity/utils';
@@ -31,10 +31,10 @@ export default async function CursosPage() {
       {/* Header */}
       <section className="container mb-16">
         <div className="max-w-3xl">
-          <h1 className="font-display text-5xl md:text-6xl font-bold text-forest mb-6">
+          <h1 className="font-display text-5xl md:text-6xl font-bold text-fg mb-6">
             Aprende a Crear Terrarios
           </h1>
-          <p className="text-xl text-gray leading-relaxed">
+          <p className="text-xl text-muted leading-relaxed">
             Cursos online completos donde aprenderás desde lo básico hasta técnicas avanzadas.
             Acceso de por vida, aprende a tu propio ritmo desde cualquier parte del mundo.
           </p>
@@ -46,32 +46,32 @@ export default async function CursosPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              icon: <Play className="text-musgo" size={32} />,
+              icon: <Play className="text-brand" size={32} />,
               title: 'Acceso de por Vida',
               description: 'Una vez comprado, es tuyo para siempre',
             },
             {
-              icon: <Clock className="text-musgo" size={32} />,
+              icon: <Clock className="text-brand" size={32} />,
               title: 'A tu Ritmo',
               description: 'Aprende cuando quieras, donde quieras',
             },
             {
-              icon: <BookOpen className="text-musgo" size={32} />,
+              icon: <BookOpen className="text-brand" size={32} />,
               title: 'Material Descargable',
               description: 'PDFs, listas de materiales y recursos',
             },
           ].map((item, i) => (
             <div
               key={i}
-              className="bg-cream p-6 rounded-lg text-center space-y-3"
+              className="bg-bg p-6 rounded-lg text-center space-y-3"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-vida/20">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20">
                 {item.icon}
               </div>
-              <h3 className="font-display text-xl font-semibold text-forest">
+              <h3 className="font-display text-xl font-semibold text-fg">
                 {item.title}
               </h3>
-              <p className="text-gray">{item.description}</p>
+              <p className="text-muted">{item.description}</p>
             </div>
           ))}
         </div>
@@ -80,8 +80,8 @@ export default async function CursosPage() {
       {/* Mensaje si no hay cursos */}
       {cursos.length === 0 ? (
         <section className="container">
-          <div className="bg-cream/50 rounded-2xl p-12 text-center">
-            <p className="text-xl text-gray mb-6">
+          <div className="bg-bg/50 rounded-2xl p-12 text-center">
+            <p className="text-xl text-muted mb-6">
               Estamos preparando nuevos cursos. Vuelve pronto 🌱
             </p>
             <Link href="/terrarios">
@@ -93,7 +93,7 @@ export default async function CursosPage() {
         <>
           {/* Grid de Cursos */}
           <section className="container">
-            <h2 className="font-display text-3xl font-semibold text-forest mb-8">
+            <h2 className="font-display text-3xl font-semibold text-fg mb-8">
               Todos los Cursos
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -117,9 +117,9 @@ export default async function CursosPage() {
                           alt={course.thumbnail?.alt || course.name} 
                         />
                         {/* Play overlay */}
-                        <div className="absolute inset-0 bg-forest/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
-                            <Play className="text-musgo ml-1" size={28} fill="currentColor" />
+                        <div className="absolute inset-0 bg-bosque-deep/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="w-16 h-16 rounded-full bg-surface/90 flex items-center justify-center">
+                            <Play className="text-brand ml-1" size={28} fill="currentColor" />
                           </div>
                         </div>
                       </div>
@@ -127,7 +127,7 @@ export default async function CursosPage() {
                         <Card.Content>
                           <div className="flex items-center gap-2 mb-3">
                             <Badge variant="info" size="sm">{levelLabel}</Badge>
-                            <span className="text-sm text-gray">
+                            <span className="text-sm text-muted">
                               {course.lessonCount} lecciones • {course.duration}h
                             </span>
                           </div>
@@ -135,18 +135,18 @@ export default async function CursosPage() {
                           <Card.Description>{course.shortDescription}</Card.Description>
 
                           <div className="space-y-1 pt-3 mt-auto">
-                            <div className="text-2xl font-display font-bold text-forest">
+                            <div className="text-2xl font-display font-bold text-fg">
                               {pricing.current}
                             </div>
                             {pricing.hasDiscount && pricing.original && (
-                              <div className="text-sm text-gray line-through">
+                              <div className="text-sm text-muted line-through">
                                 {pricing.original}
                               </div>
                             )}
                           </div>
                         </Card.Content>
                         <Card.Footer>
-                          <Button variant="primary" className="w-full group-hover:bg-musgo-dark transition-colors">
+                          <Button variant="primary" className="w-full group-hover:bg-accent-hover transition-colors">
                             Comenzar mi Viaje
                             <ArrowRight size={18} />
                           </Button>
@@ -161,29 +161,21 @@ export default async function CursosPage() {
 
           {/* CTA - Talleres Presenciales */}
           <section className="container mt-24">
-            <div className="bg-gradient-to-br from-musgo to-vida text-white rounded-2xl p-12 text-center">
-              <h2 className="font-display text-3xl md:text-4xl font-semibold mb-4">
-                ¿Prefieres Aprender en Persona?
-              </h2>
-              <p className="text-white/90 mb-6 max-w-2xl mx-auto text-lg">
-                Ofrecemos talleres presenciales en Santiago donde crearás tu propio
-                terrario, aprendiendo la teoría a través de la práctica.
-              </p>
+            <CtaBanner
+              title="¿Prefieres Aprender en Persona?"
+              description="Ofrecemos talleres presenciales en Santiago donde crearás tu propio terrario, aprendiendo la teoría a través de la práctica."
+            >
               <Link href="/talleres">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="border-white text-white hover:bg-white hover:text-musgo"
-                >
+                <Button variant="primary" size="lg">
                   Ver Próximos Talleres
                 </Button>
               </Link>
-            </div>
+            </CtaBanner>
           </section>
 
           {/* FAQ */}
           <section className="container mt-24">
-            <h2 className="font-display text-3xl font-semibold text-forest mb-8 text-center">
+            <h2 className="font-display text-3xl font-semibold text-fg mb-8 text-center">
               Preguntas Frecuentes
             </h2>
             <div className="max-w-3xl mx-auto space-y-4">
@@ -203,13 +195,13 @@ export default async function CursosPage() {
               ].map((faq, i) => (
                 <details
                   key={i}
-                  className="bg-cream p-6 rounded-lg cursor-pointer group"
+                  className="bg-bg p-6 rounded-lg cursor-pointer group"
                 >
-                  <summary className="font-display text-lg font-semibold text-forest list-none flex items-center justify-between">
+                  <summary className="font-display text-lg font-semibold text-fg list-none flex items-center justify-between">
                     {faq.q}
-                    <span className="text-musgo">+</span>
+                    <span className="text-brand">+</span>
                   </summary>
-                  <p className="text-gray mt-4 leading-relaxed">{faq.a}</p>
+                  <p className="text-muted mt-4 leading-relaxed">{faq.a}</p>
                 </details>
               ))}
             </div>

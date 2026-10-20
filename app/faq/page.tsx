@@ -190,7 +190,7 @@ export default function FAQPage() {
       <div className="pt-32 pb-16">
         <div className="container max-w-4xl">
           <div className="text-center">
-            <p className="text-gray">Cargando...</p>
+            <p className="text-muted">Cargando...</p>
           </div>
         </div>
       </div>
@@ -205,13 +205,13 @@ export default function FAQPage() {
           <FadeIn immediate={true}>
             {/* Header */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-vida/20 mb-6">
-                <HelpCircle className="text-vida" size={32} />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20 mb-6">
+                <HelpCircle className="text-brand" size={32} />
               </div>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-forest mb-4">
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-4">
                 Preguntas Frecuentes
               </h1>
-              <p className="text-gray text-lg">
+              <p className="text-muted text-lg">
                 Encuentra respuestas a las preguntas más comunes
               </p>
             </div>
@@ -219,47 +219,47 @@ export default function FAQPage() {
             {/* FAQ Content */}
             <div className="space-y-6">
               {Object.entries(faqCategories).map(([key, category]) => (
-                <div key={key} className="bg-white rounded-xl border border-gray/20 overflow-hidden">
+                <div key={key} className="bg-surface rounded-xl border border-line overflow-hidden">
                   <button
                     onClick={() => setOpenCategory(openCategory === key ? null : key)}
-                    className="w-full flex items-center justify-between p-6 text-left hover:bg-cream/50 transition-colors"
+                    className="w-full flex items-center justify-between p-6 text-left hover:bg-bg/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{category.icon}</span>
-                      <h2 className="font-display text-xl font-semibold text-forest">
+                      <h2 className="font-display text-xl font-semibold text-fg">
                         {category.title}
                       </h2>
                     </div>
                     {openCategory === key ? (
-                      <ChevronUp className="text-gray" size={24} />
+                      <ChevronUp className="text-muted" size={24} />
                     ) : (
-                      <ChevronDown className="text-gray" size={24} />
+                      <ChevronDown className="text-muted" size={24} />
                     )}
                   </button>
 
                   {openCategory === key && (
-                    <div className="border-t border-gray/20">
+                    <div className="border-t border-line">
                       {category.questions.map((faq, index) => {
                         const questionKey = `${key}-${index}`;
                         const isOpen = openQuestions.has(questionKey);
                         return (
-                          <div key={index} className="border-b border-gray/10 last:border-0">
+                          <div key={index} className="border-b border-line last:border-0">
                             <button
                               onClick={() => toggleQuestion(key, index)}
-                              className="w-full flex items-start justify-between p-6 text-left hover:bg-cream/30 transition-colors"
+                              className="w-full flex items-start justify-between p-6 text-left hover:bg-bg/30 transition-colors"
                             >
-                              <h3 className="font-semibold text-forest pr-4 flex-1">
+                              <h3 className="font-semibold text-fg pr-4 flex-1">
                                 {faq.question}
                               </h3>
                               {isOpen ? (
-                                <ChevronUp className="text-musgo shrink-0" size={20} />
+                                <ChevronUp className="text-brand shrink-0" size={20} />
                               ) : (
-                                <ChevronDown className="text-gray shrink-0" size={20} />
+                                <ChevronDown className="text-muted shrink-0" size={20} />
                               )}
                             </button>
                             {isOpen && (
                               <div className="px-6 pb-6">
-                                <p className="text-gray leading-relaxed">{faq.answer}</p>
+                                <p className="text-muted leading-relaxed">{faq.answer}</p>
                               </div>
                             )}
                           </div>
@@ -272,23 +272,23 @@ export default function FAQPage() {
             </div>
 
             {/* Contact Section */}
-            <div className="mt-12 bg-musgo/10 rounded-xl p-8 text-center">
-              <h2 className="font-display text-2xl font-semibold text-forest mb-4">
+            <div className="mt-12 bg-brand/10 rounded-xl p-8 text-center">
+              <h2 className="font-display text-2xl font-semibold text-fg mb-4">
                 ¿No encontraste tu respuesta?
               </h2>
-              <p className="text-gray mb-6">
+              <p className="text-muted mb-6">
                 Estamos aquí para ayudarte. Contáctanos y te responderemos lo antes posible.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
                   href="mailto:hola@comoelmusguito.cl"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-musgo text-white rounded-lg hover:bg-musgo-dark transition-colors"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
                 >
                   Enviar Email
                 </a>
                 <a
                   href={getTelLink()}
-                  className="inline-flex items-center justify-center px-6 py-3 bg-forest text-white rounded-lg hover:bg-forest/90 transition-colors"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-bosque-deep text-white rounded-lg hover:bg-bosque-deep/90 transition-colors"
                 >
                   Llamar: {getFormattedPhoneNumber()}
                 </a>

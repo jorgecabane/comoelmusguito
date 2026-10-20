@@ -55,7 +55,7 @@ export function NavigationDropdown({ label, items, className }: NavigationDropdo
       {/* Trigger Button */}
       <button
         onClick={handleToggle}
-        className="flex items-center gap-1 text-forest hover:text-musgo font-medium transition-colors relative group"
+        className="flex items-center gap-1 text-fg hover:text-brand font-medium transition-colors relative group"
       >
         <span>{label}</span>
         <ChevronDown
@@ -65,16 +65,13 @@ export function NavigationDropdown({ label, items, className }: NavigationDropdo
             isOpen && 'rotate-180'
           )}
         />
-        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-musgo group-hover:w-full transition-all duration-300" />
+        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300" />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
         <div 
-          className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-natural-lg border border-gray/10 overflow-hidden z-50"
-          style={{
-            animation: 'fadeInSlide 0.2s ease-out'
-          }}
+          className="absolute top-full left-0 mt-2 w-56 bg-surface rounded-lg shadow-natural-lg border border-line overflow-hidden z-50 animate-fade-in-slide"
         >
           <div className="py-2">
             {items.map((item, index) => (
@@ -82,11 +79,11 @@ export function NavigationDropdown({ label, items, className }: NavigationDropdo
                 key={index}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-3 text-forest hover:bg-cream hover:text-musgo transition-colors group"
+                className="block px-4 py-3 text-fg hover:bg-bg hover:text-brand transition-colors group"
               >
                 <div className="font-medium text-sm">{item.name}</div>
                 {item.description && (
-                  <div className="text-xs text-gray mt-0.5">{item.description}</div>
+                  <div className="text-xs text-muted mt-0.5">{item.description}</div>
                 )}
               </Link>
             ))}

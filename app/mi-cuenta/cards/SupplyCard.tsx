@@ -53,7 +53,7 @@ export function SupplyCard({ item }: SupplyCardProps) {
           {/* Badge de regalo */}
           {item.isGift && (
             <div className="absolute top-4 right-4">
-              <Badge variant="default" size="sm" className="bg-vida/90 text-white">
+              <Badge variant="default" size="sm" className="bg-olivo/90 text-white">
                 <Gift size={14} className="mr-1" />
                 Regalo
               </Badge>
@@ -68,29 +68,29 @@ export function SupplyCard({ item }: SupplyCardProps) {
               {categoryLabel}
             </Badge>
             {item.isGift && (
-              <span className="text-xs text-gray">
+              <span className="text-xs text-muted">
                 De: {item.giftSenderName || 'Un amigo'}
               </span>
             )}
           </div>
 
-          <h3 className="font-display text-xl font-semibold text-forest mb-2 group-hover:text-musgo transition-colors">
+          <h3 className="font-display text-xl font-semibold text-fg mb-2 group-hover:text-brand transition-colors">
             {item.name}
           </h3>
 
           {supply?.brand && (
-            <p className="text-sm text-gray mb-3">
+            <p className="text-sm text-muted mb-3">
               Marca: {supply.brand}
             </p>
           )}
 
-          <div className="mt-auto pt-4 border-t border-gray/20 flex items-center justify-between">
-            <div className="text-sm text-gray">
+          <div className="mt-auto pt-4 border-t border-line flex items-center justify-between">
+            <div className="text-sm text-muted">
               Comprado el {formatDateShort(item.orderDate)}
             </div>
             <ArrowRight 
               size={18} 
-              className="text-musgo opacity-0 group-hover:opacity-100 transition-opacity" 
+              className="text-brand opacity-0 group-hover:opacity-100 transition-opacity" 
             />
           </div>
         </div>

@@ -76,7 +76,7 @@ export function ImageLightbox({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 h-screen bg-forest/95 backdrop-blur-sm z-50"
+            className="fixed inset-0 h-screen bg-bosque-deep/95 backdrop-blur-sm z-50"
           />
 
           {/* Lightbox Content */}
@@ -128,23 +128,13 @@ export function ImageLightbox({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="relative w-full max-w-4xl flex items-center justify-center"
-                style={{ maxHeight: '70vh', height: 'auto' }}
+                className="relative w-full max-w-4xl max-h-[70vh] h-auto flex items-center justify-center"
               >
-                <div 
-                  className="relative flex items-center justify-center"
-                  style={{ 
-                    maxHeight: '70vh', 
-                    maxWidth: '100%',
-                    width: 'fit-content',
-                    height: 'fit-content'
-                  }}
-                >
+                <div className="relative flex items-center justify-center max-h-[70vh] max-w-full w-fit h-fit">
                   <img
                     src={images[currentIndex]}
                     alt={`${alt} ${currentIndex + 1}`}
-                    className="object-contain max-w-full max-h-[70vh] w-auto h-auto"
-                    style={{ display: 'block' }}
+                    className="block object-contain max-w-full max-h-[70vh] w-auto h-auto"
                   />
                 </div>
               </motion.div>
@@ -180,7 +170,7 @@ export function ImageLightbox({
                     className={cn(
                       'relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all shrink-0',
                       currentIndex === index
-                        ? 'border-vida scale-110'
+                        ? 'border-olivo scale-110'
                         : 'border-transparent opacity-60 hover:opacity-100'
                     )}
                   >

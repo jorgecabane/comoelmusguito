@@ -42,8 +42,8 @@ export function SupplyDetail({ supply }: SupplyDetailProps) {
   return (
     <>
       {/* Price & CTA */}
-      <div className="border-t border-b border-gray/20 py-6">
-        <div className="text-4xl font-display font-bold text-forest mb-6">
+      <div className="border-t border-b border-line py-6">
+        <div className="text-4xl font-display font-bold text-fg mb-6">
           {formatPrice(supply.price, supply.currency)}
         </div>
 
@@ -52,20 +52,20 @@ export function SupplyDetail({ supply }: SupplyDetailProps) {
             {supply.inStock ? 'Agregar al Carrito' : 'Agotado'}
           </AddToCartButton>
           <button
-            className="px-6 py-3 rounded-xl border-2 border-gray/20 hover:border-musgo hover:bg-cream transition-all"
+            className="px-6 py-3 rounded-xl border-2 border-line hover:border-brand hover:bg-bg transition-all"
             aria-label="Guardar en favoritos"
           >
-            <Heart size={24} className="text-gray hover:text-vida transition-colors" />
+            <Heart size={24} className="text-muted hover:text-brand transition-colors" />
           </button>
         </div>
 
         {supply.localPickupOnly && (
-          <p className="text-sm text-gray mt-4">
+          <p className="text-sm text-muted mt-4">
             📍 Solo retiro en persona (Santiago, Chile)
           </p>
         )}
         {supply.shippingAvailable && !supply.localPickupOnly && (
-          <p className="text-sm text-gray mt-4">
+          <p className="text-sm text-muted mt-4">
             🚚 Envío disponible a todo Chile
           </p>
         )}

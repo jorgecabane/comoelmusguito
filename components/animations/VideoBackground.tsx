@@ -66,7 +66,7 @@ export function VideoBackground({
   const overlayClasses = {
     none: '',
     light: 'bg-white/30',
-    dark: 'bg-forest/60', // Incrementado para mejor contraste
+    dark: 'bg-bosque-deep/60', // Incrementado para mejor contraste
   };
 
   // En mobile, mostrar solo imagen

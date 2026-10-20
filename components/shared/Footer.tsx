@@ -59,16 +59,16 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-forest text-cream">
+    <footer className="bg-bosque-deep text-crema">
       {/* Newsletter Section */}
-      <div className="border-b border-cream/10">
+      <div className="border-b border-crema/10">
         <div className="container py-16">
           <div className="max-w-2xl mx-auto text-center space-y-6">
-            <Leaf className="mx-auto text-vida" size={48} />
+            <Leaf className="mx-auto text-brand" size={48} />
             <h3 className="font-display text-3xl font-semibold !text-white">
               Únete a la Comunidad 🌿
             </h3>
-            <p className="text-cream/80 text-lg">
+            <p className="text-crema/80 text-lg">
               Recibe tips de cuidado, nuevos terrarios y ofertas exclusivas cada semana
             </p>
             <div className="max-w-md mx-auto">
@@ -84,7 +84,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1 lg:col-span-1 space-y-4 text-center md:text-left">
             <Logo size="md"/>
-            <p className="text-cream/70 text-sm leading-relaxed">
+            <p className="text-crema/70 text-sm leading-relaxed">
               Crea vida en cualquier lugar. Terrarios artesanales y educación
               para conectar con la naturaleza.
             </p>
@@ -99,9 +99,9 @@ export function Footer() {
                   className="group"
                   aria-label={social.name}
                 >
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-cream/5 hover:bg-vida/20 transition-colors">
-                    <social.icon size={20} className="text-cream/70 group-hover:text-vida transition-colors" />
-                    <span className="text-xs text-cream/60">{social.followers}</span>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-bg/5 hover:bg-olivo/20 transition-colors">
+                    <social.icon size={20} className="text-crema/70 group-hover:text-brand transition-colors" />
+                    <span className="text-xs text-crema/60">{social.followers}</span>
                   </div>
                 </a>
               ))}
@@ -116,7 +116,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-cream/70 hover:text-vida transition-colors text-sm"
+                    className="text-crema/70 hover:text-brand transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -133,7 +133,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-cream/70 hover:text-vida transition-colors text-sm"
+                    className="text-crema/70 hover:text-brand transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -150,7 +150,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-cream/70 hover:text-vida transition-colors text-sm"
+                    className="text-crema/70 hover:text-brand transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -167,7 +167,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-cream/70 hover:text-vida transition-colors text-sm"
+                    className="text-crema/70 hover:text-brand transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -178,15 +178,15 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-cream/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-cream/60 text-sm text-center md:text-left">
+        <div className="pt-8 border-t border-crema/10 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-crema/60 text-sm text-center md:text-left">
             © {new Date().getFullYear()} comoelmusguito. Hecho con 💚 en Chile.
           </p>
-          <div className="flex items-center gap-2 text-cream/60 text-sm">
+          <div className="flex items-center gap-2 text-crema/60 text-sm">
             <Mail size={16} />
             <a
               href="mailto:hola@comoelmusguito.cl"
-              className="hover:text-vida transition-colors"
+              className="hover:text-brand transition-colors"
             >
               hola@comoelmusguito.cl
             </a>

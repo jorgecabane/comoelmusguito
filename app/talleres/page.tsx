@@ -3,7 +3,7 @@
  * Datos desde Sanity CMS
  */
 
-import { Card, Badge, Button } from '@/components/ui';
+import { Card, Badge, Button, CtaBanner } from '@/components/ui';
 import { Calendar, MapPin, Users, Clock, ArrowRight } from 'lucide-react';
 import { getAllWorkshops } from '@/lib/sanity/fetch';
 import { getFirstImage, formatPrice, formatDateShort, getSlugString, levelLabels } from '@/lib/sanity/utils';
@@ -47,10 +47,10 @@ export default async function TalleresPage() {
       {/* Header */}
       <section className="container mb-16">
         <div className="max-w-3xl">
-          <h1 className="font-display text-5xl md:text-6xl font-bold text-forest mb-6">
+          <h1 className="font-display text-5xl md:text-6xl font-bold text-fg mb-6">
             Talleres Presenciales
           </h1>
-          <p className="text-xl text-gray leading-relaxed">
+          <p className="text-xl text-muted leading-relaxed">
             Experiencias prácticas donde aprenderás a crear terrarios con las manos en la masa.
             Cada taller incluye todos los materiales y te llevas tu terrario a casa.
           </p>
@@ -62,32 +62,32 @@ export default async function TalleresPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              icon: <Users className="text-musgo" size={32} />,
+              icon: <Users className="text-brand" size={32} />,
               title: 'Grupos Reducidos',
               description: 'Máximo 8 personas para atención personalizada',
             },
             {
-              icon: <Calendar className="text-musgo" size={32} />,
+              icon: <Calendar className="text-brand" size={32} />,
               title: 'Materiales Incluidos',
               description: 'Todo lo necesario para crear tu terrario',
             },
             {
-              icon: <MapPin className="text-musgo" size={32} />,
+              icon: <MapPin className="text-brand" size={32} />,
               title: 'En Santiago',
               description: 'Taller de Tomás en el corazón de la ciudad',
             },
           ].map((item, i) => (
             <div
               key={i}
-              className="bg-cream p-6 rounded-lg text-center space-y-3"
+              className="bg-bg p-6 rounded-lg text-center space-y-3"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-vida/20">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20">
                 {item.icon}
               </div>
-              <h3 className="font-display text-xl font-semibold text-forest">
+              <h3 className="font-display text-xl font-semibold text-fg">
                 {item.title}
               </h3>
-              <p className="text-gray">{item.description}</p>
+              <p className="text-muted">{item.description}</p>
             </div>
           ))}
         </div>
@@ -96,8 +96,8 @@ export default async function TalleresPage() {
       {/* Mensaje si no hay talleres */}
       {talleres.length === 0 ? (
         <section className="container">
-          <div className="bg-cream/50 rounded-2xl p-12 text-center">
-            <p className="text-xl text-gray mb-6">
+          <div className="bg-bg/50 rounded-2xl p-12 text-center">
+            <p className="text-xl text-muted mb-6">
               Estamos organizando nuevos talleres. Vuelve pronto o inscríbete en un curso online 🌱
             </p>
             <Link href="/cursos">
@@ -109,7 +109,7 @@ export default async function TalleresPage() {
         <>
           {/* Grid de Talleres */}
           <section className="container">
-            <h2 className="font-display text-3xl font-semibold text-forest mb-8">
+            <h2 className="font-display text-3xl font-semibold text-fg mb-8">
               Próximos Talleres
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -146,7 +146,7 @@ export default async function TalleresPage() {
                                 Sin fechas
                               </Badge>
                             )}
-                            <span className="text-xs text-gray uppercase tracking-wide">
+                            <span className="text-xs text-muted uppercase tracking-wide">
                               {levelLabel}
                             </span>
                           </div>
@@ -158,26 +158,26 @@ export default async function TalleresPage() {
 
                           {/* Próxima fecha */}
                           {proximaFecha && (
-                            <div className="flex items-center gap-2 text-sm text-gray pt-3">
-                              <Calendar size={16} className="text-musgo" />
+                            <div className="flex items-center gap-2 text-sm text-muted pt-3">
+                              <Calendar size={16} className="text-brand" />
                               <span>{formatDateShort(proximaFecha.date)}</span>
                             </div>
                           )}
 
                           {/* Ubicación */}
-                          <div className="flex items-center gap-2 text-sm text-gray pt-2">
-                            <MapPin size={16} className="text-musgo" />
+                          <div className="flex items-center gap-2 text-sm text-muted pt-2">
+                            <MapPin size={16} className="text-brand" />
                             <span>{taller.location.city}</span>
                           </div>
 
                           {/* Duración */}
-                          <div className="flex items-center gap-2 text-sm text-gray pt-2">
-                            <Clock size={16} className="text-musgo" />
+                          <div className="flex items-center gap-2 text-sm text-muted pt-2">
+                            <Clock size={16} className="text-brand" />
                             <span>{taller.duration}h</span>
                           </div>
 
                           <div className="flex items-center justify-between pt-4 mt-auto">
-                            <div className="text-2xl font-display font-bold text-forest">
+                            <div className="text-2xl font-display font-bold text-fg">
                               {formatPrice(taller.price, taller.currency)}
                             </div>
                           </div>
@@ -185,7 +185,7 @@ export default async function TalleresPage() {
                         <Card.Footer>
                           <Button
                             variant="primary"
-                            className="w-full group-hover:bg-musgo-dark transition-colors"
+                            className="w-full group-hover:bg-accent-hover transition-colors"
                             disabled={!taller.hayCuposDisponibles}
                           >
                             {!taller.hayCuposDisponibles ? 'Agotado' : 'Ver Detalles'}
@@ -202,20 +202,16 @@ export default async function TalleresPage() {
 
           {/* CTA - Cursos Online */}
           <section className="container mt-24">
-            <div className="bg-gradient-to-br from-vida/10 to-musgo/10 rounded-2xl p-12 text-center">
-              <h2 className="font-display text-3xl font-semibold text-forest mb-4">
-                ¿No puedes venir en persona?
-              </h2>
-              <p className="text-gray mb-6 max-w-2xl mx-auto">
-                Aprende desde cualquier lugar con nuestros cursos online
-                y más de 9 horas de contenido educativo.
-              </p>
+            <CtaBanner
+              title="¿No puedes venir en persona?"
+              description="Aprende desde cualquier lugar con nuestros cursos online y más de 9 horas de contenido educativo."
+            >
               <Link href="/cursos">
                 <Button variant="primary" size="lg">
                   Ver Cursos Online
                 </Button>
               </Link>
-            </div>
+            </CtaBanner>
           </section>
         </>
       )}

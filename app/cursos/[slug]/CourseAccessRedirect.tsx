@@ -67,21 +67,21 @@ export function CourseAccessRedirect({ courseSlug, courseName }: CourseAccessRed
   // Mostrar loading mientras se verifica el acceso (overlay que cubre toda la página)
   if (isRedirecting || status === 'loading') {
     return (
-      <div className="fixed inset-0 z-50 bg-gradient-to-br from-cream to-white flex items-center justify-center">
+      <div className="fixed inset-0 z-50 bg-gradient-to-br from-bg to-surface flex items-center justify-center">
         <div className="container max-w-4xl px-4">
           <div className="flex flex-col items-center justify-center space-y-6">
             {/* Spinner */}
             <div className="relative">
-              <Loader2 className="animate-spin text-musgo" size={48} />
-              <div className="absolute inset-0 bg-musgo/20 blur-2xl rounded-full" />
+              <Loader2 className="animate-spin text-brand" size={48} />
+              <div className="absolute inset-0 bg-brand/20 blur-2xl rounded-full" />
             </div>
 
             {/* Mensaje */}
             <div className="text-center space-y-2">
-              <h2 className="font-display text-2xl font-bold text-forest">
+              <h2 className="font-display text-2xl font-bold text-fg">
                 Preparando tu curso...
               </h2>
-              <p className="text-gray">
+              <p className="text-muted">
                 Te estamos redirigiendo a tus lecciones
               </p>
             </div>

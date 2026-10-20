@@ -101,7 +101,7 @@ export function PayPalCheckoutButton({
     <div className="min-h-[45px]">
       {!sdkReady && (
         <div className="flex h-[45px] items-center justify-center">
-          <div className="h-4 w-32 animate-pulse rounded bg-gray/20" />
+          <div className="h-4 w-32 animate-pulse rounded bg-fg/20" />
         </div>
       )}
 

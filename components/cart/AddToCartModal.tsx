@@ -45,7 +45,7 @@ export function AddToCartModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeCart}
-            className="fixed inset-0 bg-forest/40 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-bosque-deep/40 backdrop-blur-sm z-50"
           />
 
           {/* Modal */}
@@ -61,11 +61,11 @@ export function AddToCartModal() {
             tabIndex={-1}
             className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md"
           >
-            <div className="bg-white rounded-2xl shadow-natural-xl p-6 md:p-8 m-4 relative overflow-hidden">
+            <div className="bg-surface rounded-2xl shadow-natural-xl p-6 md:p-8 m-4 relative overflow-hidden">
               {/* Botón cerrar */}
               <button
                 onClick={closeCart}
-                className="absolute top-4 right-4 text-gray hover:text-forest transition-colors"
+                className="absolute top-4 right-4 text-muted hover:text-fg transition-colors"
                 aria-label="Cerrar"
               >
                 <X size={24} />
@@ -94,10 +94,10 @@ export function AddToCartModal() {
                 transition={{ delay: 0.3 }}
                 className="text-center mb-6"
               >
-                <h2 id="add-to-cart-title" className="font-display text-2xl font-bold text-forest mb-2">
+                <h2 id="add-to-cart-title" className="font-display text-2xl font-bold text-fg mb-2">
                   ¡Producto Agregado!
                 </h2>
-                <p className="text-gray">
+                <p className="text-muted">
                   Se agregó al carrito exitosamente
                 </p>
               </motion.div>
@@ -107,7 +107,7 @@ export function AddToCartModal() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="flex items-center gap-4 p-4 bg-cream rounded-xl mb-6"
+                className="flex items-center gap-4 p-4 bg-bg rounded-xl mb-6"
               >
                 <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                   <Image
@@ -119,13 +119,13 @@ export function AddToCartModal() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-forest truncate">
+                  <h3 className="font-semibold text-fg truncate">
                     {lastItem.name}
                   </h3>
-                  <p className="text-sm text-gray">
+                  <p className="text-sm text-muted">
                     Cantidad: {lastItem.quantity}
                   </p>
-                  <p className="text-musgo font-semibold mt-1">
+                  <p className="text-brand font-semibold mt-1">
                     ${lastItem.price.toLocaleString('es-CL')} {lastItem.currency}
                   </p>
                 </div>
@@ -156,8 +156,8 @@ export function AddToCartModal() {
               </motion.div>
 
               {/* Decoración de fondo */}
-              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-vida/5 rounded-full blur-3xl" />
-              <div className="absolute -top-10 -left-10 w-40 h-40 bg-musgo/5 rounded-full blur-3xl" />
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-olivo/5 rounded-full blur-3xl" />
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-brand/5 rounded-full blur-3xl" />
             </div>
           </motion.div>
         </>

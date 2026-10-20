@@ -164,7 +164,7 @@ export default async function MiCuentaPage() {
   );
 
   return (
-    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white">
+    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface">
       <div className="container max-w-7xl">
         <Suspense fallback={<div className="text-center py-12">Cargando...</div>}>
           <AccountFeed

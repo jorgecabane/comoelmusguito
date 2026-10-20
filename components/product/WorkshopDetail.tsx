@@ -62,17 +62,17 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
 
   return (
     <div className="sticky top-24 space-y-6">
-      <div className="bg-white border border-gray/20 rounded-2xl p-6 space-y-6">
+      <div className="bg-surface border border-line rounded-2xl p-6 space-y-6">
         <div>
-          <div className="text-3xl font-display font-bold text-forest mb-2">
+          <div className="text-3xl font-display font-bold text-fg mb-2">
             {formatPrice(workshop.price, workshop.currency)}
           </div>
-          <p className="text-sm text-gray">por persona</p>
+          <p className="text-sm text-muted">por persona</p>
         </div>
 
         {/* Selector de Fechas */}
         <div>
-          <h3 className="font-display text-lg font-semibold text-forest mb-4">
+          <h3 className="font-display text-lg font-semibold text-fg mb-4">
             Fechas Disponibles
           </h3>
           {fechasDisponibles && fechasDisponibles.length > 0 ? (
@@ -86,21 +86,21 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
                   disabled={soldOut}
                   className={`w-full border-2 rounded-lg p-3 flex items-center justify-between transition-all ${
                     selectedDateIndex === index
-                      ? 'border-musgo bg-vida/5'
-                      : 'border-gray/20 hover:border-gray/40'
+                      ? 'border-brand bg-olivo/5'
+                      : 'border-line hover:border-line'
                   } ${soldOut ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="flex items-center gap-2 text-left">
-                    <Calendar size={16} className="text-musgo" />
+                    <Calendar size={16} className="text-brand" />
                     <div>
                       {(() => {
                         const { date, time } = formatWorkshopDateTime(fecha.date);
                         return (
                           <>
-                            <div className="font-semibold text-forest text-sm">
+                            <div className="font-semibold text-fg text-sm">
                               {date}
                             </div>
-                            <div className="text-xs text-gray">
+                            <div className="text-xs text-muted">
                               {time}
                             </div>
                           </>
@@ -127,7 +127,7 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
               })}
             </div>
           ) : (
-            <div className="text-center py-6 text-gray">
+            <div className="text-center py-6 text-muted">
               <p className="mb-2">Sin fechas disponibles</p>
               <p className="text-sm">Estamos organizando nuevas fechas pronto</p>
             </div>
@@ -141,13 +141,13 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
         ) : (
           <button
             disabled
-            className="w-full py-3 px-6 rounded-xl bg-gray/20 text-gray cursor-not-allowed"
+            className="w-full py-3 px-6 rounded-xl bg-fg/20 text-muted cursor-not-allowed"
           >
             {!hayCuposDisponibles ? 'Sin Cupos' : 'Selecciona una fecha'}
           </button>
         )}
 
-        <p className="text-xs text-gray text-center">
+        <p className="text-xs text-muted text-center">
           Al reservar, aceptas nuestra política de cancelación
         </p>
       </div>

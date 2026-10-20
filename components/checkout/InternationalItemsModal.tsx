@@ -54,18 +54,18 @@ export function InternationalItemsModal({
           aria-labelledby="international-items-title"
         >
           <motion.div
-            className="mx-4 max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            className="mx-4 max-w-md rounded-2xl bg-surface p-6 shadow-xl"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 id="international-items-title" className="mb-3 font-display text-xl font-semibold text-forest">
+            <h2 id="international-items-title" className="mb-3 font-display text-xl font-semibold text-fg">
               Algunos productos solo se venden en Chile
             </h2>
 
-            <p className="mb-5 text-sm leading-relaxed text-gray">
+            <p className="mb-5 text-sm leading-relaxed text-muted">
               {formatItemNames(blockedItems)} requieren entrega o asistencia
               presencial en Chile.
             </p>
@@ -82,7 +82,7 @@ export function InternationalItemsModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-sm text-gray transition-colors hover:text-forest hover:underline"
+                className="text-sm text-muted transition-colors hover:text-fg hover:underline"
               >
                 Cerrar
               </button>

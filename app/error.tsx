@@ -24,12 +24,12 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
       <div className="container max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
+          className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
         >
           <motion.div
             initial={{ scale: 0 }}
@@ -42,10 +42,10 @@ export default function Error({
             </div>
           </motion.div>
 
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-forest mb-4">
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-fg mb-4">
             Algo Salió Mal
           </h1>
-          <p className="text-gray text-lg mb-6 leading-relaxed">
+          <p className="text-muted text-lg mb-6 leading-relaxed">
             Ocurrió un error inesperado. Por favor, intenta nuevamente o vuelve al inicio.
           </p>
 
@@ -74,25 +74,25 @@ export default function Error({
             </Link>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-gray/20">
-            <p className="text-sm text-gray mb-4">
+          <div className="mt-8 pt-8 border-t border-line">
+            <p className="text-sm text-muted mb-4">
               Si el problema persiste, puedes:
             </p>
             <div className="flex flex-col gap-2 items-center">
               <Link 
                 href="/contacto" 
-                className="text-musgo hover:text-forest transition-colors text-sm font-medium hover:underline"
+                className="text-brand hover:text-fg transition-colors text-sm font-medium hover:underline"
               >
                 Contactar Soporte
               </Link>
               <div className="flex gap-4 text-sm">
-                <Link href="/terrarios" className="text-gray hover:text-musgo transition-colors">
+                <Link href="/terrarios" className="text-muted hover:text-brand transition-colors">
                   Terrarios
                 </Link>
-                <Link href="/cursos" className="text-gray hover:text-musgo transition-colors">
+                <Link href="/cursos" className="text-muted hover:text-brand transition-colors">
                   Cursos
                 </Link>
-                <Link href="/talleres" className="text-gray hover:text-musgo transition-colors">
+                <Link href="/talleres" className="text-muted hover:text-brand transition-colors">
                   Talleres
                 </Link>
               </div>

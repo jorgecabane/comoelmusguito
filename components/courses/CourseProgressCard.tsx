@@ -51,7 +51,7 @@ function ProgressCircle({ percentage }: { percentage: number }) {
           fill="none"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          className="text-gray/20"
+          className="text-muted/20"
         />
         {/* Círculo de progreso (verde) */}
         <circle
@@ -64,18 +64,18 @@ function ProgressCircle({ percentage }: { percentage: number }) {
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className="text-vida transition-all duration-500"
+          className="text-brand transition-all duration-500"
         />
       </svg>
       {/* Botón de play centrado */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full bg-white shadow-natural-md flex items-center justify-center group-hover:scale-110 transition-transform">
-          <Play className="text-musgo ml-0.5" size={20} fill="currentColor" />
+        <div className="w-10 h-10 rounded-full bg-surface shadow-natural-md flex items-center justify-center group-hover:scale-110 transition-transform">
+          <Play className="text-brand ml-0.5" size={20} fill="currentColor" />
         </div>
       </div>
       {/* Porcentaje abajo del círculo */}
       <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap">
-        <span className="text-xs font-semibold text-forest">
+        <span className="text-xs font-semibold text-fg">
           {percentage}%
         </span>
       </div>
@@ -130,7 +130,7 @@ export function CourseProgressCard({
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
             {/* Overlay con gradiente */}
-            <div className="absolute inset-0 bg-gradient-to-t from-forest/80 via-forest/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-bosque-deep/80 via-bosque-deep/40 to-transparent" />
             
             {/* Título sobre la imagen */}
             <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -150,11 +150,11 @@ export function CourseProgressCard({
 
               {/* Info del curso */}
               <div className="flex-1 ml-6 min-w-0">
-                <div className="text-sm text-gray mb-1">
+                <div className="text-sm text-muted mb-1">
                   {progress.completedLessons.length} lecciones completadas
                 </div>
                 {progress.lastWatched && (
-                  <div className="text-xs text-gray/60">
+                  <div className="text-xs text-muted/60">
                     Última vista: {progress.lastWatched}
                   </div>
                 )}

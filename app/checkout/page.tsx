@@ -473,25 +473,25 @@ export default function CheckoutPage() {
     );
 
   return (
-    <div className="min-h-screen bg-white pt-20">
+    <div className="min-h-screen bg-surface pt-20">
 
       {/* Mobile: barra resumen colapsable — debajo del header global fijo (h-20 = 80px) */}
-      <div className="lg:hidden sticky top-20 z-40 bg-cream/95 backdrop-blur-sm border-b border-gray/10">
+      <div className="lg:hidden sticky top-20 z-40 bg-bg/95 backdrop-blur-sm border-b border-line">
         <button
           type="button"
           onClick={() => setSummaryExpanded(!summaryExpanded)}
           className="w-full px-5 py-3 flex items-center justify-between"
         >
-          <span className="flex items-center gap-2 text-sm font-medium text-forest">
-            <Package size={15} className="text-musgo" />
+          <span className="flex items-center gap-2 text-sm font-medium text-fg">
+            <Package size={15} className="text-brand" />
             {summaryExpanded ? 'Ocultar' : 'Ver'} resumen ({totalItems}{' '}
             {totalItems === 1 ? 'producto' : 'productos'})
             <ChevronDown
               size={13}
-              className={`text-musgo transition-transform duration-200 ${summaryExpanded ? 'rotate-180' : ''}`}
+              className={`text-brand transition-transform duration-200 ${summaryExpanded ? 'rotate-180' : ''}`}
             />
           </span>
-          <span className="font-bold text-forest text-sm">
+          <span className="font-bold text-fg text-sm">
             {totalLabel}
           </span>
         </button>
@@ -508,17 +508,17 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <div key={`${item.id}-${item.type}`} className="flex justify-between items-center">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-sm text-gray truncate">{item.name}</span>
-                      <span className="text-xs bg-gray/15 rounded-full px-2 py-0.5 flex-shrink-0">
+                      <span className="text-sm text-muted truncate">{item.name}</span>
+                      <span className="text-xs bg-fg/15 rounded-full px-2 py-0.5 flex-shrink-0">
                         ×{item.quantity}
                       </span>
                     </div>
-                    <span className="text-sm font-semibold text-forest ml-3 flex-shrink-0">
+                    <span className="text-sm font-semibold text-fg ml-3 flex-shrink-0">
                       ${(item.price * item.quantity).toLocaleString('es-CL')}
                     </span>
                   </div>
                 ))}
-                <div className="border-t border-gray/20 pt-2.5 flex justify-between font-bold text-forest">
+                <div className="border-t border-line pt-2.5 flex justify-between font-bold text-fg">
                   <span>Total</span>
                   <span>
                     {totalLabel}
@@ -540,14 +540,14 @@ export default function CheckoutPage() {
               {/* Link volver */}
               <Link
                 href="/carrito"
-                className="inline-flex items-center gap-1.5 text-sm text-gray hover:text-forest transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg transition-colors"
               >
                 <ArrowLeft size={15} />
                 Volver al carrito
               </Link>
 
               {pricesUpdated && (
-                <div className="flex items-start gap-2 rounded-lg border border-ambar/30 bg-ambar/10 p-3 text-sm text-forest">
+                <div className="flex items-start gap-2 rounded-lg border border-terracota/30 bg-terracota/10 p-3 text-sm text-fg">
                   <Info size={18} className="shrink-0 mt-0.5" />
                   <span>Actualizamos los precios de tu pedido con los valores vigentes. Revisa el total antes de pagar.</span>
                 </div>
@@ -555,15 +555,15 @@ export default function CheckoutPage() {
 
               {/* SECCIÓN 1: Contacto */}
               <section>
-                <h2 className="font-display text-base font-semibold text-forest mb-4 uppercase tracking-wide">
+                <h2 className="font-display text-base font-semibold text-fg mb-4 uppercase tracking-wide">
                   Contacto
                 </h2>
                 {status === 'authenticated' ? (
-                  <div className="bg-musgo/10 border border-musgo/20 rounded-xl p-4">
-                    <p className="text-sm text-forest">
+                  <div className="bg-brand/10 border border-brand/20 rounded-xl p-4">
+                    <p className="text-sm text-fg">
                       ✅ Sesión iniciada como <strong>{session?.user?.email}</strong>
                     </p>
-                    <p className="text-xs text-gray mt-1">Tu pedido se vinculará automáticamente a tu cuenta.</p>
+                    <p className="text-xs text-muted mt-1">Tu pedido se vinculará automáticamente a tu cuenta.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -592,10 +592,10 @@ export default function CheckoutPage() {
                         type="checkbox"
                         checked={createAccount}
                         onChange={(e) => setCreateAccount(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 text-musgo border-gray/30 rounded focus:ring-musgo flex-shrink-0"
+                        className="mt-0.5 w-4 h-4 text-brand border-line rounded focus:ring-brand flex-shrink-0"
                         disabled={loading}
                       />
-                      <span className="text-sm text-gray group-hover:text-forest transition-colors">
+                      <span className="text-sm text-muted group-hover:text-fg transition-colors">
                         Crear cuenta para ver mis pedidos y acceder a cursos
                       </span>
                     </label>
@@ -631,9 +631,9 @@ export default function CheckoutPage() {
                           {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
                             <div className="pt-1">
                               <div className="flex items-center gap-3 my-3">
-                                <div className="flex-1 border-t border-gray/20" />
-                                <span className="text-xs text-gray">o</span>
-                                <div className="flex-1 border-t border-gray/20" />
+                                <div className="flex-1 border-t border-line" />
+                                <span className="text-xs text-muted">o</span>
+                                <div className="flex-1 border-t border-line" />
                               </div>
                               <Button
                                 type="button"
@@ -661,27 +661,27 @@ export default function CheckoutPage() {
 
               {/* SECCIÓN 2: Entrega (solo si hay productos despachables) */}
               {hasShippableItems && (
-                <section className="border-t border-gray/10 pt-8">
-                  <h2 className="font-display text-base font-semibold text-forest mb-1 uppercase tracking-wide">
+                <section className="border-t border-line pt-8">
+                  <h2 className="font-display text-base font-semibold text-fg mb-1 uppercase tracking-wide">
                     Entrega
                   </h2>
-                  <p className="text-sm text-gray mb-5">¿Cómo quieres recibir tus productos?</p>
+                  <p className="text-sm text-muted mb-5">¿Cómo quieres recibir tus productos?</p>
 
                   {/* Grupo: productos con despacho disponible */}
-                  <div className="rounded-xl border border-gray/15 overflow-hidden mb-4">
+                  <div className="rounded-xl border border-line overflow-hidden mb-4">
                     {/* Header del grupo */}
-                    <div className="bg-cream/60 px-4 py-3 border-b border-gray/10">
+                    <div className="bg-bg/60 px-4 py-3 border-b border-line">
                       <div className="flex items-center gap-1.5 mb-1.5">
-                        <Truck size={13} className="text-musgo" />
-                        <span className="text-xs font-bold text-forest uppercase tracking-wider">
+                        <Truck size={13} className="text-brand" />
+                        <span className="text-xs font-bold text-fg uppercase tracking-wider">
                           Con despacho disponible
                         </span>
                       </div>
                       <div className="space-y-0.5">
                         {shippableItems.map((item) => (
-                          <p key={`${item.id}-${item.type}`} className="text-sm text-gray">
+                          <p key={`${item.id}-${item.type}`} className="text-sm text-muted">
                             {item.name}{' '}
-                            <span className="text-xs text-gray/50">×{item.quantity}</span>
+                            <span className="text-xs text-muted/50">×{item.quantity}</span>
                           </p>
                         ))}
                       </div>
@@ -691,20 +691,20 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => setShippingGroupPreference('pickup')}
-                        className={`flex flex-col items-center gap-1.5 py-4 px-3 border-r border-gray/10 transition-all ${
+                        className={`flex flex-col items-center gap-1.5 py-4 px-3 border-r border-line transition-all ${
                           shippingGroupPreference === 'pickup'
-                            ? 'bg-musgo/10 text-forest'
-                            : 'text-gray hover:bg-gray/5'
+                            ? 'bg-brand/10 text-fg'
+                            : 'text-muted hover:bg-fg/5'
                         }`}
                       >
                         <MapPin
                           size={18}
-                          className={shippingGroupPreference === 'pickup' ? 'text-musgo' : 'text-gray/40'}
+                          className={shippingGroupPreference === 'pickup' ? 'text-brand' : 'text-muted/40'}
                         />
                         <span className="text-sm font-semibold">Retiro en tienda</span>
-                        <span className="text-xs text-gray/60">Sin costo</span>
+                        <span className="text-xs text-muted/60">Sin costo</span>
                         {shippingGroupPreference === 'pickup' && (
-                          <span className="text-[11px] font-bold text-musgo">✓ Seleccionado</span>
+                          <span className="text-[11px] font-bold text-brand">✓ Seleccionado</span>
                         )}
                       </button>
                       <button
@@ -712,18 +712,18 @@ export default function CheckoutPage() {
                         onClick={() => setShippingGroupPreference('shipping')}
                         className={`flex flex-col items-center gap-1.5 py-4 px-3 transition-all ${
                           shippingGroupPreference === 'shipping'
-                            ? 'bg-musgo/10 text-forest'
-                            : 'text-gray hover:bg-gray/5'
+                            ? 'bg-brand/10 text-fg'
+                            : 'text-muted hover:bg-fg/5'
                         }`}
                       >
                         <Truck
                           size={18}
-                          className={shippingGroupPreference === 'shipping' ? 'text-musgo' : 'text-gray/40'}
+                          className={shippingGroupPreference === 'shipping' ? 'text-brand' : 'text-muted/40'}
                         />
                         <span className="text-sm font-semibold">Despacho a domicilio</span>
-                        <span className="text-xs text-gray/60">Starken · a coordinar</span>
+                        <span className="text-xs text-muted/60">Starken · a coordinar</span>
                         {shippingGroupPreference === 'shipping' && (
-                          <span className="text-[11px] font-bold text-musgo">✓ Seleccionado</span>
+                          <span className="text-[11px] font-bold text-brand">✓ Seleccionado</span>
                         )}
                       </button>
                     </div>
@@ -731,17 +731,17 @@ export default function CheckoutPage() {
 
                   {/* Grupo: solo retiro (si hay productos sin despacho) */}
                   {nonShippableItems.length > 0 && (
-                    <div className="rounded-xl border border-gray/10 px-4 py-3 bg-gray/[0.03]">
+                    <div className="rounded-xl border border-line px-4 py-3 bg-fg/[0.03]">
                       <div className="flex items-center gap-1.5 mb-1.5">
-                        <MapPin size={13} className="text-gray/50" />
-                        <span className="text-xs font-bold text-gray/50 uppercase tracking-wider">
+                        <MapPin size={13} className="text-muted/50" />
+                        <span className="text-xs font-bold text-muted/50 uppercase tracking-wider">
                           Solo retiro en tienda
                         </span>
                       </div>
                       {nonShippableItems.map((item) => (
-                        <p key={`${item.id}-${item.type}`} className="text-sm text-gray">
+                        <p key={`${item.id}-${item.type}`} className="text-sm text-muted">
                           {item.name}{' '}
-                          <span className="text-xs text-gray/50">×{item.quantity}</span>
+                          <span className="text-xs text-muted/50">×{item.quantity}</span>
                         </p>
                       ))}
                     </div>
@@ -751,10 +751,10 @@ export default function CheckoutPage() {
 
               {/* Info retiro (sin productos despachables) */}
               {!hasShippableItems && items.length > 0 && (
-                <section className="border-t border-gray/10 pt-8">
-                  <div className="flex items-center gap-2 bg-cream/50 rounded-xl px-4 py-3 border border-gray/10">
-                    <MapPin size={15} className="text-gray/50 flex-shrink-0" />
-                    <p className="text-sm text-gray">Todos los productos son de retiro en tienda</p>
+                <section className="border-t border-line pt-8">
+                  <div className="flex items-center gap-2 bg-bg/50 rounded-xl px-4 py-3 border border-line">
+                    <MapPin size={15} className="text-muted/50 flex-shrink-0" />
+                    <p className="text-sm text-muted">Todos los productos son de retiro en tienda</p>
                   </div>
                 </section>
               )}
@@ -767,15 +767,15 @@ export default function CheckoutPage() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.25 }}
-                    className="overflow-hidden border-t border-gray/10 pt-8"
+                    className="overflow-hidden border-t border-line pt-8"
                   >
                     <div className="space-y-4">
                       <div>
-                        <h2 className="font-display text-base font-semibold text-forest mb-1 uppercase tracking-wide">
+                        <h2 className="font-display text-base font-semibold text-fg mb-1 uppercase tracking-wide">
                           Dirección de despacho
                         </h2>
-                        <p className="text-xs text-gray/70">
-                          Solo dentro de Chile · <strong className="text-gray">Starken a cobrar en destino</strong> · Coordinaremos contigo después de la compra
+                        <p className="text-xs text-muted/70">
+                          Solo dentro de Chile · <strong className="text-muted">Starken a cobrar en destino</strong> · Coordinaremos contigo después de la compra
                         </p>
                       </div>
 
@@ -825,7 +825,7 @@ export default function CheckoutPage() {
                         }}
                         required={hasSelectedShipping}
                         disabled={loading}
-                        className="w-full px-4 py-3 rounded-md border-2 border-gray transition-all duration-200 font-sans text-base text-forest focus:outline-none focus:ring-2 focus:ring-musgo focus:ring-offset-2 focus:border-musgo disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray/10 bg-white"
+                        className="w-full px-4 py-3 rounded-md border-2 border-line transition-all duration-200 font-sans text-base text-fg focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:border-brand disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-fg/10 bg-surface"
                       >
                         <option value="">Región *</option>
                         {CHILE_REGIONS.map((region) => (
@@ -843,7 +843,7 @@ export default function CheckoutPage() {
                           onChange={(e) => setShippingComuna(e.target.value)}
                           required={hasSelectedShipping}
                           disabled={loading || !shippingRegion}
-                          className="w-full px-4 py-3 rounded-md border-2 border-gray transition-all duration-200 font-sans text-base text-forest focus:outline-none focus:ring-2 focus:ring-musgo focus:ring-offset-2 focus:border-musgo disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray/10 bg-white"
+                          className="w-full px-4 py-3 rounded-md border-2 border-line transition-all duration-200 font-sans text-base text-fg focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:border-brand disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-fg/10 bg-surface"
                         >
                           <option value="">Comuna *</option>
                           {availableCommunes.map((comuna) => (
@@ -895,7 +895,7 @@ export default function CheckoutPage() {
               </AnimatePresence>
 
               {/* SECCIÓN 4: Regalo */}
-              <section className="border-t border-gray/10 pt-6">
+              <section className="border-t border-line pt-6">
                 <label className="flex items-start gap-2.5 cursor-pointer group">
                   <input
                     type="checkbox"
@@ -908,17 +908,17 @@ export default function CheckoutPage() {
                         setGiftMessage('');
                       }
                     }}
-                    className="mt-0.5 w-4 h-4 text-musgo border-gray/30 rounded focus:ring-musgo flex-shrink-0"
+                    className="mt-0.5 w-4 h-4 text-brand border-line rounded focus:ring-brand flex-shrink-0"
                     disabled={loading}
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <Gift size={15} className="text-musgo" />
-                      <span className="text-sm font-semibold text-forest group-hover:text-musgo transition-colors">
+                      <Gift size={15} className="text-brand" />
+                      <span className="text-sm font-semibold text-fg group-hover:text-brand transition-colors">
                         Comprar como regalo
                       </span>
                     </div>
-                    <span className="text-xs text-gray">Envía este pedido como regalo a otra persona</span>
+                    <span className="text-xs text-muted">Envía este pedido como regalo a otra persona</span>
                   </div>
                 </label>
 
@@ -959,10 +959,10 @@ export default function CheckoutPage() {
                           maxLength={500}
                           rows={3}
                           disabled={loading}
-                          className="w-full px-4 py-2.5 border border-gray/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-musgo resize-none disabled:opacity-50 text-sm"
+                          className="w-full px-4 py-2.5 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-brand resize-none disabled:opacity-50 text-sm"
                         />
                         <div className="flex justify-end mt-1">
-                          <span className={`text-xs ${giftMessage.length >= 450 ? 'text-error' : 'text-gray/50'}`}>
+                          <span className={`text-xs ${giftMessage.length >= 450 ? 'text-error' : 'text-muted/50'}`}>
                             {giftMessage.length}/500
                           </span>
                         </div>
@@ -982,9 +982,9 @@ export default function CheckoutPage() {
           </div>
 
           {/* ── COLUMNA DERECHA: Resumen + Pago (solo desktop) ── */}
-          <div className="hidden lg:flex flex-col bg-[#f7f6f1] border-l border-gray/10 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto">
+          <div className="hidden lg:flex flex-col bg-surface border-l border-line sticky top-20 h-[calc(100vh-80px)] overflow-y-auto">
             <div className="p-8 flex flex-col flex-1 gap-6">
-              <h3 className="font-display text-base font-semibold text-forest uppercase tracking-wide">
+              <h3 className="font-display text-base font-semibold text-fg uppercase tracking-wide">
                 Tu pedido
               </h3>
 
@@ -994,8 +994,8 @@ export default function CheckoutPage() {
                 {shippableItems.length > 0 && (
                   <div>
                     <div className="flex items-center gap-1.5 mb-3">
-                      <Truck size={12} className="text-musgo" />
-                      <span className="text-[11px] font-bold text-musgo uppercase tracking-wider">
+                      <Truck size={12} className="text-brand" />
+                      <span className="text-[11px] font-bold text-brand uppercase tracking-wider">
                         Con despacho disponible
                       </span>
                     </div>
@@ -1007,7 +1007,7 @@ export default function CheckoutPage() {
                           deliveryLabel={
                             shippingGroupPreference === 'shipping' ? '🚚 Despacho a domicilio' : '📍 Retiro en tienda'
                           }
-                          deliveryColor={shippingGroupPreference === 'shipping' ? 'text-musgo' : 'text-gray/50'}
+                          deliveryColor={shippingGroupPreference === 'shipping' ? 'text-brand' : 'text-muted/50'}
                         />
                       ))}
                     </div>
@@ -1016,7 +1016,7 @@ export default function CheckoutPage() {
 
                 {/* Divisor */}
                 {shippableItems.length > 0 && nonShippableItems.length > 0 && (
-                  <div className="border-t border-gray/20" />
+                  <div className="border-t border-line" />
                 )}
 
                 {/* Grupo solo retiro */}
@@ -1024,8 +1024,8 @@ export default function CheckoutPage() {
                   <div>
                     {shippableItems.length > 0 && (
                       <div className="flex items-center gap-1.5 mb-3">
-                        <MapPin size={12} className="text-gray/50" />
-                        <span className="text-[11px] font-bold text-gray/50 uppercase tracking-wider">
+                        <MapPin size={12} className="text-muted/50" />
+                        <span className="text-[11px] font-bold text-muted/50 uppercase tracking-wider">
                           Solo retiro en tienda
                         </span>
                       </div>
@@ -1036,7 +1036,7 @@ export default function CheckoutPage() {
                           key={`${item.id}-${item.type}`}
                           item={item}
                           deliveryLabel="📍 Retiro en tienda"
-                          deliveryColor="text-gray/50"
+                          deliveryColor="text-muted/50"
                         />
                       ))}
                     </div>
@@ -1045,8 +1045,8 @@ export default function CheckoutPage() {
               </div>
 
               {/* Desglose de precios */}
-              <div className="border-t border-gray/20 pt-4 space-y-2 mt-auto">
-                <div className="flex justify-between text-sm text-gray">
+              <div className="border-t border-line pt-4 space-y-2 mt-auto">
+                <div className="flex justify-between text-sm text-muted">
                   <span>Subtotal</span>
                   <span>
                     {totalLabel}
@@ -1054,19 +1054,19 @@ export default function CheckoutPage() {
                 </div>
                 {hasSelectedShipping && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray">Despacho</span>
-                    <span className="text-forest font-medium">Por coordinar</span>
+                    <span className="text-muted">Despacho</span>
+                    <span className="text-fg font-medium">Por coordinar</span>
                   </div>
                 )}
-                <div className="border-t border-gray/20 pt-3 flex justify-between items-baseline">
-                  <span className="font-display font-bold text-forest text-base">Total</span>
+                <div className="border-t border-line pt-3 flex justify-between items-baseline">
+                  <span className="font-display font-bold text-fg text-base">Total</span>
                   <div className="text-right">
                     {totalsByCurrency.map(([cur, amount]) => (
                       <div key={cur}>
-                        <span className="font-display text-2xl font-bold text-forest">
+                        <span className="font-display text-2xl font-bold text-fg">
                           ${amount.toLocaleString('es-CL')}
                         </span>
-                        <span className="text-sm text-gray ml-1">{cur}</span>
+                        <span className="text-sm text-muted ml-1">{cur}</span>
                       </div>
                     ))}
                   </div>
@@ -1100,7 +1100,7 @@ export default function CheckoutPage() {
               {/* Botón pagar desktop */}
               {renderPayCTA()}
 
-              <p className="text-center text-xs text-gray/60">
+              <p className="text-center text-xs text-muted/60">
                 {selectedGateway === 'paypal' ? 'Pago seguro con PayPal' : 'Pago seguro con Flow.cl'}
               </p>
             </div>
@@ -1109,7 +1109,7 @@ export default function CheckoutPage() {
       </form>
 
       {/* Mobile: botón pagar sticky */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray/10 px-5 py-4">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur-sm border-t border-line px-5 py-4">
         {PAYPAL_ENABLED && (
           <div className="mb-3">
             <PaymentMethodSelector
@@ -1132,26 +1132,26 @@ export default function CheckoutPage() {
 
       {/* PayPal processing overlay */}
       {checkoutState === 'paypal_processing' && (
-        <div className="fixed inset-0 z-40 bg-forest/30 backdrop-blur-[4px] flex items-center justify-center">
-          <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-sm mx-4">
-            <Loader2 className="animate-spin mx-auto mb-4 text-musgo" size={32} />
-            <p className="font-display text-lg font-semibold text-forest">Procesando pago</p>
-            <p className="text-sm text-gray mt-2">Completa el pago en la ventana de PayPal...</p>
+        <div className="fixed inset-0 z-40 bg-bosque-deep/30 backdrop-blur-[4px] flex items-center justify-center">
+          <div className="bg-surface rounded-2xl p-8 shadow-xl text-center max-w-sm mx-4">
+            <Loader2 className="animate-spin mx-auto mb-4 text-brand" size={32} />
+            <p className="font-display text-lg font-semibold text-fg">Procesando pago</p>
+            <p className="text-sm text-muted mt-2">Completa el pago en la ventana de PayPal...</p>
           </div>
         </div>
       )}
 
       {/* Payment confirmed overlay */}
       {checkoutState === 'confirmed' && (
-        <div className="fixed inset-0 z-40 bg-forest/30 backdrop-blur-[4px] flex items-center justify-center">
-          <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-sm mx-4">
-            <div className="w-12 h-12 rounded-full bg-musgo/10 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-musgo" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="fixed inset-0 z-40 bg-bosque-deep/30 backdrop-blur-[4px] flex items-center justify-center">
+          <div className="bg-surface rounded-2xl p-8 shadow-xl text-center max-w-sm mx-4">
+            <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="font-display text-lg font-semibold text-forest">Pago confirmado</p>
-            <p className="text-sm text-gray mt-2">Redirigiendo...</p>
+            <p className="font-display text-lg font-semibold text-fg">Pago confirmado</p>
+            <p className="text-sm text-muted mt-2">Redirigiendo...</p>
           </div>
         </div>
       )}
@@ -1201,20 +1201,20 @@ function ProductRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-gray/10 flex-shrink-0">
+      <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-fg/10 flex-shrink-0">
         {item.image && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
         )}
-        <span className="absolute -top-1 -right-1 bg-gray text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none">
+        <span className="absolute -top-1 -right-1 bg-surface-raised text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none">
           {item.quantity}
         </span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-forest font-medium leading-snug truncate">{item.name}</p>
+        <p className="text-sm text-fg font-medium leading-snug truncate">{item.name}</p>
         <p className={`text-xs mt-0.5 ${deliveryColor}`}>{deliveryLabel}</p>
       </div>
-      <span className="text-sm font-semibold text-forest whitespace-nowrap">
+      <span className="text-sm font-semibold text-fg whitespace-nowrap">
         ${(item.price * item.quantity).toLocaleString('es-CL')}
       </span>
     </div>

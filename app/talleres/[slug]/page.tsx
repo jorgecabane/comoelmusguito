@@ -97,16 +97,16 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
       <div className="pt-32 pb-16">
       {/* Breadcrumb */}
       <div className="container mb-8">
-        <div className="flex items-center gap-2 text-sm text-gray">
-          <Link href="/" className="hover:text-musgo transition-colors">
+        <div className="flex items-center gap-2 text-sm text-muted">
+          <Link href="/" className="hover:text-brand transition-colors">
             Inicio
           </Link>
           <span>/</span>
-          <Link href="/talleres" className="hover:text-musgo transition-colors">
+          <Link href="/talleres" className="hover:text-brand transition-colors">
             Talleres
           </Link>
           <span>/</span>
-          <span className="text-forest">{taller.name}</span>
+          <span className="text-fg">{taller.name}</span>
         </div>
       </div>
 
@@ -120,10 +120,10 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
               <div className="flex items-center gap-3 mb-4">
                 <Badge variant="info">{levelLabel}</Badge>
               </div>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-forest mb-4">
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-4">
                 {taller.name}
               </h1>
-              <p className="text-xl text-gray leading-relaxed">
+              <p className="text-xl text-muted leading-relaxed">
                 {taller.description}
               </p>
             </div>
@@ -142,14 +142,14 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
             {/* Qué Aprenderás */}
             {taller.learningOutcomes && taller.learningOutcomes.length > 0 && (
               <div>
-                <h2 className="font-display text-2xl font-semibold text-forest mb-6">
+                <h2 className="font-display text-2xl font-semibold text-fg mb-6">
                   ¿Qué Aprenderás?
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {taller.learningOutcomes.map((outcome, index) => (
                     <div key={index} className="flex items-start gap-3">
-                      <CheckCircle2 className="text-vida shrink-0 mt-1" size={20} />
-                      <span className="text-gray">{outcome}</span>
+                      <CheckCircle2 className="text-brand shrink-0 mt-1" size={20} />
+                      <span className="text-muted">{outcome}</span>
                     </div>
                   ))}
                 </div>
@@ -159,15 +159,15 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
             {/* Qué Incluye */}
             {taller.includes && taller.includes.length > 0 && (
               <div>
-                <h2 className="font-display text-2xl font-semibold text-forest mb-6">
+                <h2 className="font-display text-2xl font-semibold text-fg mb-6">
                   Qué Incluye
                 </h2>
-                <div className="bg-cream rounded-xl p-6">
+                <div className="bg-bg rounded-xl p-6">
                   <ul className="space-y-3">
                     {taller.includes.map((item, index) => (
                       <li key={index} className="flex items-start gap-3">
-                        <CheckCircle2 className="text-vida shrink-0 mt-1" size={18} />
-                        <span className="text-gray">{item}</span>
+                        <CheckCircle2 className="text-brand shrink-0 mt-1" size={18} />
+                        <span className="text-muted">{item}</span>
                       </li>
                     ))}
                   </ul>
@@ -178,13 +178,13 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
             {/* Requisitos */}
             {taller.requirements && taller.requirements.length > 0 && (
               <div>
-                <h2 className="font-display text-2xl font-semibold text-forest mb-6">
+                <h2 className="font-display text-2xl font-semibold text-fg mb-6">
                   Requisitos
                 </h2>
                 <ul className="space-y-2">
                   {taller.requirements.map((req, index) => (
-                    <li key={index} className="flex items-start gap-2 text-gray">
-                      <span className="text-musgo mt-1">•</span>
+                    <li key={index} className="flex items-start gap-2 text-muted">
+                      <span className="text-brand mt-1">•</span>
                       {req}
                     </li>
                   ))}
@@ -195,11 +195,11 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
             {/* Política de Cancelación */}
             {taller.cancellationPolicy && (
               <div>
-                <h2 className="font-display text-2xl font-semibold text-forest mb-4">
+                <h2 className="font-display text-2xl font-semibold text-fg mb-4">
                   Política de Cancelación
                 </h2>
-                <div className="bg-cream rounded-xl p-6">
-                  <p className="text-gray">{taller.cancellationPolicy}</p>
+                <div className="bg-bg rounded-xl p-6">
+                  <p className="text-muted">{taller.cancellationPolicy}</p>
                 </div>
               </div>
             )}

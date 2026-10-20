@@ -30,13 +30,13 @@ export function OrderItemDetail({ item, orderId }: OrderItemDetailProps) {
   const getIcon = () => {
     switch (item.type) {
       case 'terrarium':
-        return <Package size={20} className="text-musgo" />;
+        return <Package size={20} className="text-brand" />;
       case 'course':
-        return <BookOpen size={20} className="text-musgo" />;
+        return <BookOpen size={20} className="text-brand" />;
       case 'workshop':
-        return <Calendar size={20} className="text-musgo" />;
+        return <Calendar size={20} className="text-brand" />;
       case 'supply':
-        return <Wrench size={20} className="text-musgo" />;
+        return <Wrench size={20} className="text-brand" />;
       default:
         return null;
     }
@@ -58,13 +58,13 @@ export function OrderItemDetail({ item, orderId }: OrderItemDetailProps) {
     <div className="group">
       <button
         onClick={() => setShowDetails(!showDetails)}
-        className="w-full flex items-center justify-between text-left p-3 rounded-lg hover:bg-cream/50 transition-colors"
+        className="w-full flex items-center justify-between text-left p-3 rounded-lg hover:bg-bg/50 transition-colors"
       >
         <div className="flex items-center gap-3 flex-1">
           {getIcon()}
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-forest truncate">{item.name}</p>
-            <p className="text-xs text-gray">
+            <p className="font-medium text-fg truncate">{item.name}</p>
+            <p className="text-xs text-muted">
               {item.type === 'terrarium' && '🌿 Terrario'}
               {item.type === 'course' && '🎓 Curso Online'}
               {item.type === 'workshop' && '🤝 Taller Presencial'}
@@ -75,7 +75,7 @@ export function OrderItemDetail({ item, orderId }: OrderItemDetailProps) {
           </div>
         </div>
         <div className="text-right ml-4">
-          <p className="font-semibold text-forest">
+          <p className="font-semibold text-fg">
             {formatCurrency(item.price * item.quantity, item.currency)}
           </p>
         </div>
@@ -96,23 +96,23 @@ export function OrderItemDetail({ item, orderId }: OrderItemDetailProps) {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h4 className="font-display font-semibold text-forest mb-2">
+              <h4 className="font-display font-semibold text-fg mb-2">
                 {item.name}
               </h4>
               {description && (
-                <p className="text-sm text-gray mb-3 line-clamp-2">
+                <p className="text-sm text-muted mb-3 line-clamp-2">
                   {description}
                 </p>
               )}
               <div className="flex items-center gap-2">
                 {hasSnapshot ? (
-                  <span className="text-xs text-gray italic">
+                  <span className="text-xs text-muted italic">
                     (Vista del producto al momento de compra)
                   </span>
                 ) : (
                   <Link
                     href={productUrl}
-                    className="text-xs text-musgo hover:text-forest flex items-center gap-1 transition-colors"
+                    className="text-xs text-brand hover:text-fg flex items-center gap-1 transition-colors"
                   >
                     Ver producto actual
                     <ExternalLink size={14} />

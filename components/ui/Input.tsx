@@ -21,7 +21,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full space-y-2">
         {label && (
-          <label htmlFor={id} className="block text-sm font-medium text-forest">
+          <label htmlFor={id} className="block text-sm font-medium text-fg">
             {label}
             {props.required && <span className="text-error ml-1" aria-hidden="true">*</span>}
           </label>
@@ -29,7 +29,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">
               {icon}
             </div>
           )}
@@ -38,12 +38,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             className={cn(
               'w-full px-4 py-3 rounded-md border-2 transition-all duration-200',
-              'font-sans text-base text-forest placeholder:text-gray',
-              'focus:outline-none focus:ring-2 focus:ring-musgo focus:ring-offset-2 focus:border-musgo',
-              'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray/10',
+              'font-sans text-base text-fg placeholder:text-muted',
+              'focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:border-brand',
+              'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-fg/10',
               error
                 ? 'border-error focus:ring-error focus:border-error'
-                : 'border-gray',
+                : 'border-line',
               icon && 'pl-10',
               className
             )}
@@ -62,7 +62,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
 
         {helperText && !error && (
-          <p id={descriptionId} className="text-sm text-gray">{helperText}</p>
+          <p id={descriptionId} className="text-sm text-muted">{helperText}</p>
         )}
       </div>
     );

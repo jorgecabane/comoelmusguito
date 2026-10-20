@@ -6,6 +6,8 @@
 
 export { Button } from './Button';
 export { Card } from './Card';
+export { Section } from './Section';
+export { CtaBanner } from './CtaBanner';
 export { Input } from './Input';
 export { Badge } from './Badge';
 export { Skeleton, SkeletonCard, SkeletonText } from './Skeleton';

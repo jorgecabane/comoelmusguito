@@ -59,13 +59,13 @@ export default function ContactoPage() {
         <FadeIn immediate={true}>
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-musgo/20 mb-6">
-              <Mail className="text-musgo" size={32} />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand/20 mb-6">
+              <Mail className="text-brand" size={32} />
             </div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-forest mb-4">
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-4">
               Contáctanos
             </h1>
-            <p className="text-gray text-lg">
+            <p className="text-muted text-lg">
               Estamos aquí para ayudarte. Escríbenos y te responderemos lo antes posible.
             </p>
           </div>
@@ -74,17 +74,17 @@ export default function ContactoPage() {
             {/* Contact Info */}
             <div className="space-y-8">
               <div>
-                <h2 className="font-display text-2xl font-semibold text-forest mb-6">
+                <h2 className="font-display text-2xl font-semibold text-fg mb-6">
                   Información de Contacto
                 </h2>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-musgo/20 flex items-center justify-center shrink-0">
-                      <MapPin className="text-musgo" size={24} />
+                    <div className="w-12 h-12 rounded-lg bg-brand/20 flex items-center justify-center shrink-0">
+                      <MapPin className="text-brand" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-forest mb-1">Dirección</h3>
-                      <p className="text-gray text-sm">
+                      <h3 className="font-semibold text-fg mb-1">Dirección</h3>
+                      <p className="text-muted text-sm">
                         Santa Isabel 676<br />
                         Providencia, Santiago, Chile
                       </p>
@@ -92,7 +92,7 @@ export default function ContactoPage() {
                         href="https://maps.app.goo.gl/ZrVNsERx7zXKhtUA8"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-musgo hover:text-forest underline text-sm mt-2 inline-block"
+                        className="text-brand hover:text-fg underline text-sm mt-2 inline-block"
                       >
                         Ver en Google Maps
                       </a>
@@ -100,18 +100,18 @@ export default function ContactoPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-vida/20 flex items-center justify-center shrink-0">
-                      <Phone className="text-vida" size={24} />
+                    <div className="w-12 h-12 rounded-lg bg-olivo/20 flex items-center justify-center shrink-0">
+                      <Phone className="text-brand" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-forest mb-1">Teléfono</h3>
+                      <h3 className="font-semibold text-fg mb-1">Teléfono</h3>
                       <a
                         href={getTelLink()}
-                        className="text-gray hover:text-musgo transition-colors text-sm"
+                        className="text-muted hover:text-brand transition-colors text-sm"
                       >
                         {getFormattedPhoneNumber()}
                       </a>
-                      <p className="text-gray text-xs mt-1">
+                      <p className="text-muted text-xs mt-1">
                         Lunes a Viernes: 10:00 - 18:00 hrs<br />
                         Sábados: 10:00 - 14:00 hrs
                       </p>
@@ -119,14 +119,14 @@ export default function ContactoPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-forest/20 flex items-center justify-center shrink-0">
-                      <Mail className="text-forest" size={24} />
+                    <div className="w-12 h-12 rounded-lg bg-bosque-deep/20 flex items-center justify-center shrink-0">
+                      <Mail className="text-fg" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-forest mb-1">Email</h3>
+                      <h3 className="font-semibold text-fg mb-1">Email</h3>
                       <a
                         href="mailto:hola@comoelmusguito.cl"
-                        className="text-gray hover:text-musgo transition-colors text-sm"
+                        className="text-muted hover:text-brand transition-colors text-sm"
                       >
                         hola@comoelmusguito.cl
                       </a>
@@ -137,54 +137,53 @@ export default function ContactoPage() {
 
               {/* Social Media */}
               <div>
-                <h3 className="font-semibold text-forest mb-4">Síguenos</h3>
+                <h3 className="font-semibold text-fg mb-4">Síguenos</h3>
                 <div className="flex gap-4">
                   <a
                     href="https://www.instagram.com/comoelmusguito"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-lg bg-cream/50 hover:bg-cream flex items-center justify-center transition-colors"
+                    className="w-12 h-12 rounded-lg bg-bg/50 hover:bg-bg flex items-center justify-center transition-colors"
                     aria-label="Instagram"
                   >
-                    <Instagram className="text-forest" size={24} />
+                    <Instagram className="text-fg" size={24} />
                   </a>
                   <a
                     href="https://www.youtube.com/@comoelmusguito"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-lg bg-cream/50 hover:bg-cream flex items-center justify-center transition-colors"
+                    className="w-12 h-12 rounded-lg bg-bg/50 hover:bg-bg flex items-center justify-center transition-colors"
                     aria-label="YouTube"
                   >
-                    <Youtube className="text-forest" size={24} />
+                    <Youtube className="text-fg" size={24} />
                   </a>
                 </div>
               </div>
 
               {/* Map */}
-              <div className="bg-cream/50 rounded-xl p-4">
+              <div className="bg-bg/50 rounded-xl p-4">
                 <a
                   href="https://maps.app.goo.gl/ZrVNsERx7zXKhtUA8"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full h-[300px] rounded-lg overflow-hidden relative group"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-musgo/20 to-vida/20 flex items-center justify-center z-10 group-hover:opacity-0 transition-opacity">
+                  <div className="absolute inset-0 bg-gradient-to-br from-bosque/20 to-olivo/20 flex items-center justify-center z-10 group-hover:opacity-0 transition-opacity">
                     <div className="text-center">
-                      <MapPin className="text-musgo mx-auto mb-2" size={32} />
-                      <p className="text-forest font-medium">Ver en Google Maps</p>
-                      <p className="text-gray text-sm mt-1">Haz clic para abrir</p>
+                      <MapPin className="text-brand mx-auto mb-2" size={32} />
+                      <p className="text-fg font-medium">Ver en Google Maps</p>
+                      <p className="text-muted text-sm mt-1">Haz clic para abrir</p>
                     </div>
                   </div>
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.1234567890123!2d-70.61000000000001!3d-33.45000000000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzPCsDI3JzAwLjAiUyA3MMKwMzYnMzYuMCJX!5e0!3m2!1ses!2scl!4v1234567890123!5m2!1ses!2scl"
                     width="100%"
                     height="300"
-                    style={{ border: 0, borderRadius: '12px' }}
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
                     title="Ubicación Como el Musguito"
-                    className="pointer-events-none"
+                    className="border-0 rounded-lg pointer-events-none"
                   />
                 </a>
               </div>
@@ -192,14 +191,14 @@ export default function ContactoPage() {
 
             {/* Contact Form */}
             <div>
-              <h2 className="font-display text-2xl font-semibold text-forest mb-6">
+              <h2 className="font-display text-2xl font-semibold text-fg mb-6">
                 Envíanos un Mensaje
               </h2>
               {success ? (
-                <div className="bg-vida/10 border border-vida rounded-xl p-6 text-center">
+                <div className="bg-olivo/10 border border-olivo rounded-xl p-6 text-center">
                   <div className="text-4xl mb-4">✅</div>
-                  <h3 className="font-semibold text-forest mb-2">¡Mensaje enviado!</h3>
-                  <p className="text-gray text-sm mb-4">
+                  <h3 className="font-semibold text-fg mb-2">¡Mensaje enviado!</h3>
+                  <p className="text-muted text-sm mb-4">
                     Te responderemos lo antes posible.
                   </p>
                   <Button
@@ -212,7 +211,7 @@ export default function ContactoPage() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-forest mb-2">
+                    <label htmlFor="name" className="block text-sm font-medium text-fg mb-2">
                       Nombre *
                     </label>
                     <Input
@@ -226,7 +225,7 @@ export default function ContactoPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-forest mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-fg mb-2">
                       Email *
                     </label>
                     <Input
@@ -240,7 +239,7 @@ export default function ContactoPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-forest mb-2">
+                    <label htmlFor="phone" className="block text-sm font-medium text-fg mb-2">
                       Teléfono
                     </label>
                     <Input
@@ -253,7 +252,7 @@ export default function ContactoPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-forest mb-2">
+                    <label htmlFor="subject" className="block text-sm font-medium text-fg mb-2">
                       Asunto *
                     </label>
                     <Input
@@ -267,7 +266,7 @@ export default function ContactoPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-forest mb-2">
+                    <label htmlFor="message" className="block text-sm font-medium text-fg mb-2">
                       Mensaje *
                     </label>
                     <textarea
@@ -277,7 +276,7 @@ export default function ContactoPage() {
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       placeholder="Escribe tu mensaje aquí..."
-                      className="w-full px-4 py-3 rounded-lg border border-gray/20 focus:border-musgo focus:ring-2 focus:ring-musgo outline-none transition-colors text-forest placeholder:text-gray/50"
+                      className="w-full px-4 py-3 rounded-lg border border-line focus:border-brand focus:ring-2 focus:ring-brand outline-none transition-colors text-fg placeholder:text-muted/50"
                     />
                   </div>
 
@@ -298,9 +297,9 @@ export default function ContactoPage() {
                     {loading ? 'Enviando...' : 'Enviar Mensaje'}
                   </Button>
 
-                  <p className="text-xs text-gray/60 text-center">
+                  <p className="text-xs text-muted/60 text-center">
                     Al enviar este formulario, aceptas nuestra{' '}
-                    <Link href="/privacidad" className="text-musgo hover:text-forest underline">
+                    <Link href="/privacidad" className="text-brand hover:text-fg underline">
                       Política de Privacidad
                     </Link>
                   </p>

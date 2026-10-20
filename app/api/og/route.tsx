@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       home: {
         title: 'Como el musguito',
         subtitle: 'Crea Vida en Cualquier Lugar',
-        bgImage: `${baseUrl}/images/hero/hero-fallback.jpg`,
+        bgImage: `${baseUrl}/images/hero/hero-musguito.jpg`,
       },
       terrarios: {
         title: 'Terrarios Artesanales',
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       cursos: {
         title: 'Cursos Online',
         subtitle: 'Aprende a crear terrarios a tu ritmo',
-        bgImage: `${baseUrl}/images/hero/hero-fallback.jpg`,
+        bgImage: `${baseUrl}/images/hero/hero-musguito.jpg`,
       },
       talleres: {
         title: 'Talleres Presenciales',
@@ -52,11 +52,11 @@ export async function GET(request: NextRequest) {
     const title = customTitle || config.title;
     const subtitle = customSubtitle || config.subtitle;
     const bgImageUrl = config.bgImage;
-    const logoUrl = `${baseUrl}/logo/logo-white.svg`;
+    const logoUrl = `${baseUrl}/logo/logo-cream.png`;
 
     // Colores de la marca
-    const textColor = '#FDFAF6'; // cream
-    const accentColor = '#6B9362'; // vida
+    const textColor = '#F3EBD8'; // crema
+    const accentColor = '#A5AD84'; // salvia
 
     return new ImageResponse(
       (
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(to bottom, rgba(45, 80, 22, 0.6) 0%, rgba(31, 57, 16, 0.75) 100%)',
+              background: 'linear-gradient(to bottom, rgba(35, 53, 41, 0.6) 0%, rgba(27, 43, 32, 0.85) 100%)',
             }}
           />
 
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
               <img
                 src={logoUrl}
                 alt="comoelmusguito logo"
-                width={200}
+                width={252}
                 height={120}
                 style={{
                   objectFit: 'contain',

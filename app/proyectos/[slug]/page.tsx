@@ -9,7 +9,7 @@ import { BlogHero, BlogContent } from '@/components/blog';
 import { VideoPlayer } from '@/components/ui/VideoPlayer';
 import { FadeIn } from '@/components/animations';
 import { Badge } from '@/components/ui';
-import { Button } from '@/components/ui';
+import { Button, CtaBanner } from '@/components/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -77,41 +77,41 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {/* Hero */}
       <BlogHero post={post} />
 
-      <div className="bg-white">
+      <div className="bg-surface">
         {/* Breadcrumb */}
         <div className="container pt-8 pb-4">
-          <div className="flex items-center gap-2 text-sm text-gray">
-            <Link href="/" className="hover:text-musgo transition-colors">
+          <div className="flex items-center gap-2 text-sm text-muted">
+            <Link href="/" className="hover:text-brand transition-colors">
               Inicio
             </Link>
             <span>/</span>
-            <Link href="/proyectos" className="hover:text-musgo transition-colors">
+            <Link href="/proyectos" className="hover:text-brand transition-colors">
               Proyectos
             </Link>
             <span>/</span>
-            <span className="text-forest">{post.name}</span>
+            <span className="text-fg">{post.name}</span>
           </div>
         </div>
 
         {/* Metadatos */}
-        <section className="container py-8 border-b border-gray/20">
+        <section className="container py-8 border-b border-line">
           <FadeIn>
-            <div className="flex flex-wrap items-center gap-6 text-gray">
+            <div className="flex flex-wrap items-center gap-6 text-muted">
               {post.projectDate && (
                 <div className="flex items-center gap-2">
-                  <Calendar size={18} className="text-musgo" />
+                  <Calendar size={18} className="text-brand" />
                   <span>{formatDateLong(post.projectDate)}</span>
                 </div>
               )}
               {post.location && (
                 <div className="flex items-center gap-2">
-                  <MapPin size={18} className="text-musgo" />
+                  <MapPin size={18} className="text-brand" />
                   <span>{post.location}</span>
                 </div>
               )}
               {post.tags && post.tags.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Tag size={18} className="text-musgo" />
+                  <Tag size={18} className="text-brand" />
                   {post.tags.map((tag, index) => (
                     <Badge key={index} variant="default" size="sm">
                       {tag}
@@ -155,9 +155,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {/* Galería */}
         {post.gallery && post.gallery.length > 0 && (
-          <section className="container py-16 bg-cream/30">
+          <section className="container py-16 bg-bg/30">
             <FadeIn>
-              <h2 className="font-display text-3xl font-semibold text-forest mb-8 text-center">
+              <h2 className="font-display text-3xl font-semibold text-fg mb-8 text-center">
                 Galería del Proyecto
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -185,14 +185,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         {/* CTA Final */}
         <section className="container py-16">
           <FadeIn>
-            <div className="bg-gradient-to-br from-musgo/10 to-vida/10 rounded-2xl p-12 text-center">
-              <h2 className="font-display text-3xl font-semibold text-forest mb-4">
-                ¿Te Interesa un Proyecto Similar?
-              </h2>
-              <p className="text-gray mb-6 max-w-2xl mx-auto">
-                Si estás interesado en realizar un proyecto con terrarios, 
-                contáctanos para discutir tus ideas y necesidades.
-              </p>
+            <CtaBanner
+              title="¿Te Interesa un Proyecto Similar?"
+              description="Si estás interesado en realizar un proyecto con terrarios, contáctanos para discutir tus ideas y necesidades."
+            >
               <div className="flex flex-wrap justify-center gap-4">
                 <Link href="/contacto">
                   <Button variant="primary" size="lg">
@@ -205,7 +201,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   </Button>
                 </Link>
               </div>
-            </div>
+            </CtaBanner>
           </FadeIn>
         </section>
 

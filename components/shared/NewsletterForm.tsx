@@ -98,7 +98,7 @@ export function NewsletterForm({ source = 'footer-home', variant = 'footer' }: N
   };
 
   const inputClassName = variant === 'footer'
-    ? 'flex-1 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/50 focus:border-cream/40 focus:ring-cream/20'
+    ? 'flex-1 bg-bg/10 border-crema/20 text-crema placeholder:text-crema/50 focus:border-crema/40 focus:ring-crema/20'
     : 'flex-1';
 
   return (
@@ -127,7 +127,7 @@ export function NewsletterForm({ source = 'footer-home', variant = 'footer' }: N
       {error && (
         <div className="flex items-start gap-2 text-sm">
           <AlertCircle className="text-error shrink-0 mt-0.5" size={16} />
-          <p className={`${variant === 'footer' ? 'text-cream/80' : 'text-error'}`}>
+          <p className={`${variant === 'footer' ? 'text-crema/80' : 'text-error'}`}>
             {error}
           </p>
         </div>
@@ -135,15 +135,15 @@ export function NewsletterForm({ source = 'footer-home', variant = 'footer' }: N
 
       {success && (
         <div className="flex items-start gap-2 text-sm">
-          <CheckCircle2 className="text-vida shrink-0 mt-0.5" size={16} />
-          <p className={variant === 'footer' ? 'text-cream/80' : 'text-vida'}>
+          <CheckCircle2 className="text-brand shrink-0 mt-0.5" size={16} />
+          <p className={variant === 'footer' ? 'text-crema/80' : 'text-brand'}>
             ¡Te has suscrito exitosamente! Revisa tu email para confirmar.
           </p>
         </div>
       )}
 
       {variant === 'footer' && (
-        <p className="text-sm text-cream/60">
+        <p className="text-sm text-crema/60">
           Sin spam. Solo contenido útil y hermosos terrarios 💚
         </p>
       )}

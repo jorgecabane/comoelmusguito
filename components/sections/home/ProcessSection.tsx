@@ -15,8 +15,8 @@ const processSteps = [
     title: 'Recolección',
     description: 'Recolecto troncos y piedras de forma sustentable, respetando el ecosistema.',
     icon: Leaf,
-    image: '/images/process/proceso-01-recoleccion.jpg', // TODO: Reemplazar con foto real
-    imagePlaceholder: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
+    image: '/images/process/recoleccion.jpg',
+    imagePosition: 'object-[50%_70%]',
     story: 'Cada recolección es una aventura. Busco materiales a la vez que me inspiro en los pequeños paisajes naturales.',
   },
   {
@@ -24,8 +24,8 @@ const processSteps = [
     title: 'Cultivo',
     description: 'Propago y cultivo diferentes especies de musgos y plantas tropicales, esperando la oportunidad perfecta para usar cada planta.',
     icon: Sparkles,
-    image: '/images/process/proceso-02-cultivo.jpg', // TODO: Reemplazar con foto real
-    imagePlaceholder: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=800&q=80',
+    image: '/images/process/cultivo.jpg',
+    imagePosition: 'object-center',
     story: 'La paciencia es clave. Trabajar con plantas siempre significa trabajar con las estaciones.',
   },
   {
@@ -33,8 +33,8 @@ const processSteps = [
     title: 'Diseño',
     description: 'Compongo cada terrario como un cuadro, buscando una sensación realista con profundidad y perspectiva.',
     icon: Palette,
-    image: '/images/process/proceso-03-diseño.png',
-    imagePlaceholder: 'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=800&q=80',
+    image: '/images/process/diseno.jpg',
+    imagePosition: 'object-[50%_20%]',
     story: 'Todos mis diseños nacen de la naturaleza, pero en el proceso busco que cada uno transmita esa sensación que lo hace diferente.',
   },
   {
@@ -42,25 +42,25 @@ const processSteps = [
     title: 'Vida',
     description: 'El ecosistema cobra vida, saludable y listo para crecer contigo.',
     icon: Heart,
-    image: '/images/process/proceso-04-vida.jpg', // TODO: Reemplazar con foto real
-    imagePlaceholder: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=800&q=80',
+    image: '/images/process/vida.jpg',
+    imagePosition: 'object-[50%_55%]',
     story: 'Observar cómo un terrario crece y evoluciona es un fin en sí mismo.',
   },
 ];
 
 export function ProcessSection() {
   return (
-    <section className="py-32 bg-gradient-to-br from-musgo/5 via-cream to-vida/5">
+    <section className="theme-soft py-32 bg-bg">
       <div className="container">
         {/* Header */}
         <div className="text-center mb-20 space-y-6">
           <FadeIn>
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-forest">
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-fg">
               El Proceso Artesanal
             </h2>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p className="text-xl text-gray max-w-2xl mx-auto">
+            <p className="text-xl text-muted max-w-2xl mx-auto">
               Cada terrario pasa por un cuidadoso proceso de elaboración. 
               No son dedos verdes, es dedicación y amor por la naturaleza.
             </p>
@@ -70,7 +70,7 @@ export function ProcessSection() {
         {/* Process Steps - Con línea cronológica */}
         <div className="relative">
           {/* Línea cronológica vertical (solo desktop) */}
-          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-musgo via-vida to-musgo-dark transform -translate-x-1/2 opacity-20" />
+          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-bosque via-olivo to-bosque-deep transform -translate-x-1/2 opacity-20" />
           
           <div className="space-y-24 md:space-y-32">
           {processSteps.map((step, index) => (
@@ -91,12 +91,12 @@ export function ProcessSection() {
                       src={step.image}
                       alt={step.title}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className={`object-cover ${step.imagePosition} transition-transform duration-500 group-hover:scale-105`}
                       sizes="(max-width: 1024px) 100vw, 50vw"
                     />
                     
                     {/* Overlay con historia */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-forest/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
+                    <div className="absolute inset-0 bg-gradient-to-t from-bosque-deep/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
                       <p className="text-white text-lg italic">
                         "{step.story}"
                       </p>
@@ -106,21 +106,21 @@ export function ProcessSection() {
 
                 {/* Contenido */}
                 <div className="space-y-6">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-musgo text-white">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent text-white">
                     <step.icon size={32} />
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-baseline gap-4">
-                      <span className="text-6xl md:text-7xl font-display font-bold text-musgo/20">
+                      <span className="text-6xl md:text-7xl font-display font-bold text-brand/20">
                         {step.step}
                       </span>
-                      <h3 className="text-3xl md:text-4xl font-display font-bold text-forest">
+                      <h3 className="text-3xl md:text-4xl font-display font-bold text-fg">
                         {step.title}
                       </h3>
                     </div>
 
-                    <p className="text-xl text-gray leading-relaxed">
+                    <p className="text-xl text-muted leading-relaxed">
                       {step.description}
                     </p>
                   </div>
@@ -128,8 +128,8 @@ export function ProcessSection() {
                   {/* Decorative arrow para desktop */}
                   {index < processSteps.length - 1 && (
                     <div className="hidden lg:block pt-8">
-                      <div className="flex items-center gap-2 text-vida">
-                        <div className="h-px flex-1 bg-vida/30" />
+                      <div className="flex items-center gap-2 text-brand">
+                        <div className="h-px flex-1 bg-olivo/30" />
                         <span className="text-2xl">→</span>
                       </div>
                     </div>
@@ -139,7 +139,7 @@ export function ProcessSection() {
                 {/* Línea divisoria horizontal en mobile */}
                 {index < processSteps.length - 1 && (
                   <div className="lg:hidden mt-12 mb-12">
-                    <div className="h-px bg-gradient-to-r from-transparent via-musgo/30 to-transparent" />
+                    <div className="h-px bg-gradient-to-r from-transparent via-bosque/30 to-transparent" />
                   </div>
                 )}
               </div>
