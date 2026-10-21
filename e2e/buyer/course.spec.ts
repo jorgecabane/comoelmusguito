@@ -17,7 +17,7 @@ test('el detalle de un curso comprado redirige a las lecciones', async ({ page }
 test('abre una lección y navega a la siguiente', async ({ page }) => {
   await page.goto(lessonUrl(0, 0));
   await expect(page.getByRole('heading', { level: 1, name: COURSE.lessons[0][0] })).toBeVisible();
-  await page.getByRole('button', { name: 'Siguiente →' }).click();
+  await page.getByRole('link', { name: 'Siguiente →' }).click();
   await expect(page).toHaveURL(lessonUrl(0, 1));
   await expect(page.getByRole('heading', { level: 1, name: COURSE.lessons[0][1] })).toBeVisible();
 });

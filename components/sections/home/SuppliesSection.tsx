@@ -116,12 +116,10 @@ export function SuppliesSection({ insumos }: SuppliesSectionProps) {
         {/* CTA */}
         <FadeIn delay={0.4}>
           <div className="text-center mt-16">
-            <Link href="/insumos">
-              <Button variant="primary" size="lg">
-                Ver Todos los Insumos
-                <ArrowRight size={20} />
-              </Button>
-            </Link>
+            <Button variant="primary" size="lg" href="/insumos">
+              Ver Todos los Insumos
+              <ArrowRight size={20} />
+            </Button>
           </div>
         </FadeIn>
       </div>

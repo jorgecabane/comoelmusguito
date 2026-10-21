@@ -190,12 +190,10 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
         {/* CTA */}
         <FadeIn delay={0.6}>
           <div className="text-center mt-16">
-            <Link href="/talleres">
-              <Button variant="secondary" size="lg">
-                Ver Todos los Talleres
-                <ArrowRight size={20} />
-              </Button>
-            </Link>
+            <Button variant="secondary" size="lg" href="/talleres">
+              Ver Todos los Talleres
+              <ArrowRight size={20} />
+            </Button>
           </div>
         </FadeIn>
       </div>

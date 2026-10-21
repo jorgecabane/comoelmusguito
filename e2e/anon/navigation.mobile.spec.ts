@@ -17,7 +17,7 @@ test('menú móvil abre, navega y se cierra', async ({ page }) => {
   await expect(header.getByRole('button', { name: 'Aprender' })).toBeHidden();
 
   await open.click();
-  await expect(header.getByRole('button', { name: 'Iniciar Sesión' })).toBeVisible();
+  await expect(header.getByRole('link', { name: 'Iniciar Sesión' })).toBeVisible();
   await close.click();
   await expect(header.getByRole('button', { name: 'Tienda' })).toBeHidden();
 });
@@ -30,7 +30,7 @@ test('agregar al carrito y ver el carrito en móvil', async ({ page }) => {
   await expect(page).toHaveURL('/carrito');
   await expect(page.getByRole('main').getByRole('heading', { name: TERRARIUM.name })).toBeVisible();
   await expectCartCount(page, 1);
-  await page.getByRole('button', { name: 'Proceder al Pago' }).click();
+  await page.getByRole('link', { name: 'Proceder al Pago' }).click();
   await expect(page).toHaveURL('/checkout');
   await expect(page.getByRole('button', { name: /Ver resumen \(1 producto\)/ })).toBeVisible();
 });

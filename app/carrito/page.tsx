@@ -98,16 +98,12 @@ export default function CarritoPage() {
               ¿Listo para crear vida? Explora nuestros productos
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/terrarios">
-                <Button variant="primary" size="lg">
-                  Ver Terrarios
-                </Button>
-              </Link>
-              <Link href="/cursos">
-                <Button variant="secondary" size="lg">
-                  Ver Cursos
-                </Button>
-              </Link>
+              <Button variant="primary" size="lg" href="/terrarios">
+                Ver Terrarios
+              </Button>
+              <Button variant="secondary" size="lg" href="/cursos">
+                Ver Cursos
+              </Button>
             </div>
           </div>
         </div>
@@ -321,16 +317,15 @@ export default function CarritoPage() {
                   Proceder al Pago
                 </Button>
               ) : (
-                <Link href="/checkout">
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
-                    icon={<ShoppingBag size={20} />}
-                  >
-                    Proceder al Pago
-                  </Button>
-                </Link>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full"
+                  icon={<ShoppingBag size={20} />}
+                  href="/checkout"
+                >
+                  Proceder al Pago
+                </Button>
               )}
 
               <div className="text-center text-sm text-muted">

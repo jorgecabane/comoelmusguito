@@ -116,12 +116,10 @@ export function ExploreSection({ terrarios }: ExploreSectionProps) {
         {/* CTA */}
         <FadeIn delay={0.4}>
           <div className="text-center mt-16">
-            <Link href="/terrarios">
-              <Button variant="primary" size="lg">
-                Explorar Todos los Ecosistemas
-                <ArrowRight size={20} />
-              </Button>
-            </Link>
+            <Button variant="primary" size="lg" href="/terrarios">
+              Explorar Todos los Ecosistemas
+              <ArrowRight size={20} />
+            </Button>
           </div>
         </FadeIn>
       </div>

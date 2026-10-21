@@ -233,9 +233,7 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
 
       {/* Back to catalog */}
       <section className="container mt-16">
-        <Link href="/terrarios">
-          <Button variant="secondary">← Ver todos los terrarios</Button>
-        </Link>
+        <Button variant="secondary" href="/terrarios">← Ver todos los terrarios</Button>
       </section>
     </div>
     </>

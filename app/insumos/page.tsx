@@ -62,9 +62,7 @@ export default async function InsumosPage() {
             <p className="text-xl text-muted mb-6">
               Estamos preparando nuevos insumos. Vuelve pronto 🛠️
             </p>
-            <Link href="/cursos">
-              <Button variant="primary">Ver Cursos Online</Button>
-            </Link>
+            <Button variant="primary" href="/cursos">Ver Cursos Online</Button>
           </div>
         </section>
       ) : (

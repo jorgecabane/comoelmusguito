@@ -10,7 +10,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui';
 import { CheckCircle2, XCircle, Loader2, ArrowRight, Gift } from 'lucide-react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useCartStore } from '@/lib/store/useCartStore';
 
@@ -309,27 +308,19 @@ function CheckoutCallbackContent() {
                     )}
                     <div className="flex flex-col sm:flex-row gap-2 justify-center">
                       {isLoggedIn ? (
-                        <Link href="/mi-cuenta?filter=courses">
-                          <Button variant="primary" size="sm" className="w-full sm:w-auto">
-                            Ver mi Curso
-                          </Button>
-                        </Link>
+                        <Button variant="primary" size="sm" className="w-full sm:w-auto" href="/mi-cuenta?filter=courses">
+                          Ver mi Curso
+                        </Button>
                       ) : (
                         <>
                           {courseSlug && (
-                            <Link href={`/cursos/${courseSlug}`}>
-                              <Button variant="primary" size="sm" className="w-full sm:w-auto">
-                                Ver mi Curso
-                              </Button>
-                            </Link>
-                          )}
-                          <Link
-                            href="/auth/register"
-                          >
-                            <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                              Crear mi Cuenta
+                            <Button variant="primary" size="sm" className="w-full sm:w-auto" href={`/cursos/${courseSlug}`}>
+                              Ver mi Curso
                             </Button>
-                          </Link>
+                          )}
+                          <Button variant="secondary" size="sm" className="w-full sm:w-auto" href="/auth/register">
+                            Crear mi Cuenta
+                          </Button>
                         </>
                       )}
                     </div>
@@ -338,17 +329,13 @@ function CheckoutCallbackContent() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/">
-                  <Button variant="primary" size="lg">
-                    Seguir Explorando
-                    <ArrowRight size={20} />
-                  </Button>
-                </Link>
-                <Link href="/mi-cuenta">
-                  <Button variant="secondary" size="lg">
-                    Ver Mi Cuenta
-                  </Button>
-                </Link>
+                <Button variant="primary" size="lg" href="/">
+                  Seguir Explorando
+                  <ArrowRight size={20} />
+                </Button>
+                <Button variant="secondary" size="lg" href="/mi-cuenta">
+                  Ver Mi Cuenta
+                </Button>
               </div>
             </>
           )}
@@ -378,16 +365,12 @@ function CheckoutCallbackContent() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/carrito">
-                  <Button variant="primary" size="lg">
-                    Intentar Nuevamente
-                  </Button>
-                </Link>
-                <Link href="/">
-                  <Button variant="secondary" size="lg">
-                    Volver al Inicio
-                  </Button>
-                </Link>
+                <Button variant="primary" size="lg" href="/carrito">
+                  Intentar Nuevamente
+                </Button>
+                <Button variant="secondary" size="lg" href="/">
+                  Volver al Inicio
+                </Button>
               </div>
             </>
           )}
@@ -413,11 +396,9 @@ function CheckoutCallbackContent() {
                 </p>
               </div>
 
-              <Link href="/">
-                <Button variant="secondary" size="lg">
-                  Volver al Inicio
-                </Button>
-              </Link>
+              <Button variant="secondary" size="lg" href="/">
+                Volver al Inicio
+              </Button>
             </>
           )}
         </motion.div>
