@@ -15,6 +15,13 @@ export const metadata = {
   description: 'Conoce la historia de Tomás Barrera, licenciado en Literatura y Horticultor, creador de terrarios autosuficientes y fundador de Como el Musguito.',
 };
 
+/** Fotos del taller: escritorio de trabajo, estantes de terrarios y materiales */
+const workshopPhotos = [
+  { src: '/images/about/taller-escritorio.jpg', alt: 'Escritorio de trabajo del taller, con herramientas colgadas en la pared' },
+  { src: '/images/about/taller-estantes.jpg', alt: 'Estantes del taller llenos de terrarios iluminados' },
+  { src: '/images/about/taller-materiales.jpg', alt: 'Estantería con troncos, rocas y materiales para armar terrarios' },
+];
+
 export default function SobrePage() {
   return (
     <div className="pt-32 pb-16">
@@ -45,10 +52,10 @@ export default function SobrePage() {
           <FadeIn direction="left">
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-natural-lg">
               <Image
-                src="/images/about/tomas-table.jpg"
-                alt="Tomás Barrera en su taller"
+                src="/images/about/tomas-taller.jpg"
+                alt="Tomás Barrera trabajando en su taller, rodeado de terrarios"
                 fill
-                className="object-cover"
+                className="object-cover object-[50%_28%]"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
               />
@@ -145,8 +152,8 @@ export default function SobrePage() {
           <FadeIn direction="right" delay={0.2}>
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-natural-lg">
               <Image
-                src="/images/about/terrarios-musguito-1.jpg"
-                alt="Terrarios autosuficientes creados por Tomás Barrera"
+                src="/images/about/vitrinas.jpg"
+                alt="Vitrinas con ecosistemas autosuficientes creados por Tomás Barrera"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -208,6 +215,22 @@ export default function SobrePage() {
                     </Link>
                   </div>
                 </div>
+              </div>
+            </FadeIn>
+
+            <FadeIn delay={0.3}>
+              <div className="grid grid-cols-3 gap-3 md:gap-6 mt-8">
+                {workshopPhotos.map((photo) => (
+                  <div key={photo.src} className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-natural-md">
+                    <Image
+                      src={photo.src}
+                      alt={photo.alt}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 33vw, 280px"
+                    />
+                  </div>
+                ))}
               </div>
             </FadeIn>
           </div>
