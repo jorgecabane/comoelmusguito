@@ -82,6 +82,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  themeColor: "#233529", // --bosque
 };
 
 import { Header, Footer } from "@/components/shared";
