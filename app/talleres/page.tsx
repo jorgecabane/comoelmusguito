@@ -3,6 +3,7 @@
  * Datos desde Sanity CMS
  */
 
+import { cn } from '@/lib/utils/cn';
 import { Card, Badge, Button, CtaBanner } from '@/components/ui';
 import { Calendar, MapPin, Users, Clock, ArrowRight } from 'lucide-react';
 import { getAllWorkshops } from '@/lib/sanity/fetch';
@@ -182,9 +183,9 @@ export default async function TalleresPage() {
                         </Card.Content>
                         <Card.Footer>
                           <Button
+                            as="span"
                             variant="primary"
-                            className="w-full group-hover:bg-accent-hover transition-colors"
-                            disabled={!taller.hayCuposDisponibles}
+                            className={cn('w-full group-hover:bg-accent-hover transition-colors', !taller.hayCuposDisponibles && 'opacity-60')}
                           >
                             {!taller.hayCuposDisponibles ? 'Agotado' : 'Ver Detalles'}
                             {taller.hayCuposDisponibles && <ArrowRight size={18} />}

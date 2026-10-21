@@ -3,6 +3,7 @@
  * Datos desde Sanity CMS
  */
 
+import { cn } from '@/lib/utils/cn';
 import { Card, Badge, Button, CtaBanner } from '@/components/ui';
 import { Heart, Filter, ArrowRight } from 'lucide-react';
 import { getAllTerrariums } from '@/lib/sanity/fetch';
@@ -108,9 +109,9 @@ export default async function TerrariosPage() {
                         </Card.Content>
                         <Card.Footer>
                           <Button
+                            as="span"
                             variant="primary"
-                            className="w-full group-hover:bg-accent-hover transition-colors"
-                            disabled={!terrarium.inStock}
+                            className={cn('w-full group-hover:bg-accent-hover transition-colors', !terrarium.inStock && 'opacity-60')}
                           >
                             {terrarium.inStock ? 'Ver Detalles' : 'Agotado'}
                             {terrarium.inStock && <ArrowRight size={18} />}
