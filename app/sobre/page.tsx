@@ -104,7 +104,7 @@ export default function SobrePage() {
                     <p>
                       En 2018, después de trabajar en la recuperación de un jardín abandonado y tras algunas lluvias, Tomás fue testigo del inicio de la temporada de musgos en Santiago.
                     </p>
-                    <p className="text-2xl md:text-3xl font-display text-fg font-semibold italic">
+                    <p className="text-2xl md:text-3xl font-display text-fg">
                       "Esto me maravilló profundamente, pero los musgos no duraron mucho"
                     </p>
                     <p>

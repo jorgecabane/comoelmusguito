@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Package, BookOpen, Calendar } from 'lucide-react';
 import { Card, Button } from '@/components/ui';
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import { formatDateShort, formatDateLong, formatTime, formatCurrency } from '@/lib/sanity/utils';
 import { OrderItemDetail } from '@/components/orders/OrderItemDetail';
 import { CourseProgressCard } from '@/components/courses/CourseProgressCard';
@@ -84,12 +83,10 @@ export function TabsController({
             <p className="text-muted mb-6">
               Cuando hagas tu primera compra, aparecerá aquí
             </p>
-            <Link href="/terrarios">
-              <Button variant="primary">
-                Explorar Terrarios
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
+            <Button variant="primary" href="/terrarios">
+              Explorar Terrarios
+              <ArrowRight size={18} />
+            </Button>
           </Card>
         ) : (
           <div className="grid gap-6">
@@ -152,12 +149,10 @@ export function TabsController({
             <p className="text-muted mb-6">
               Explora nuestros cursos online y aprende a crear vida
             </p>
-            <Link href="/cursos">
-              <Button variant="primary">
-                Ver Cursos
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
+            <Button variant="primary" href="/cursos">
+              Ver Cursos
+              <ArrowRight size={18} />
+            </Button>
           </Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -186,12 +181,10 @@ export function TabsController({
             <p className="text-muted mb-6">
               Únete a nuestros talleres presenciales y aprende en persona
             </p>
-            <Link href="/talleres">
-              <Button variant="primary">
-                Ver Talleres
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
+            <Button variant="primary" href="/talleres">
+              Ver Talleres
+              <ArrowRight size={18} />
+            </Button>
           </Card>
         ) : (
           <div className="grid gap-6">

@@ -156,7 +156,7 @@ body {
   margin: 0;
   padding: 0;
   /* Las animaciones de entrada (FadeIn desde los lados) no deben generar scroll horizontal en móvil */
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Títulos con Lumiflora (un solo grosor: sin negrita sintética).
@@ -250,10 +250,10 @@ body {
   --brand: var(--terracota-dark);    /* 4.7:1 sobre niebla y 6.7:1 sobre crema */
   --accent-text: var(--terracota-dark);
   --tint: var(--bosque);
-  --error: #A32A1B;                  /* estados oscurecidos para fondo claro (≥4.5:1) */
-  --success: #2F6B2A;
-  --warning: #7A5A00;
-  --info: #1F5C80;
+  --error: #982719;                  /* estados oscurecidos: ≥4.6:1 sobre niebla, ≥6.6:1 sobre crema */
+  --success: #295C24;
+  --warning: #684D00;
+  --info: #1D5678;
   background-color: var(--bg);
   color: var(--fg);
 }
