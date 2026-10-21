@@ -132,15 +132,7 @@ export default async function TerrariosPage() {
               title="¿No encuentras lo que buscas?"
               description="Creamos terrarios personalizados según tus gustos y espacio. Contáctanos y diseñemos juntos tu ecosistema perfecto."
             >
-              <a
-                href={getWhatsAppLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="primary" size="lg">
-                  Solicitar Terrario Personalizado
-                </Button>
-              </a>
+              <Button href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer" variant="primary" size="lg">Solicitar Terrario Personalizado</Button>
             </CtaBanner>
           </section>
         </>

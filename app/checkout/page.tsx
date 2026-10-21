@@ -547,7 +547,7 @@ export default function CheckoutPage() {
               </Link>
 
               {pricesUpdated && (
-                <div className="flex items-start gap-2 rounded-lg border border-terracota/30 bg-terracota/10 p-3 text-sm text-fg">
+                <div className="flex items-start gap-2 rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm text-fg">
                   <Info size={18} className="shrink-0 mt-0.5" />
                   <span>Actualizamos los precios de tu pedido con los valores vigentes. Revisa el total antes de pagar.</span>
                 </div>
@@ -1132,7 +1132,7 @@ export default function CheckoutPage() {
 
       {/* PayPal processing overlay */}
       {checkoutState === 'paypal_processing' && (
-        <div className="fixed inset-0 z-40 bg-bosque-deep/30 backdrop-blur-[4px] flex items-center justify-center">
+        <div className="fixed inset-0 z-40 bg-scrim/30 backdrop-blur-[4px] flex items-center justify-center">
           <div className="bg-surface rounded-2xl p-8 shadow-xl text-center max-w-sm mx-4">
             <Loader2 className="animate-spin mx-auto mb-4 text-brand" size={32} />
             <p className="font-display text-lg font-semibold text-fg">Procesando pago</p>
@@ -1143,7 +1143,7 @@ export default function CheckoutPage() {
 
       {/* Payment confirmed overlay */}
       {checkoutState === 'confirmed' && (
-        <div className="fixed inset-0 z-40 bg-bosque-deep/30 backdrop-blur-[4px] flex items-center justify-center">
+        <div className="fixed inset-0 z-40 bg-scrim/30 backdrop-blur-[4px] flex items-center justify-center">
           <div className="bg-surface rounded-2xl p-8 shadow-xl text-center max-w-sm mx-4">
             <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -205,7 +205,7 @@ export default function FAQPage() {
           <FadeIn immediate={true}>
             {/* Header */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20 mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-tint/20 mb-6">
                 <HelpCircle className="text-brand" size={32} />
               </div>
               <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-4">
@@ -288,7 +288,7 @@ export default function FAQPage() {
                 </a>
                 <a
                   href={getTelLink()}
-                  className="inline-flex items-center justify-center px-6 py-3 bg-bosque-deep text-white rounded-lg hover:bg-bosque-deep/90 transition-colors"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-scrim text-white rounded-lg hover:bg-scrim/90 transition-colors"
                 >
                   Llamar: {getFormattedPhoneNumber()}
                 </a>

@@ -23,7 +23,7 @@ export default function SobrePage() {
       <section className="container mb-24">
         <FadeIn>
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-olivo/20 mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-tint/20 mb-6">
               <Leaf className="text-brand" size={40} />
             </div>
             <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-fg leading-tight">
@@ -80,7 +80,7 @@ export default function SobrePage() {
       </section>
 
       {/* El Descubrimiento - 2018 */}
-      <Section tone="soft" className="py-32 mb-32">
+      <Section tone="soft" className="mb-32">
           <div className="max-w-4xl mx-auto">
             <FadeIn>
               <div className="text-center mb-16">
@@ -268,15 +268,9 @@ export default function SobrePage() {
             description="Explora nuestros terrarios, aprende con nuestros cursos o únete a un taller presencial."
           >
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/terrarios">
-                <Button variant="primary" size="lg">Ver Terrarios</Button>
-              </Link>
-              <Link href="/cursos">
-                <Button variant="secondary" size="lg">Ver Cursos</Button>
-              </Link>
-              <Link href="/talleres">
-                <Button variant="secondary" size="lg">Ver Talleres</Button>
-              </Link>
+              <Button href="/terrarios" variant="primary" size="lg">Ver Terrarios</Button>
+              <Button href="/cursos" variant="secondary" size="lg">Ver Cursos</Button>
+              <Button href="/talleres" variant="secondary" size="lg">Ver Talleres</Button>
             </div>
           </CtaBanner>
         </FadeIn>

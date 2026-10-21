@@ -190,16 +190,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               description="Si estás interesado en realizar un proyecto con terrarios, contáctanos para discutir tus ideas y necesidades."
             >
               <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/contacto">
-                  <Button variant="primary" size="lg">
-                    Contactar
-                  </Button>
-                </Link>
-                <Link href="/proyectos">
-                  <Button variant="secondary" size="lg">
-                    Ver Más Proyectos
-                  </Button>
-                </Link>
+                <Button href="/contacto" variant="primary" size="lg">Contactar</Button>
+                <Button href="/proyectos" variant="secondary" size="lg">Ver Más Proyectos</Button>
               </div>
             </CtaBanner>
           </FadeIn>
@@ -207,12 +199,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {/* Back to list */}
         <section className="container pb-16">
-          <Link href="/proyectos">
-            <Button variant="secondary" className="flex items-center gap-2">
-              <ArrowLeft size={18} />
-              Volver a Proyectos
-            </Button>
-          </Link>
+          <Button href="/proyectos" variant="secondary" className="flex items-center gap-2"><ArrowLeft size={18} />
+              Volver a Proyectos</Button>
         </section>
       </div>
     </>

@@ -45,7 +45,7 @@ export function AddToCartModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeCart}
-            className="fixed inset-0 bg-bosque-deep/40 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-scrim/40 backdrop-blur-sm z-50"
           />
 
           {/* Modal */}
@@ -156,7 +156,7 @@ export function AddToCartModal() {
               </motion.div>
 
               {/* Decoración de fondo */}
-              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-olivo/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-tint/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
               <div className="absolute -top-10 -left-10 w-40 h-40 bg-brand/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
             </div>
           </motion.div>

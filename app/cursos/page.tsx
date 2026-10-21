@@ -65,7 +65,7 @@ export default async function CursosPage() {
               key={i}
               className="bg-bg p-6 rounded-lg text-center space-y-3"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-tint/20">
                 {item.icon}
               </div>
               <h3 className="font-display text-xl font-semibold text-fg">
@@ -84,9 +84,7 @@ export default async function CursosPage() {
             <p className="text-xl text-muted mb-6">
               Estamos preparando nuevos cursos. Vuelve pronto 🌱
             </p>
-            <Link href="/terrarios">
-              <Button variant="primary">Ver Terrarios</Button>
-            </Link>
+            <Button href="/terrarios" variant="primary">Ver Terrarios</Button>
           </div>
         </section>
       ) : (
@@ -117,7 +115,7 @@ export default async function CursosPage() {
                           alt={course.thumbnail?.alt || course.name} 
                         />
                         {/* Play overlay */}
-                        <div className="absolute inset-0 bg-bosque-deep/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-scrim/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <div className="w-16 h-16 rounded-full bg-surface/90 flex items-center justify-center">
                             <Play className="text-brand ml-1" size={28} fill="currentColor" />
                           </div>
@@ -165,11 +163,7 @@ export default async function CursosPage() {
               title="¿Prefieres Aprender en Persona?"
               description="Ofrecemos talleres presenciales en Santiago donde crearás tu propio terrario, aprendiendo la teoría a través de la práctica."
             >
-              <Link href="/talleres">
-                <Button variant="primary" size="lg">
-                  Ver Próximos Talleres
-                </Button>
-              </Link>
+              <Button href="/talleres" variant="primary" size="lg">Ver Próximos Talleres</Button>
             </CtaBanner>
           </section>
 

@@ -46,7 +46,7 @@ export function ImageGallery({ images, alt, className }: ImageGalleryProps) {
             sizes="(max-width: 1024px) 100vw, 50vw"
             priority
           />
-          <div className="absolute inset-0 bg-bosque-deep/0 group-hover:bg-bosque-deep/10 transition-colors flex items-center justify-center">
+          <div className="absolute inset-0 bg-scrim/0 group-hover:bg-scrim/10 transition-colors flex items-center justify-center">
             <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium transition-opacity">
               Click para ampliar
             </span>
@@ -69,7 +69,7 @@ export function ImageGallery({ images, alt, className }: ImageGalleryProps) {
                   className="object-cover transition-transform group-hover:scale-110"
                   sizes="200px"
                 />
-                <div className="absolute inset-0 bg-bosque-deep/0 group-hover:bg-bosque-deep/20 transition-colors" />
+                <div className="absolute inset-0 bg-scrim/0 group-hover:bg-scrim/20 transition-colors" />
               </button>
             ))}
             {images.length > 5 && (
@@ -84,7 +84,7 @@ export function ImageGallery({ images, alt, className }: ImageGalleryProps) {
                   className="object-cover opacity-50"
                   sizes="200px"
                 />
-                <div className="absolute inset-0 bg-bosque-deep/60 flex items-center justify-center">
+                <div className="absolute inset-0 bg-scrim/60 flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">
                     +{images.length - 5}
                   </span>

@@ -168,7 +168,7 @@ export default function CarritoPage() {
         </div>
 
         {pricesUpdated && (
-          <div className="mb-6 flex items-start gap-2 rounded-lg border border-terracota/30 bg-terracota/10 p-3 text-sm text-fg">
+          <div className="mb-6 flex items-start gap-2 rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm text-fg">
             <Info size={18} className="shrink-0 mt-0.5" />
             <span>Actualizamos los precios de tu carrito con los valores vigentes.</span>
           </div>

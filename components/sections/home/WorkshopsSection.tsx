@@ -6,7 +6,7 @@
 'use client';
 
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/animations';
-import { Card, Badge, Button } from '@/components/ui';
+import { Card, Badge, Button, Section } from '@/components/ui';
 import { Calendar, MapPin, Clock, Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import type { Workshop } from '@/types/sanity';
@@ -22,7 +22,7 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
   }
 
   return (
-    <section className="theme-soft py-32 bg-bg">
+    <Section tone="soft" contained={false}>
       <div className="container">
         {/* Header */}
         <div className="text-center mb-20 space-y-6">
@@ -199,6 +199,6 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
           </div>
         </FadeIn>
       </div>
-    </section>
+    </Section>
   );
 }

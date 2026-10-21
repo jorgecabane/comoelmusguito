@@ -19,7 +19,7 @@ export default function PrivacidadPage() {
         <FadeIn immediate={true}>
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20 mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-tint/20 mb-6">
               <Shield className="text-brand" size={32} />
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-4">

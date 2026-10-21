@@ -67,7 +67,7 @@ export default async function ProyectosPage() {
                 key={i}
                 className="bg-bg p-6 rounded-lg text-center space-y-3"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-tint/20">
                   {item.icon}
                 </div>
                 <h3 className="font-display text-xl font-semibold text-fg">
@@ -88,9 +88,7 @@ export default async function ProyectosPage() {
               <p className="text-xl text-muted mb-6">
                 Estamos documentando nuevos proyectos. Vuelve pronto 🌱
               </p>
-              <Link href="/terrarios">
-                <Button variant="primary">Ver Terrarios</Button>
-              </Link>
+              <Button href="/terrarios" variant="primary">Ver Terrarios</Button>
             </div>
           </FadeIn>
         </section>
@@ -117,11 +115,7 @@ export default async function ProyectosPage() {
                 title="¿Tienes un Proyecto en Mente?"
                 description="Si estás interesado en realizar un proyecto con terrarios, contáctanos para discutir tus ideas."
               >
-                <Link href="/contacto">
-                  <Button variant="primary" size="lg">
-                    Contactar
-                  </Button>
-                </Link>
+                <Button href="/contacto" variant="primary" size="lg">Contactar</Button>
               </CtaBanner>
             </FadeIn>
           </section>

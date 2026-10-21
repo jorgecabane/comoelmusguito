@@ -5,6 +5,7 @@
 
 'use client';
 
+import { Section } from '@/components/ui';
 import { FadeIn } from '@/components/animations';
 import { Leaf, Sparkles, Palette, Heart } from 'lucide-react';
 import Image from 'next/image';
@@ -50,7 +51,7 @@ const processSteps = [
 
 export function ProcessSection() {
   return (
-    <section className="theme-soft py-32 bg-bg">
+    <Section tone="soft" contained={false}>
       <div className="container">
         {/* Header */}
         <div className="text-center mb-20 space-y-6">
@@ -70,7 +71,7 @@ export function ProcessSection() {
         {/* Process Steps - Con línea cronológica */}
         <div className="relative">
           {/* Línea cronológica vertical (solo desktop) */}
-          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-bosque via-olivo to-bosque-deep transform -translate-x-1/2 opacity-20" />
+          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-tint via-tint to-scrim transform -translate-x-1/2 opacity-20" />
           
           <div className="space-y-24 md:space-y-32">
           {processSteps.map((step, index) => (
@@ -96,7 +97,7 @@ export function ProcessSection() {
                     />
                     
                     {/* Overlay con historia */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-bosque-deep/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
+                    <div className="absolute inset-0 bg-gradient-to-t from-scrim/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
                       <p className="text-white text-lg italic">
                         "{step.story}"
                       </p>
@@ -129,7 +130,7 @@ export function ProcessSection() {
                   {index < processSteps.length - 1 && (
                     <div className="hidden lg:block pt-8">
                       <div className="flex items-center gap-2 text-brand">
-                        <div className="h-px flex-1 bg-olivo/30" />
+                        <div className="h-px flex-1 bg-tint/30" />
                         <span className="text-2xl">→</span>
                       </div>
                     </div>
@@ -139,7 +140,7 @@ export function ProcessSection() {
                 {/* Línea divisoria horizontal en mobile */}
                 {index < processSteps.length - 1 && (
                   <div className="lg:hidden mt-12 mb-12">
-                    <div className="h-px bg-gradient-to-r from-transparent via-bosque/30 to-transparent" />
+                    <div className="h-px bg-gradient-to-r from-transparent via-tint/30 to-transparent" />
                   </div>
                 )}
               </div>
@@ -148,7 +149,7 @@ export function ProcessSection() {
           </div>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 

@@ -81,7 +81,7 @@ export default async function TalleresPage() {
               key={i}
               className="bg-bg p-6 rounded-lg text-center space-y-3"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-tint/20">
                 {item.icon}
               </div>
               <h3 className="font-display text-xl font-semibold text-fg">
@@ -100,9 +100,7 @@ export default async function TalleresPage() {
             <p className="text-xl text-muted mb-6">
               Estamos organizando nuevos talleres. Vuelve pronto o inscríbete en un curso online 🌱
             </p>
-            <Link href="/cursos">
-              <Button variant="primary">Ver Cursos Online</Button>
-            </Link>
+            <Button href="/cursos" variant="primary">Ver Cursos Online</Button>
           </div>
         </section>
       ) : (
@@ -206,11 +204,7 @@ export default async function TalleresPage() {
               title="¿No puedes venir en persona?"
               description="Aprende desde cualquier lugar con nuestros cursos online y más de 9 horas de contenido educativo."
             >
-              <Link href="/cursos">
-                <Button variant="primary" size="lg">
-                  Ver Cursos Online
-                </Button>
-              </Link>
+              <Button href="/cursos" variant="primary" size="lg">Ver Cursos Online</Button>
             </CtaBanner>
           </section>
         </>

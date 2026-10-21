@@ -34,7 +34,7 @@ export function BlogHero({ post }: BlogHeroProps) {
       </div>
 
       {/* Overlay oscuro */}
-      <div className="absolute inset-0 bg-gradient-to-b from-bosque-deep/60 via-bosque-deep/50 to-bosque-deep/70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-scrim/60 via-scrim/50 to-scrim/70" />
 
       {/* Contenido */}
       <div className="relative z-10 h-full flex items-end">

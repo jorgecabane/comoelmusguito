@@ -149,7 +149,7 @@ const components: PortableTextComponents = {
       
       return (
         <blockquote className="bg-bg border-l-4 border-brand pl-8 pr-6 py-8 my-12 rounded-r-xl">
-          <p className="font-display text-xl md:text-2xl text-fg leading-relaxed italic mb-4">
+          <p className="font-display text-xl md:text-2xl text-fg leading-relaxed mb-4">
             "{value.quote}"
           </p>
           {value.author && (
@@ -167,14 +167,14 @@ const components: PortableTextComponents = {
       if (style === 'spaced') {
         return (
           <div className="my-16 flex items-center justify-center">
-            <div className="w-24 h-0.5 bg-olivo"></div>
+            <div className="w-24 h-0.5 bg-tint"></div>
           </div>
         );
       }
       
       return (
         <div className="my-12">
-          <div className="w-full h-0.5 bg-olivo/30"></div>
+          <div className="w-full h-0.5 bg-tint/30"></div>
         </div>
       );
     },

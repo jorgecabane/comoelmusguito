@@ -27,6 +27,7 @@
   --terracota: #BF6F4C;
   --terracota-light: #E0956F;
   --terracota-deep: #9E5434; /* terracota oscurecido: texto crema sobre él pasa AA (4.7:1) */
+  --terracota-dark: #7F3F22; /* terracota para texto sobre fondos claros (4.7:1 sobre niebla) */
 
   /* --- Tokens semánticos --- */
   --bg: var(--bosque);                 /* fondo de página */
@@ -39,6 +40,10 @@
   --accent: var(--terracota-deep);     /* acción primaria (botones) */
   --accent-hover: #B5633F;
   --on-accent: var(--crema);           /* texto sobre --accent */
+  --tint: var(--olivo);                /* rellenos y líneas de énfasis suave (usar con opacidad) */
+  --scrim: var(--bosque-deep);         /* velos sobre fotos (usar con opacidad) */
+  --chrome: var(--bosque-deep);        /* barras fijas oscuras (footer) en cualquier tema */
+  --on-chrome: var(--crema);           /* texto sobre --chrome */
   --accent-text: var(--terracota-light); /* texto/bordes de acento sobre bg o surface */
 
   /* Estados (todos con contraste ≥4.5:1 sobre bg y surface) */
@@ -79,19 +84,6 @@
 }
 
 @theme inline {
-  /* Paleta de marca */
-  --color-bosque: var(--bosque);
-  --color-bosque-deep: var(--bosque-deep);
-  --color-bosque-raised: var(--bosque-raised);
-  --color-olivo: var(--olivo);
-  --color-olivo-light: var(--olivo-light);
-  --color-salvia: var(--salvia);
-  --color-niebla: var(--niebla);
-  --color-crema: var(--crema);
-  --color-terracota: var(--terracota);
-  --color-terracota-light: var(--terracota-light);
-  --color-terracota-deep: var(--terracota-deep);
-
   /* Semánticos */
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -103,6 +95,10 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-on-accent: var(--on-accent);
+  --color-tint: var(--tint);
+  --color-scrim: var(--scrim);
+  --color-chrome: var(--chrome);
+  --color-on-chrome: var(--on-chrome);
   --color-accent-text: var(--accent-text);
   --color-error: var(--error);
   --color-success: var(--success);
@@ -159,25 +155,22 @@ body {
   line-height: 1.6;
   margin: 0;
   padding: 0;
+  /* Las animaciones de entrada (FadeIn desde los lados) no deben generar scroll horizontal en móvil */
+  overflow-x: hidden;
 }
 
-/* Títulos con Lumiflora (una sola grosor: sin negrita sintética) */
-h1, h2, h3, h4, h5, h6,
-.font-display {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-synthesis: none;
-  line-height: 1.1;
-  color: var(--fg);
-}
-
-/* Etiquetas en mayúscula con tracking amplio (estilo del brandboard) */
-.label {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+/* Títulos con Lumiflora (un solo grosor: sin negrita sintética).
+   Van en la capa base para que las utilidades de Tailwind (text-*, leading-*,
+   font-*) puedan sobrescribirlos. */
+@layer base {
+  h1, h2, h3, h4, h5, h6,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-synthesis: none;
+    line-height: 1.1;
+    color: var(--fg);
+  }
 }
 
 /* ============================================
@@ -254,12 +247,14 @@ h1, h2, h3, h4, h5, h6,
   --fg: var(--bosque);
   --muted: #38493D;                  /* 6.4:1 sobre niebla */
   --line: rgb(35 53 41 / 0.28);
-  --brand: var(--terracota-deep);    /* 3.3:1 sobre niebla: solo para títulos grandes */
-  --accent-text: var(--terracota-deep);
+  --brand: var(--terracota-dark);    /* 4.7:1 sobre niebla y 6.7:1 sobre crema */
+  --accent-text: var(--terracota-dark);
+  --tint: var(--bosque);
   --error: #A32A1B;                  /* estados oscurecidos para fondo claro (≥4.5:1) */
   --success: #2F6B2A;
   --warning: #7A5A00;
   --info: #1F5C80;
+  background-color: var(--bg);
   color: var(--fg);
 }
 

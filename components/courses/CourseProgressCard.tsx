@@ -130,7 +130,7 @@ export function CourseProgressCard({
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
             {/* Overlay con gradiente */}
-            <div className="absolute inset-0 bg-gradient-to-t from-bosque-deep/80 via-bosque-deep/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-scrim/80 via-scrim/40 to-transparent" />
             
             {/* Título sobre la imagen */}
             <div className="absolute bottom-0 left-0 right-0 p-6">

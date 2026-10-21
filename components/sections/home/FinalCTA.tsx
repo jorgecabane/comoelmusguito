@@ -6,7 +6,7 @@
 'use client';
 
 import { FadeIn, ParallaxSection } from '@/components/animations';
-import { Button } from '@/components/ui';
+import { Button, Section } from '@/components/ui';
 import { Leaf, BookOpen, Users, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 
@@ -39,7 +39,7 @@ export function FinalCTA() {
   ];
 
   return (
-    <section className="theme-soft relative py-32 overflow-hidden bg-bg">
+    <Section tone="soft" contained={false} className="relative overflow-hidden">
       {/* Pattern decorativo */}
       <div className="absolute inset-0 opacity-[0.06]">
         <div className="absolute inset-0 bg-dots" />
@@ -108,7 +108,7 @@ export function FinalCTA() {
             {/* Mensaje final */}
             <FadeIn delay={0.8}>
               <div className="pt-12 space-y-6">
-                <p className="text-2xl md:text-3xl font-display italic">
+                <p className="text-2xl md:text-3xl font-display">
                   "La vida encuentra su camino...
                   <br />
                   <span className="text-brand">incluso en un frasco de vidrio."</span>
@@ -121,7 +121,7 @@ export function FinalCTA() {
           </div>
         </div>
       </ParallaxSection>
-    </section>
+    </Section>
   );
 }
 

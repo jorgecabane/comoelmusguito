@@ -59,7 +59,7 @@ export function TerrariumCard({ item }: TerrariumCardProps) {
           />
           
           {/* Overlay con info al hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-bosque-deep/90 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
+          <div className="absolute inset-0 bg-gradient-to-t from-scrim/90 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
             {terrarium?.plants && terrarium.plants.length > 0 && (
               <p className="text-sm mb-2 opacity-90">
                 {terrarium.plants.slice(0, 2).join(' • ')}

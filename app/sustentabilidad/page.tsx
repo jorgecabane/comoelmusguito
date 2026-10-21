@@ -51,7 +51,7 @@ export default function SustentabilidadPage() {
         <FadeIn>
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20 mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-tint/20 mb-6">
               <Leaf className="text-brand" size={32} />
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-4">
@@ -63,7 +63,7 @@ export default function SustentabilidadPage() {
           </div>
 
           {/* Intro */}
-          <div className="theme-soft bg-bg rounded-2xl p-8 md:p-12 mb-12">
+          <div className="theme-soft rounded-2xl p-8 md:p-12 mb-12">
             <p className="text-lg text-muted leading-relaxed text-center">
               En <strong>Como el Musguito</strong>, creemos que la belleza y la sustentabilidad van de la mano. 
               Cada terrario que creamos es un compromiso con el cuidado del medio ambiente, utilizando prácticas 
@@ -199,11 +199,11 @@ export default function SustentabilidadPage() {
           </div>
 
           {/* CTA */}
-          <div className="mt-12 bg-bosque-deep text-crema rounded-2xl p-8 md:p-12 text-center">
+          <div className="mt-12 bg-scrim text-fg rounded-2xl p-8 md:p-12 text-center">
             <h2 className="font-display text-2xl font-semibold mb-4">
               ¿Quieres saber más?
             </h2>
-            <p className="text-crema/80 mb-6">
+            <p className="text-fg/80 mb-6">
               Contáctanos si tienes preguntas sobre nuestras prácticas sustentables
             </p>
             <a

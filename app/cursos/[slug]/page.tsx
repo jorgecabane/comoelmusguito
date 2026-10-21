@@ -193,7 +193,7 @@ export default async function CoursePage({
 
       {params_search?.requireAccess === 'true' && (
         <div className="container mb-6">
-          <div className="bg-olivo/10 border border-olivo/20 rounded-lg p-4">
+          <div className="bg-tint/10 border border-tint/20 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <Lock className="text-brand mt-0.5" size={20} />
               <div className="flex-1">

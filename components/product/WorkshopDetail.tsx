@@ -86,7 +86,7 @@ export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
                   disabled={soldOut}
                   className={`w-full border-2 rounded-lg p-3 flex items-center justify-between transition-all ${
                     selectedDateIndex === index
-                      ? 'border-brand bg-olivo/5'
+                      ? 'border-brand bg-tint/5'
                       : 'border-line hover:border-line'
                   } ${soldOut ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >

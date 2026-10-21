@@ -57,11 +57,11 @@ export function HeroImmersive() {
             nextSection.scrollIntoView({ behavior: 'smooth' });
           }
         }}
-        className="absolute bottom-25 left-1/2 -translate-x-1/2 z-20 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-crema"
+        className="absolute bottom-25 left-1/2 -translate-x-1/2 z-20 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
         aria-label="Scroll hacia abajo"
       >
         <span className="flex flex-col items-center gap-2 text-fg/80 hover:text-fg transition-colors">
-          <span className="label text-[0.65rem]">Descubre</span>
+          <span className="text-sm font-medium uppercase tracking-[0.24em]">Descubre</span>
           <Image src="/logo/snail-cream.png" alt="" width={44} height={24} className="w-11 h-auto" />
         </span>
       </motion.button>

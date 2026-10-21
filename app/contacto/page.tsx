@@ -100,7 +100,7 @@ export default function ContactoPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-olivo/20 flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-lg bg-tint/20 flex items-center justify-center shrink-0">
                       <Phone className="text-brand" size={24} />
                     </div>
                     <div>
@@ -119,7 +119,7 @@ export default function ContactoPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-bosque-deep/20 flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-lg bg-scrim/20 flex items-center justify-center shrink-0">
                       <Mail className="text-fg" size={24} />
                     </div>
                     <div>
@@ -168,7 +168,7 @@ export default function ContactoPage() {
                   rel="noopener noreferrer"
                   className="block w-full h-[300px] rounded-lg overflow-hidden relative group"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-bosque/20 to-olivo/20 flex items-center justify-center z-10 group-hover:opacity-0 transition-opacity">
+                  <div className="absolute inset-0 bg-gradient-to-br from-tint/20 to-tint/20 flex items-center justify-center z-10 group-hover:opacity-0 transition-opacity">
                     <div className="text-center">
                       <MapPin className="text-brand mx-auto mb-2" size={32} />
                       <p className="text-fg font-medium">Ver en Google Maps</p>
@@ -195,7 +195,7 @@ export default function ContactoPage() {
                 Envíanos un Mensaje
               </h2>
               {success ? (
-                <div className="bg-olivo/10 border border-olivo rounded-xl p-6 text-center">
+                <div className="bg-tint/10 border border-tint rounded-xl p-6 text-center">
                   <div className="text-4xl mb-4">✅</div>
                   <h3 className="font-semibold text-fg mb-2">¡Mensaje enviado!</h3>
                   <p className="text-muted text-sm mb-4">

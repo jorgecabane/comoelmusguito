@@ -76,7 +76,7 @@ export function ImageLightbox({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 h-screen bg-bosque-deep/95 backdrop-blur-sm z-50"
+            className="fixed inset-0 h-screen bg-scrim/95 backdrop-blur-sm z-50"
           />
 
           {/* Lightbox Content */}
@@ -170,7 +170,7 @@ export function ImageLightbox({
                     className={cn(
                       'relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all shrink-0',
                       currentIndex === index
-                        ? 'border-olivo scale-110'
+                        ? 'border-tint scale-110'
                         : 'border-transparent opacity-60 hover:opacity-100'
                     )}
                   >

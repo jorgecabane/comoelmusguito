@@ -191,7 +191,7 @@ function CheckoutCallbackContent() {
                 transition={{ type: 'spring', stiffness: 200 }}
                 className="mb-6"
               >
-                <div className="w-24 h-24 bg-olivo/20 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-24 h-24 bg-tint/20 rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle2 className="text-brand" size={48} />
                 </div>
               </motion.div>

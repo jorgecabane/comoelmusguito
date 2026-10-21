@@ -61,7 +61,7 @@ export function SuppliesSection({ insumos }: SuppliesSectionProps) {
                         />
                         
                         {/* Overlay info al hover */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-bosque-deep/90 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
+                        <div className="absolute inset-0 bg-gradient-to-t from-scrim/90 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
                           {insumo.brand && (
                             <p className="text-sm mb-2 opacity-90">
                               {insumo.brand}

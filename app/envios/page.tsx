@@ -39,7 +39,7 @@ export default function EnviosPage() {
                 Envíos y Entregas
               </h2>
               
-              <div className="bg-olivo/10 border-l-4 border-olivo rounded-lg p-6 mb-6">
+              <div className="bg-tint/10 border-l-4 border-tint rounded-lg p-6 mb-6">
                 <h3 className="font-semibold text-fg mb-2">⚠️ Importante</h3>
                 <p className="text-muted text-sm">
                   Los terrarios son productos frágiles y únicos. Por su naturaleza artesanal y delicada, 
@@ -115,7 +115,7 @@ export default function EnviosPage() {
                     De acuerdo con la <strong>Ley del Consumidor chilena</strong>, usted tiene derecho a retractarse 
                     de la compra dentro de <strong>10 días hábiles</strong> desde la recepción del producto.
                   </p>
-                  <div className="bg-olivo/10 rounded-lg p-4 mt-4">
+                  <div className="bg-tint/10 rounded-lg p-4 mt-4">
                     <p className="text-sm text-muted font-medium mb-2">Condiciones para devolución:</p>
                     <ul className="list-disc list-inside space-y-1 text-muted text-sm ml-2">
                       <li>El producto debe estar en su estado original</li>

@@ -53,7 +53,7 @@ export function SupplyCard({ item }: SupplyCardProps) {
           {/* Badge de regalo */}
           {item.isGift && (
             <div className="absolute top-4 right-4">
-              <Badge variant="default" size="sm" className="bg-olivo/90 text-white">
+              <Badge variant="default" size="sm" className="bg-tint/90 text-white">
                 <Gift size={14} className="mr-1" />
                 Regalo
               </Badge>

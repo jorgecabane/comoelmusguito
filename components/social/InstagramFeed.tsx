@@ -20,6 +20,8 @@ interface InstagramPost {
   timestamp: string;
 }
 
+const INSTAGRAM_PROFILE_URL = 'https://www.instagram.com/comoelmusguito';
+
 interface FallbackPhoto {
   src: string;
   alt: string;
@@ -30,15 +32,12 @@ interface InstagramFeedProps {
   className?: string;
   /** Fotos propias que se muestran si el feed de Instagram no responde o viene vacío */
   fallbackPhotos?: FallbackPhoto[];
-  /** Perfil al que enlazan las fotos de respaldo */
-  profileUrl?: string;
 }
 
 export function InstagramFeed({
   limit = 8,
   className,
   fallbackPhotos,
-  profileUrl = 'https://www.instagram.com/comoelmusguito',
 }: InstagramFeedProps) {
   const [posts, setPosts] = useState<InstagramPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,14 +69,17 @@ export function InstagramFeed({
     fetchInstagramPosts();
   }, [limit]);
 
+  // Cantidad de cuadros: igual en carga y en respaldo para que el contenido de abajo no salte
+  const placeholderCount = fallbackPhotos?.length ? Math.min(limit, fallbackPhotos.length) : limit;
+
   // Estado de carga
   if (loading) {
     return (
       <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-4', className)}>
-        {[...Array(limit)].map((_, i) => (
+        {[...Array(placeholderCount)].map((_, i) => (
           <div
             key={i}
-            className="aspect-square bg-gradient-to-br from-bosque/10 to-olivo/10 rounded-lg animate-pulse"
+            className="aspect-square bg-gradient-to-br from-tint/10 to-tint/10 rounded-lg animate-pulse"
           />
         ))}
       </div>
@@ -94,7 +96,7 @@ export function InstagramFeed({
           {fallbackPhotos.slice(0, limit).map((photo) => (
             <Link
               key={photo.src}
-              href={profileUrl}
+              href={INSTAGRAM_PROFILE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="aspect-square rounded-lg shadow-natural-sm hover:shadow-natural-md transition-all group overflow-hidden relative"
@@ -106,7 +108,7 @@ export function InstagramFeed({
                 sizes="(max-width: 768px) 50vw, 25vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-bosque-deep/0 group-hover:bg-bosque-deep/30 transition-colors flex items-center justify-center">
+              <div className="absolute inset-0 bg-scrim/0 group-hover:bg-scrim/30 transition-colors flex items-center justify-center">
                 <Instagram className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={32} />
               </div>
             </Link>
@@ -120,7 +122,7 @@ export function InstagramFeed({
         {[...Array(limit)].map((_, i) => (
           <div
             key={i}
-            className="aspect-square bg-gradient-to-br from-bosque/10 to-olivo/10 rounded-lg shadow-natural-sm hover:shadow-natural-md transition-all cursor-pointer group overflow-hidden relative"
+            className="aspect-square bg-gradient-to-br from-tint/10 to-tint/10 rounded-lg shadow-natural-sm hover:shadow-natural-md transition-all cursor-pointer group overflow-hidden relative"
           >
             <div className="absolute inset-0 bg-brand/0 group-hover:bg-brand/10 transition-colors flex items-center justify-center">
               <Instagram className="text-brand opacity-0 group-hover:opacity-100 transition-opacity" size={32} />

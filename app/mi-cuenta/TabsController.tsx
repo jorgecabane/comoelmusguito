@@ -111,7 +111,7 @@ export function TabsController({
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
                         order.paymentStatus === 2
-                          ? 'bg-olivo/20 text-brand'
+                          ? 'bg-tint/20 text-brand'
                           : order.paymentStatus === 1
                           ? 'bg-brand/20 text-brand'
                           : 'bg-error/20 text-error'

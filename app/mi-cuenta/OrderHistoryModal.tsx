@@ -36,7 +36,7 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-bosque-deep/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-scrim/60 backdrop-blur-sm z-50"
           />
 
           {/* Modal */}
@@ -116,7 +116,7 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
                           <div className="font-display text-2xl font-bold text-fg mb-2">
                             {formatCurrency(order.total, order.currency)}
                           </div>
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-olivo/20 text-brand text-xs font-medium">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-tint/20 text-brand text-xs font-medium">
                             ✅ Confirmado
                           </span>
                         </div>

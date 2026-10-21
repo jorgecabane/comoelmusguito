@@ -77,7 +77,7 @@ export function CourseCard({ course }: CourseCardProps) {
           />
           
           {/* Play overlay */}
-          <div className="absolute inset-0 bg-bosque-deep/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="absolute inset-0 bg-scrim/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-surface/90 flex items-center justify-center">
               <Play className="text-brand ml-1" size={28} fill="currentColor" />
             </div>
@@ -140,7 +140,7 @@ export function CourseCard({ course }: CourseCardProps) {
           <div className="pt-2">
             <div className="h-2 bg-bg rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-bosque to-olivo transition-all duration-500"
+                className="h-full bg-gradient-to-r from-tint to-tint transition-all duration-500"
                 style={{ width: `${course.progress.percentage}%` }}
               />
             </div>

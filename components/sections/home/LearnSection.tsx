@@ -29,7 +29,7 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
         {/* Header */}
         <div className="text-center mb-20 space-y-6">
           <FadeIn>
-            <div className="inline-flex items-center gap-3 bg-olivo/10 px-6 py-3 rounded-full mb-4">
+            <div className="inline-flex items-center gap-3 bg-tint/10 px-6 py-3 rounded-full mb-4">
               <BookOpen className="text-brand" size={24} />
               <span className="text-brand font-semibold">Educación</span>
             </div>
@@ -111,7 +111,7 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
                         />
                         
                         {/* Play overlay */}
-                        <div className="absolute inset-0 bg-bosque-deep/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-scrim/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <div className="w-16 h-16 rounded-full bg-surface/90 flex items-center justify-center">
                             <Play className="text-brand ml-1" size={28} fill="currentColor" />
                           </div>

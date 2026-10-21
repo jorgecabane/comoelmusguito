@@ -14,7 +14,7 @@ export function ArtistSection() {
     <section className="relative py-32 bg-gradient-to-b from-bg to-surface overflow-hidden">
       {/* Background decorativo */}
       <div className="absolute inset-0 opacity-5 pointer-events-none" aria-hidden="true">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-olivo rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-64 h-64 bg-tint rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent rounded-full blur-3xl" />
       </div>
 
@@ -39,7 +39,7 @@ export function ArtistSection() {
           {/* Contenido */}
           <div className="space-y-8 relative">
             <FadeIn delay={0.2}>
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-olivo/20 mb-4 relative z-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-tint/20 mb-4 relative z-10">
                 <Leaf className="text-brand" size={32} />
               </div>
             </FadeIn>

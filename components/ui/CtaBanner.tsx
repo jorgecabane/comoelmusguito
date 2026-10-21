@@ -19,7 +19,7 @@ export function CtaBanner({ title, description, children, className }: CtaBanner
   return (
     <div
       className={cn(
-        'theme-soft bg-bg text-fg rounded-2xl p-8 md:p-12 text-center',
+        'theme-soft rounded-2xl p-8 md:p-12 text-center',
         className
       )}
     >

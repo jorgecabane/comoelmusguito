@@ -108,7 +108,7 @@ export function PaymentMethodSelector({
         type="button"
         disabled={disabled}
         onClick={() => onGatewayChange(otherGateway)}
-        className="mt-3 text-sm text-terracota transition-colors hover:text-terracota-light hover:underline disabled:opacity-50"
+        className="mt-3 text-sm text-accent-text transition-colors hover:text-accent-text hover:underline disabled:opacity-50"
       >
         {selectedGateway === 'flow'
           ? 'Tienes una tarjeta internacional? Pagar con PayPal'
