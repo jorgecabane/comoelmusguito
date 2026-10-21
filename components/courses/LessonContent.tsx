@@ -11,7 +11,6 @@ import { CheckCircle2, Clock, Download } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { formatFileSize } from '@/sanity/lib/file';
 
@@ -194,7 +193,8 @@ export function LessonContent({
       <div className="flex items-center justify-between gap-4 pt-8 border-t border-line">
         <div>
           {moduleIndex > 0 || lessonIndex > 0 ? (
-            <Link
+            <Button
+              variant="secondary"
               href={
                 lessonIndex > 0
                   ? `/cursos/${course.slug.current}/leccion/${moduleIndex}/${
@@ -205,28 +205,20 @@ export function LessonContent({
                     }/${(course.modules?.[moduleIndex - 1]?.lessons?.length || 1) - 1}`
               }
             >
-              <Button variant="secondary">
-                ← Anterior
-              </Button>
-            </Link>
+              ← Anterior
+            </Button>
           ) : null}
         </div>
 
         <div>
           {nextLesson ? (
-            <Link
-              href={`/cursos/${course.slug.current}/leccion/${nextLesson.moduleIndex}/${nextLesson.lessonIndex}`}
-            >
-              <Button variant="primary">
-                Siguiente →
-              </Button>
-            </Link>
+            <Button variant="primary" href={`/cursos/${course.slug.current}/leccion/${nextLesson.moduleIndex}/${nextLesson.lessonIndex}`}>
+              Siguiente →
+            </Button>
           ) : (
-            <Link href={`/cursos/${course.slug.current}`}>
-              <Button variant="primary">
-                Finalizar Curso
-              </Button>
-            </Link>
+            <Button variant="primary" href={`/cursos/${course.slug.current}`}>
+              Finalizar Curso
+            </Button>
           )}
         </div>
       </div>

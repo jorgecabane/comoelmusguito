@@ -214,9 +214,7 @@ export default async function WorkshopPage({ params }: WorkshopPageProps) {
 
       {/* Back to catalog */}
       <section className="container mt-16">
-        <Link href="/talleres">
-          <Button variant="secondary">← Ver todos los talleres</Button>
-        </Link>
+        <Button variant="secondary" href="/talleres">← Ver todos los talleres</Button>
       </section>
     </div>
     </>
