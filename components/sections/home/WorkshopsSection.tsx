@@ -170,7 +170,6 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
                             {formatPrice(workshop.price, workshop.currency)}
                           </div>
                           <Button
-                            as="span"
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
                             className="text-brand"
@@ -191,8 +190,12 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
         {/* CTA */}
         <FadeIn delay={0.6}>
           <div className="text-center mt-16">
-            <Button href="/talleres" variant="secondary" size="lg">Ver Todos los Talleres
-                <ArrowRight size={20} /></Button>
+            <Link href="/talleres">
+              <Button variant="secondary" size="lg">
+                Ver Todos los Talleres
+                <ArrowRight size={20} />
+              </Button>
+            </Link>
           </div>
         </FadeIn>
       </div>

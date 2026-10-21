@@ -256,7 +256,9 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
 
         {/* CTA Final */}
         <div className="text-center">
-          <Button href="/insumos" variant="secondary">← Ver todos los insumos</Button>
+          <Link href="/insumos">
+            <Button variant="secondary">← Ver todos los insumos</Button>
+          </Link>
         </div>
       </div>
     </div>

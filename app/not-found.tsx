@@ -37,10 +37,18 @@ export default function NotFound() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button href="/" variant="primary" size="lg"><Home size={20} />
-                Ir al Inicio</Button>
-            <Button href="/cursos" variant="secondary" size="lg"><Search size={20} />
-                Ver Cursos</Button>
+            <Link href="/">
+              <Button variant="primary" size="lg">
+                <Home size={20} />
+                Ir al Inicio
+              </Button>
+            </Link>
+            <Link href="/cursos">
+              <Button variant="secondary" size="lg">
+                <Search size={20} />
+                Ver Cursos
+              </Button>
+            </Link>
           </div>
 
           <div className="pt-8 border-t border-line">

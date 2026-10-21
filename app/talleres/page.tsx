@@ -182,7 +182,6 @@ export default async function TalleresPage() {
                         </Card.Content>
                         <Card.Footer>
                           <Button
-                            as="span"
                             variant="primary"
                             className="w-full group-hover:bg-accent-hover transition-colors"
                             disabled={!taller.hayCuposDisponibles}

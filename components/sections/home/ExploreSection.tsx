@@ -97,7 +97,6 @@ export function ExploreSection({ terrarios }: ExploreSectionProps) {
                             {formatPrice(terrarium.price, terrarium.currency)}
                           </div>
                           <Button
-                            as="span"
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
                             className="text-brand"
@@ -117,8 +116,12 @@ export function ExploreSection({ terrarios }: ExploreSectionProps) {
         {/* CTA */}
         <FadeIn delay={0.4}>
           <div className="text-center mt-16">
-            <Button href="/terrarios" variant="primary" size="lg">Explorar Todos los Ecosistemas
-                <ArrowRight size={20} /></Button>
+            <Link href="/terrarios">
+              <Button variant="primary" size="lg">
+                Explorar Todos los Ecosistemas
+                <ArrowRight size={20} />
+              </Button>
+            </Link>
           </div>
         </FadeIn>
       </div>

@@ -66,8 +66,12 @@ export default function Error({
               <RefreshCw size={20} />
               Intentar Nuevamente
             </Button>
-            <Button href="/" variant="secondary" size="lg"><Home size={20} />
-                Ir al Inicio</Button>
+            <Link href="/">
+              <Button variant="secondary" size="lg">
+                <Home size={20} />
+                Ir al Inicio
+              </Button>
+            </Link>
           </div>
 
           <div className="mt-8 pt-8 border-t border-line">

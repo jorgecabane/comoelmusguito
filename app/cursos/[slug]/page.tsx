@@ -180,13 +180,11 @@ export default async function CoursePage({
                 <p className="text-sm text-muted mb-3">
                   Necesitas iniciar sesión para acceder a este curso.
                 </p>
-                <Button
-                  href={`/auth/login?callbackUrl=${encodeURIComponent(`/cursos/${slug}`)}`}
-                  variant="primary"
-                  size="sm"
-                >
-                  Iniciar Sesión
-                </Button>
+                <Link href={`/auth/login?callbackUrl=${encodeURIComponent(`/cursos/${slug}`)}`}>
+                  <Button variant="primary" size="sm">
+                    Iniciar Sesión
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -207,7 +205,11 @@ export default async function CoursePage({
                 </p>
                 <div className="flex gap-2">
                   <CourseDetail course={course} userCurrency={userCurrency} />
-                  <Button href="/mi-cuenta?filter=courses" variant="secondary" size="sm">Ver Mis Cursos</Button>
+                  <Link href="/mi-cuenta?filter=courses">
+                    <Button variant="secondary" size="sm">
+                      Ver Mis Cursos
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -476,7 +478,9 @@ export default async function CoursePage({
 
       {/* Back to catalog */}
       <section className="container mt-16">
-        <Button href="/cursos" variant="secondary">← Ver todos los cursos</Button>
+        <Link href="/cursos">
+          <Button variant="secondary">← Ver todos los cursos</Button>
+        </Link>
       </section>
     </div>
     </>

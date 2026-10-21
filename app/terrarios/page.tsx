@@ -45,7 +45,9 @@ export default async function TerrariosPage() {
             <p className="text-xl text-muted mb-6">
               Estamos preparando nuevos terrarios. Vuelve pronto 🌱
             </p>
-            <Button href="/cursos" variant="primary">Ver Cursos Online</Button>
+            <Link href="/cursos">
+              <Button variant="primary">Ver Cursos Online</Button>
+            </Link>
           </div>
         </section>
       ) : (

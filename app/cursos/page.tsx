@@ -144,7 +144,7 @@ export default async function CursosPage() {
                           </div>
                         </Card.Content>
                         <Card.Footer>
-                          <Button as="span" variant="primary" className="w-full group-hover:bg-accent-hover transition-colors">
+                          <Button variant="primary" className="w-full group-hover:bg-accent-hover transition-colors">
                             Comenzar mi Viaje
                             <ArrowRight size={18} />
                           </Button>

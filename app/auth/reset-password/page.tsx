@@ -146,7 +146,11 @@ function ResetPasswordContent() {
               El enlace de recuperación no es válido o ha expirado. Por favor, solicita un nuevo enlace.
             </p>
 
-            <Button href="/auth/forgot-password" variant="primary" size="lg" className="w-full">Solicitar Nuevo Enlace</Button>
+            <Link href="/auth/forgot-password">
+              <Button variant="primary" size="lg" className="w-full">
+                Solicitar Nuevo Enlace
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </div>
@@ -175,7 +179,11 @@ function ResetPasswordContent() {
                 : 'Tu contraseña ha sido restablecida exitosamente. Serás redirigido al login en unos segundos.'}
             </p>
 
-            <Button href="/auth/login" variant="primary" size="lg" className="w-full">Ir al Login</Button>
+            <Link href="/auth/login">
+              <Button variant="primary" size="lg" className="w-full">
+                Ir al Login
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </div>
