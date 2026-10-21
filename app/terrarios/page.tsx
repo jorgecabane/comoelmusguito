@@ -3,7 +3,7 @@
  * Datos desde Sanity CMS
  */
 
-import { Card, Badge, Button } from '@/components/ui';
+import { Card, Badge, Button, CtaBanner } from '@/components/ui';
 import { Heart, Filter, ArrowRight } from 'lucide-react';
 import { getAllTerrariums } from '@/lib/sanity/fetch';
 import { getFirstImage, formatPrice, getSlugString, sizeLabels, categoryLabels } from '@/lib/sanity/utils';
@@ -28,10 +28,10 @@ export default async function TerrariosPage() {
       {/* Header */}
       <section className="container mb-16">
         <div className="max-w-3xl">
-          <h1 className="font-display text-5xl md:text-6xl font-bold text-forest mb-6">
+          <h1 className="font-display text-5xl md:text-6xl font-bold text-fg mb-6">
             Ecosistemas Vivos
           </h1>
-          <p className="text-xl text-gray leading-relaxed">
+          <p className="text-xl text-muted leading-relaxed">
             Cada terrario es una obra de arte viva, hecha a mano con plantas y musgos cultivados por Tomás
             y materiales recolectados de forma sustentable en Chile.
           </p>
@@ -41,13 +41,11 @@ export default async function TerrariosPage() {
       {/* Mensaje si no hay terrarios */}
       {terrarios.length === 0 ? (
         <section className="container">
-          <div className="bg-cream/50 rounded-2xl p-12 text-center">
-            <p className="text-xl text-gray mb-6">
+          <div className="bg-bg/50 rounded-2xl p-12 text-center">
+            <p className="text-xl text-muted mb-6">
               Estamos preparando nuevos terrarios. Vuelve pronto 🌱
             </p>
-            <Link href="/cursos">
-              <Button variant="primary">Ver Cursos Online</Button>
-            </Link>
+            <Button variant="primary" href="/cursos">Ver Cursos Online</Button>
           </div>
         </section>
       ) : (
@@ -76,7 +74,7 @@ export default async function TerrariosPage() {
                                 ? `Stock: ${terrarium.stock}`
                                 : 'Agotado'}
                             </Badge>
-                            <span className="text-xs text-gray uppercase tracking-wide">
+                            <span className="text-xs text-muted uppercase tracking-wide">
                               {categoryLabel}
                             </span>
                           </div>
@@ -102,16 +100,16 @@ export default async function TerrariosPage() {
                           )}
 
                           <div className="flex items-center justify-between pt-2 mt-auto">
-                            <div className="text-2xl font-display font-bold text-forest">
+                            <div className="text-2xl font-display font-bold text-fg">
                               {formatPrice(terrarium.price, terrarium.currency)}
                             </div>
-                            <span className="text-sm text-gray">{sizeLabel}</span>
+                            <span className="text-sm text-muted">{sizeLabel}</span>
                           </div>
                         </Card.Content>
                         <Card.Footer>
                           <Button
                             variant="primary"
-                            className="w-full group-hover:bg-musgo-dark transition-colors"
+                            className="w-full group-hover:bg-accent-hover transition-colors"
                             disabled={!terrarium.inStock}
                           >
                             {terrarium.inStock ? 'Ver Detalles' : 'Agotado'}
@@ -128,24 +126,12 @@ export default async function TerrariosPage() {
 
           {/* Info adicional */}
           <section className="container mt-24">
-            <div className="bg-gradient-to-br from-vida/10 to-musgo/10 rounded-2xl p-12 text-center">
-              <h2 className="font-display text-3xl font-semibold text-forest mb-4">
-                ¿No encuentras lo que buscas?
-              </h2>
-              <p className="text-gray mb-6 max-w-2xl mx-auto">
-                Creamos terrarios personalizados según tus gustos y espacio.
-                Contáctanos y diseñemos juntos tu ecosistema perfecto.
-              </p>
-              <a
-                href={getWhatsAppLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="primary" size="lg">
-                  Solicitar Terrario Personalizado
-                </Button>
-              </a>
-            </div>
+            <CtaBanner
+              title="¿No encuentras lo que buscas?"
+              description="Creamos terrarios personalizados según tus gustos y espacio. Contáctanos y diseñemos juntos tu ecosistema perfecto."
+            >
+              <Button href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer" variant="primary" size="lg">Solicitar Terrario Personalizado</Button>
+            </CtaBanner>
           </section>
         </>
       )}

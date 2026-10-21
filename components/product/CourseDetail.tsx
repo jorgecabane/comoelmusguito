@@ -47,14 +47,14 @@ export function CourseDetail({ course, userCurrency }: CourseDetailProps) {
   };
 
   return (
-    <div className="border-t border-b border-gray/20 py-6">
+    <div className="border-t border-b border-line py-6">
       <div className="space-y-2 mb-6">
-        <div className="text-4xl font-display font-bold text-forest">
+        <div className="text-4xl font-display font-bold text-fg">
           {pricing.current}
         </div>
         {pricing.hasDiscount && pricing.original && (
           <div className="flex items-center gap-3">
-            <div className="text-xl text-gray line-through">
+            <div className="text-xl text-muted line-through">
               {pricing.original}
             </div>
             <Badge variant="error">
@@ -68,7 +68,7 @@ export function CourseDetail({ course, userCurrency }: CourseDetailProps) {
         Comenzar mi Viaje
       </AddToCartButton>
 
-      <p className="text-sm text-gray text-center mt-4">
+      <p className="text-sm text-muted text-center mt-4">
         ✓ Acceso de por vida • ✓ Material descargable • ✓ Aprende a tu ritmo
       </p>
     </div>

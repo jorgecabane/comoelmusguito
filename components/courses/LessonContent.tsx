@@ -11,7 +11,6 @@ import { CheckCircle2, Clock, Download } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { formatFileSize } from '@/sanity/lib/file';
 
@@ -56,21 +55,21 @@ export function LessonContent({
     <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
       {/* Header de la Lección */}
       <div className="mb-6">
-        <div className="flex items-center gap-2 text-sm text-gray mb-2">
+        <div className="flex items-center gap-2 text-sm text-muted mb-2">
           <span>Módulo {module.order}</span>
           <span>/</span>
           <span>Lección {lesson.order}</span>
         </div>
-        <h1 className="font-display text-3xl md:text-4xl font-bold text-forest mb-4">
+        <h1 className="font-display text-3xl md:text-4xl font-bold text-fg mb-4">
           {lesson.title}
         </h1>
         {module.description && (
-          <p className="text-gray text-lg mb-4">{module.description}</p>
+          <p className="text-muted text-lg mb-4">{module.description}</p>
         )}
         {lesson.description && (
-          <p className="text-gray mb-4">{lesson.description}</p>
+          <p className="text-muted mb-4">{lesson.description}</p>
         )}
-        <div className="flex items-center gap-4 text-sm text-gray">
+        <div className="flex items-center gap-4 text-sm text-muted">
           {lesson.duration && (
             <div className="flex items-center gap-1">
               <Clock size={16} />
@@ -78,7 +77,7 @@ export function LessonContent({
             </div>
           )}
           {isCompleted && (
-            <div className="flex items-center gap-1 text-vida">
+            <div className="flex items-center gap-1 text-brand">
               <CheckCircle2 size={16} fill="currentColor" />
               <span>Completada</span>
             </div>
@@ -123,7 +122,7 @@ export function LessonContent({
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 text-sm text-vida font-semibold"
+                  className="mt-3 text-sm text-brand font-semibold"
                 >
                   ✅ ¡Lección completada!
                 </motion.div>
@@ -136,7 +135,7 @@ export function LessonContent({
       {/* Descripción adicional */}
       {/* {lesson.description && (
         <div className="prose prose-lg max-w-none mb-8">
-          <div className="text-gray leading-relaxed whitespace-pre-line">
+          <div className="text-muted leading-relaxed whitespace-pre-line">
             {lesson.description}
           </div>
         </div>
@@ -145,7 +144,7 @@ export function LessonContent({
       {/* Downloadables */}
       {lesson.downloadables && lesson.downloadables.length > 0 && (
         <div className="mb-8">
-          <h3 className="font-display text-xl font-semibold text-forest mb-4">
+          <h3 className="font-display text-xl font-semibold text-fg mb-4">
             Materiales Descargables
           </h3>
           <div className="space-y-2">
@@ -167,18 +166,18 @@ export function LessonContent({
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-4 bg-cream rounded-lg hover:bg-cream/80 transition-colors group"
+                  className="flex items-center gap-3 p-4 bg-bg rounded-lg hover:bg-bg/80 transition-colors group"
                 >
                   <Download
                     size={20}
-                    className="text-musgo group-hover:text-forest transition-colors flex-shrink-0"
+                    className="text-brand group-hover:text-fg transition-colors flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-forest truncate">
+                    <div className="font-medium text-fg truncate">
                       {fileName}
                     </div>
                     {fileSize && (
-                      <div className="text-sm text-gray">
+                      <div className="text-sm text-muted">
                         {fileSize}
                       </div>
                     )}
@@ -191,10 +190,11 @@ export function LessonContent({
       )}
 
       {/* Botones de Navegación */}
-      <div className="flex items-center justify-between gap-4 pt-8 border-t border-gray/20">
+      <div className="flex items-center justify-between gap-4 pt-8 border-t border-line">
         <div>
           {moduleIndex > 0 || lessonIndex > 0 ? (
-            <Link
+            <Button
+              variant="secondary"
               href={
                 lessonIndex > 0
                   ? `/cursos/${course.slug.current}/leccion/${moduleIndex}/${
@@ -205,28 +205,20 @@ export function LessonContent({
                     }/${(course.modules?.[moduleIndex - 1]?.lessons?.length || 1) - 1}`
               }
             >
-              <Button variant="secondary">
-                ← Anterior
-              </Button>
-            </Link>
+              ← Anterior
+            </Button>
           ) : null}
         </div>
 
         <div>
           {nextLesson ? (
-            <Link
-              href={`/cursos/${course.slug.current}/leccion/${nextLesson.moduleIndex}/${nextLesson.lessonIndex}`}
-            >
-              <Button variant="primary">
-                Siguiente →
-              </Button>
-            </Link>
+            <Button variant="primary" href={`/cursos/${course.slug.current}/leccion/${nextLesson.moduleIndex}/${nextLesson.lessonIndex}`}>
+              Siguiente →
+            </Button>
           ) : (
-            <Link href={`/cursos/${course.slug.current}`}>
-              <Button variant="primary">
-                Finalizar Curso
-              </Button>
-            </Link>
+            <Button variant="primary" href={`/cursos/${course.slug.current}`}>
+              Finalizar Curso
+            </Button>
           )}
         </div>
       </div>

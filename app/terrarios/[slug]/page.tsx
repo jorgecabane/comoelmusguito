@@ -107,16 +107,16 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
     <div className="pt-32 pb-16">
       {/* Breadcrumb */}
       <div className="container mb-8">
-        <div className="flex items-center gap-2 text-sm text-gray">
-          <Link href="/" className="hover:text-musgo transition-colors">
+        <div className="flex items-center gap-2 text-sm text-muted">
+          <Link href="/" className="hover:text-brand transition-colors">
             Inicio
           </Link>
           <span>/</span>
-          <Link href="/terrarios" className="hover:text-musgo transition-colors">
+          <Link href="/terrarios" className="hover:text-brand transition-colors">
             Terrarios
           </Link>
           <span>/</span>
-          <span className="text-forest">{terrarium.name}</span>
+          <span className="text-fg">{terrarium.name}</span>
         </div>
       </div>
 
@@ -142,10 +142,10 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
                 </Badge>
                 <Badge variant="default">{categoryLabel}</Badge>
               </div>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-forest mb-4">
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-4">
                 {terrarium.name}
               </h1>
-              <p className="text-xl text-gray leading-relaxed">
+              <p className="text-xl text-muted leading-relaxed">
                 {terrarium.description}
               </p>
             </div>
@@ -155,42 +155,42 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
 
             {/* Specs */}
             <div className="space-y-4">
-              <h2 className="font-display text-2xl font-semibold text-forest">
+              <h2 className="font-display text-2xl font-semibold text-fg">
                 Características
               </h2>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-cream p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-musgo mb-2">
+                <div className="bg-bg p-4 rounded-lg">
+                  <div className="flex items-center gap-2 text-brand mb-2">
                     <Package size={20} />
                     <span className="font-semibold">Tamaño</span>
                   </div>
-                  <p className="text-gray">{sizeLabel}</p>
+                  <p className="text-muted">{sizeLabel}</p>
                 </div>
                 {terrarium.careLevel && (
-                  <div className="bg-cream p-4 rounded-lg">
-                    <div className="flex items-center gap-2 text-musgo mb-2">
+                  <div className="bg-bg p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-brand mb-2">
                       <Leaf size={20} />
                       <span className="font-semibold">Dificultad</span>
                     </div>
-                    <p className="text-gray capitalize">{terrarium.careLevel}</p>
+                    <p className="text-muted capitalize">{terrarium.careLevel}</p>
                   </div>
                 )}
                 {terrarium.lightRequirement && (
-                  <div className="bg-cream p-4 rounded-lg">
-                    <div className="flex items-center gap-2 text-musgo mb-2">
+                  <div className="bg-bg p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-brand mb-2">
                       <Leaf size={20} />
                       <span className="font-semibold">Luz</span>
                     </div>
-                    <p className="text-gray capitalize">{terrarium.lightRequirement}</p>
+                    <p className="text-muted capitalize">{terrarium.lightRequirement}</p>
                   </div>
                 )}
                 {terrarium.wateringFrequency && (
-                  <div className="bg-cream p-4 rounded-lg">
-                    <div className="flex items-center gap-2 text-musgo mb-2">
+                  <div className="bg-bg p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-brand mb-2">
                       <Droplets size={20} />
                       <span className="font-semibold">Riego</span>
                     </div>
-                    <p className="text-gray">{terrarium.wateringFrequency}</p>
+                    <p className="text-muted">{terrarium.wateringFrequency}</p>
                   </div>
                 )}
               </div>
@@ -199,7 +199,7 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
             {/* Plants */}
             {terrarium.plants && terrarium.plants.length > 0 && (
               <div className="space-y-3">
-                <h3 className="font-display text-xl font-semibold text-forest">
+                <h3 className="font-display text-xl font-semibold text-fg">
                   Plantas Incluidas
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -215,7 +215,7 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
             {/* Hardscape */}
             {terrarium.hardscape && terrarium.hardscape.length > 0 && (
               <div className="space-y-3">
-                <h3 className="font-display text-xl font-semibold text-forest">
+                <h3 className="font-display text-xl font-semibold text-fg">
                   Hardscape
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -233,9 +233,7 @@ export default async function TerrariumPage({ params }: TerrariumPageProps) {
 
       {/* Back to catalog */}
       <section className="container mt-16">
-        <Link href="/terrarios">
-          <Button variant="secondary">← Ver todos los terrarios</Button>
-        </Link>
+        <Button variant="secondary" href="/terrarios">← Ver todos los terrarios</Button>
       </section>
     </div>
     </>

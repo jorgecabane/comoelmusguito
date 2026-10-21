@@ -50,17 +50,17 @@ export function WorkshopCard({ item }: WorkshopCardProps) {
           {/* Header */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-display text-xl font-bold text-forest group-hover:text-musgo transition-colors">
+              <h3 className="font-display text-xl font-bold text-fg group-hover:text-brand transition-colors">
                 {item.name}
               </h3>
               {item.isGift && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cream border border-musgo/30 text-musgo text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-bg border border-brand/30 text-brand text-xs font-medium">
                   <Gift size={12} />
                   Regalo
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray">
+            <p className="text-sm text-muted">
               {item.isGift && item.giftSenderName
                 ? `Regalo de ${item.giftSenderName} • ${formatDateShort(item.orderDate)}`
                 : `Reservado el ${formatDateShort(item.orderDate)}`}
@@ -69,15 +69,15 @@ export function WorkshopCard({ item }: WorkshopCardProps) {
 
           {/* Fecha y hora */}
           {workshopDate && (
-            <div className="space-y-3 pt-2 border-t border-gray/20">
+            <div className="space-y-3 pt-2 border-t border-line">
               <div className="flex items-start gap-3">
-                <Calendar className="text-musgo mt-0.5" size={20} />
+                <Calendar className="text-brand mt-0.5" size={20} />
                 <div>
-                  <p className="font-semibold text-forest">
+                  <p className="font-semibold text-fg">
                     {workshopDateLong}
                   </p>
                   {workshopTime && (
-                    <div className="flex items-center gap-2 mt-1 text-sm text-gray">
+                    <div className="flex items-center gap-2 mt-1 text-sm text-muted">
                       <Clock size={16} />
                       <span>{workshopTime}</span>
                     </div>
@@ -88,23 +88,23 @@ export function WorkshopCard({ item }: WorkshopCardProps) {
               {/* Estado */}
               <div className="flex items-center gap-2">
                 {isUpcoming && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-musgo/20 text-musgo text-xs font-medium">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand/20 text-brand text-xs font-medium">
                     Próximamente
                   </span>
                 )}
                 {isPast && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray/20 text-gray text-xs font-medium">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-fg/20 text-muted text-xs font-medium">
                     Completado
                   </span>
                 )}
               </div>
 
               {/* Ubicación */}
-              <div className="flex items-start gap-3 pt-2 border-t border-gray/10">
-                <MapPin className="text-musgo mt-0.5" size={20} />
+              <div className="flex items-start gap-3 pt-2 border-t border-line">
+                <MapPin className="text-brand mt-0.5" size={20} />
                 <div>
-                  <p className="font-semibold text-forest text-sm">Ubicación</p>
-                  <p className="text-sm text-gray">
+                  <p className="font-semibold text-fg text-sm">Ubicación</p>
+                  <p className="text-sm text-muted">
                     Santa Isabel 676, Providencia, Santiago
                   </p>
                 </div>
@@ -113,7 +113,7 @@ export function WorkshopCard({ item }: WorkshopCardProps) {
           )}
 
           {/* CTA */}
-          <div className="pt-2 mt-auto flex items-center gap-2 text-musgo font-medium group-hover:gap-3 transition-all">
+          <div className="pt-2 mt-auto flex items-center gap-2 text-brand font-medium group-hover:gap-3 transition-all">
             <span>Ver detalles del taller</span>
             <ArrowRight size={18} />
           </div>

@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Jost } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { OrganizationSchema } from "@/lib/seo/schema";
 
-// Fuente para títulos
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["600", "700"],
+// Fuente para títulos: Lumiflora (identidad de marca, solo peso regular)
+const lumiflora = localFont({
+  src: "./fonts/Lumiflora.otf",
+  weight: "400",
   variable: "--font-display",
   display: "swap",
 });
 
-// Fuente para cuerpo de texto
-const inter = Inter({
+// Fuente para cuerpo de texto. Reemplazo de Glacial Indifference (la tipografía de marca)
+// hasta tener el archivo con licencia web: al tenerlo, solo cambia este bloque.
+const bodyFont = Jost({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["300", "400", "500", "600"],
   variable: "--font-sans",
   display: "swap",
 });
@@ -96,7 +98,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${playfair.variable} ${inter.variable}`}>
+    <html lang="es" className={`${lumiflora.variable} ${bodyFont.variable}`}>
       <head>
         {/* Preconnect a CDNs críticos para mejorar FCP */}
         <link rel="preconnect" href="https://cdn.sanity.io" />
@@ -106,7 +108,7 @@ export default function RootLayout({
         {/* Preload imagen hero crítica para mejorar LCP */}
         <link
           rel="preload"
-          href="/images/hero/hero-fallback.jpg"
+          href="/images/hero/hero-musguito.jpg"
           as="image"
           type="image/jpeg"
         />

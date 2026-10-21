@@ -152,7 +152,7 @@ test.describe('recuperar contraseña', () => {
   test('token inválido muestra error', async ({ page }) => {
     await page.goto('/auth/reset-password?token=token-que-no-existe');
     await expect(page.getByRole('heading', { name: 'Token Inválido' })).toBeVisible();
-    await page.getByRole('button', { name: 'Solicitar Nuevo Enlace' }).click();
+    await page.getByRole('link', { name: 'Solicitar Nuevo Enlace' }).click();
     await expect(page).toHaveURL('/auth/forgot-password');
   });
 

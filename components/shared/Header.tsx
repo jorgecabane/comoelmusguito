@@ -8,7 +8,7 @@
 import { cn } from '@/lib/utils/cn';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Menu, X, ChevronDown, ChevronRight, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { Logo } from './Logo';
 import { UserMenu } from './UserMenu';
@@ -96,8 +96,8 @@ export function Header() {
         'fixed top-0 left-0 right-0 z-200 transition-all duration-500 ease-in-out',
         visible ? 'translate-y-0' : '-translate-y-full',
         scrolled 
-          ? 'bg-cream/30 backdrop-blur-xl shadow-natural-lg border-b border-gray/10' 
-          : 'bg-white shadow-sm'
+          ? 'bg-bg/30 backdrop-blur-xl shadow-natural-lg border-b border-line' 
+          : 'bg-surface shadow-sm'
       )}
     >
       <nav className="container mx-auto">
@@ -112,10 +112,10 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-forest hover:text-musgo font-medium transition-colors relative group"
+                className="text-fg hover:text-brand font-medium transition-colors relative group"
               >
                 {item.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-musgo group-hover:w-full transition-all duration-300" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300" />
               </Link>
             ))}
             
@@ -131,12 +131,12 @@ export function Header() {
             {/* Cart Button - Como jardín */}
             <Link 
               href="/carrito" 
-              className="relative p-2 text-forest hover:text-musgo transition-all hover:scale-110 group"
+              className="relative p-2 text-fg hover:text-brand transition-all hover:scale-110 group"
               aria-label={`Carrito de compras (${cartItemCount} items)`}
             >
-              <span className="text-2xl group-hover:animate-bounce">🌱</span>
+              <ShoppingBag size={24} strokeWidth={1.75} className="group-hover:animate-bounce" aria-hidden="true" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-musgo text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-accent text-on-accent text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                   {cartItemCount}
                 </span>
               )}
@@ -153,11 +153,9 @@ export function Header() {
               </div>
             ) : (
               <div className="hidden lg:flex items-center gap-3">
-                <Link href="/auth/login">
-                  <Button variant="secondary" size="sm">
-                    Iniciar Sesión
-                  </Button>
-                </Link>
+                <Button variant="secondary" size="sm" href="/auth/login">
+                  Iniciar Sesión
+                </Button>
               </div>
             )}
 
@@ -167,7 +165,7 @@ export function Header() {
                 setMobileMenuOpen(!mobileMenuOpen);
                 setShowAccountMenu(false); // Reset account menu cuando se cierra/abre el menú principal
               }}
-              className="lg:hidden p-2 text-forest hover:text-musgo transition-colors"
+              className="lg:hidden p-2 text-fg hover:text-brand transition-colors"
               aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-expanded={mobileMenuOpen}
             >
@@ -178,7 +176,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-6 space-y-4 border-t border-gray/20">
+          <div className="lg:hidden py-6 space-y-4 border-t border-line">
             {!showAccountMenu ? (
               // Menú principal de navegación
               <>
@@ -188,7 +186,7 @@ export function Header() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block text-forest hover:text-musgo font-medium transition-colors py-2"
+                    className="block text-fg hover:text-brand font-medium transition-colors py-2"
                   >
                     {item.name}
                   </Link>
@@ -199,20 +197,18 @@ export function Header() {
                 
                 {/* Dropdown: Aprender (Mobile) */}
                 <MobileDropdown label="Aprender" items={aprenderItems} onItemClick={() => setMobileMenuOpen(false)} />
-                <div className="pt-4 border-t border-gray/20">
+                <div className="pt-4 border-t border-line">
                   {session?.user ? (
                     <button
                       onClick={() => setShowAccountMenu(true)}
-                      className="w-full text-left px-4 py-3 bg-cream/50 rounded-lg font-semibold text-forest hover:bg-cream transition-colors"
+                      className="w-full text-left px-4 py-3 bg-bg/50 rounded-lg font-semibold text-fg hover:bg-bg transition-colors"
                     >
                       {session.user.name || session.user.email?.split('@')[0] || 'Mi Cuenta'}
                     </button>
                   ) : (
-                    <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="secondary" size="sm" className="w-full">
-                        Iniciar Sesión
-                      </Button>
-                    </Link>
+                    <Button variant="secondary" size="sm" className="w-full" href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                      Iniciar Sesión
+                    </Button>
                   )}
                 </div>
               </>
@@ -221,7 +217,7 @@ export function Header() {
               <>
                 <button
                   onClick={() => setShowAccountMenu(false)}
-                  className="flex items-center gap-2 text-forest hover:text-musgo font-medium transition-colors py-2 mb-4"
+                  className="flex items-center gap-2 text-fg hover:text-brand font-medium transition-colors py-2 mb-4"
                 >
                   <span>←</span>
                   <span>Volver</span>
@@ -260,7 +256,7 @@ function MobileDropdown({
     <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-forest hover:text-musgo font-medium transition-colors py-2"
+        className="w-full flex items-center justify-between text-fg hover:text-brand font-medium transition-colors py-2"
       >
         <span>{label}</span>
         <ChevronDown
@@ -278,7 +274,7 @@ function MobileDropdown({
               key={index}
               href={item.href}
               onClick={onItemClick}
-              className="block text-gray hover:text-musgo transition-colors py-1.5"
+              className="block text-muted hover:text-brand transition-colors py-1.5"
             >
               {item.name}
             </Link>

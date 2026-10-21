@@ -69,34 +69,34 @@ function LoginContent() {
   };
 
   return (
-    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
       <div className="container max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl"
+          className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl"
         >
-          <h1 className="font-display text-3xl font-bold text-forest mb-2">
+          <h1 className="font-display text-3xl font-bold text-fg mb-2">
             Bienvenido de vuelta 🌿
           </h1>
-          <p className="text-gray mb-8">
+          <p className="text-muted mb-8">
             Inicia sesión para acceder a tus cursos y pedidos
           </p>
 
           {verified && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-green-800 text-sm">
+            <div className="bg-success/10 border border-success/30 rounded-lg p-4 mb-6 text-success text-sm">
               ✅ Email verificado exitosamente. Ya puedes iniciar sesión.
             </div>
           )}
 
           {searchParams.get('alreadyVerified') === 'true' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-blue-800 text-sm">
+            <div className="bg-info/10 border border-info/30 rounded-lg p-4 mb-6 text-info text-sm">
               ℹ️ Tu email ya está verificado. Puedes iniciar sesión con tu email y contraseña.
             </div>
           )}
 
           {searchParams.get('passwordReset') === 'true' && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-green-800 text-sm">
+            <div className="bg-success/10 border border-success/30 rounded-lg p-4 mb-6 text-success text-sm">
               ✅ Contraseña restablecida exitosamente. Ya puedes iniciar sesión.
             </div>
           )}
@@ -124,7 +124,7 @@ function LoginContent() {
                         setError('Error al reenviar email de verificación');
                       }
                     }}
-                    className="text-sm text-musgo hover:text-forest underline"
+                    className="text-sm text-brand hover:text-fg underline"
                   >
                     Reenviar email de verificación
                   </button>
@@ -135,7 +135,7 @@ function LoginContent() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-forest mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-fg mb-2">
                 Email
               </label>
               <Input
@@ -151,12 +151,12 @@ function LoginContent() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-medium text-forest">
+                <label htmlFor="password" className="block text-sm font-medium text-fg">
                   Contraseña
                 </label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-musgo hover:text-forest font-medium"
+                  className="text-sm text-brand hover:text-fg font-medium"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -197,10 +197,10 @@ function LoginContent() {
             <>
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray/20" />
+                  <div className="w-full border-t border-line" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray">O continúa con</span>
+                  <span className="px-2 bg-surface text-muted">O continúa con</span>
                 </div>
               </div>
 
@@ -236,9 +236,9 @@ function LoginContent() {
           )}
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray">
+            <p className="text-sm text-muted">
               ¿No tienes cuenta?{' '}
-              <Link href="/auth/register" className="text-musgo hover:text-forest font-medium">
+              <Link href="/auth/register" className="text-brand hover:text-fg font-medium">
                 Regístrate aquí
               </Link>
             </p>
@@ -253,11 +253,11 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+        <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
           <div className="container max-w-md">
-            <div className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
-              <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={48} />
-              <h1 className="font-display text-2xl font-bold text-forest">
+            <div className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
+              <Loader2 className="animate-spin text-brand mx-auto mb-6" size={48} />
+              <h1 className="font-display text-2xl font-bold text-fg">
                 Cargando...
               </h1>
             </div>

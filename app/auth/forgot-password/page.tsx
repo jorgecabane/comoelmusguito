@@ -48,39 +48,37 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
         <div className="container max-w-md">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
+            className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
           >
-            <div className="w-16 h-16 bg-musgo/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Mail className="text-musgo" size={32} />
+            <div className="w-16 h-16 bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Mail className="text-brand" size={32} />
             </div>
 
-            <h1 className="font-display text-3xl font-bold text-forest mb-4">
+            <h1 className="font-display text-3xl font-bold text-fg mb-4">
               Email Enviado
             </h1>
-            <p className="text-gray mb-8 leading-relaxed">
+            <p className="text-muted mb-8 leading-relaxed">
               Si el email existe en nuestro sistema, recibirás un enlace para restablecer tu contraseña en los próximos minutos.
             </p>
-            <p className="text-sm text-gray mb-8">
+            <p className="text-sm text-muted mb-8">
               Por favor, revisa tu bandeja de entrada y carpeta de spam.
             </p>
 
             <div className="space-y-4">
-              <Link href="/auth/login">
-                <Button variant="primary" size="lg" className="w-full">
-                  Volver al Login
-                </Button>
-              </Link>
+              <Button variant="primary" size="lg" className="w-full" href="/auth/login">
+                Volver al Login
+              </Button>
               <button
                 onClick={() => {
                   setSuccess(false);
                   setEmail('');
                 }}
-                className="text-sm text-musgo hover:text-forest transition-colors"
+                className="text-sm text-brand hover:text-fg transition-colors"
               >
                 Enviar otro email
               </button>
@@ -92,17 +90,17 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
       <div className="container max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl"
+          className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl"
         >
-          <h1 className="font-display text-3xl font-bold text-forest mb-2">
+          <h1 className="font-display text-3xl font-bold text-fg mb-2">
             Olvidé mi Contraseña
           </h1>
-          <p className="text-gray mb-8">
+          <p className="text-muted mb-8">
             Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.
           </p>
 
@@ -114,7 +112,7 @@ export default function ForgotPasswordPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-forest mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-fg mb-2">
                 Email
               </label>
               <Input
@@ -150,7 +148,7 @@ export default function ForgotPasswordPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <Link href="/auth/login" className="text-sm text-musgo hover:text-forest font-medium">
+            <Link href="/auth/login" className="text-sm text-brand hover:text-fg font-medium">
               ← Volver al Login
             </Link>
           </div>

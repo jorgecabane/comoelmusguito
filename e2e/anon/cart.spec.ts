@@ -100,7 +100,7 @@ test.describe('carrito', () => {
     await seedCart(page, [terrariumCartItem()]);
     await page.goto('/carrito');
     await expect(page.getByRole('heading', { name: 'Resumen' })).toBeVisible();
-    await page.getByRole('button', { name: 'Proceder al Pago' }).click();
+    await page.getByRole('link', { name: 'Proceder al Pago' }).click();
     await expect(page).toHaveURL('/checkout');
   });
 

@@ -113,11 +113,11 @@ function ResetPasswordContent() {
 
   if (tokenValid === null) {
     return (
-      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
         <div className="container max-w-md">
-          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
-            <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={48} />
-            <h1 className="font-display text-2xl font-bold text-forest">
+          <div className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
+            <Loader2 className="animate-spin text-brand mx-auto mb-6" size={48} />
+            <h1 className="font-display text-2xl font-bold text-fg">
               Verificando enlace...
             </h1>
           </div>
@@ -128,29 +128,27 @@ function ResetPasswordContent() {
 
   if (tokenValid === false) {
     return (
-      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
         <div className="container max-w-md">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
+            className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
           >
             <div className="w-16 h-16 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertCircle className="text-error" size={32} />
             </div>
 
-            <h1 className="font-display text-3xl font-bold text-forest mb-4">
+            <h1 className="font-display text-3xl font-bold text-fg mb-4">
               Token Inválido
             </h1>
-            <p className="text-gray mb-8">
+            <p className="text-muted mb-8">
               El enlace de recuperación no es válido o ha expirado. Por favor, solicita un nuevo enlace.
             </p>
 
-            <Link href="/auth/forgot-password">
-              <Button variant="primary" size="lg" className="w-full">
-                Solicitar Nuevo Enlace
-              </Button>
-            </Link>
+            <Button variant="primary" size="lg" className="w-full" href="/auth/forgot-password">
+              Solicitar Nuevo Enlace
+            </Button>
           </motion.div>
         </div>
       </div>
@@ -159,31 +157,29 @@ function ResetPasswordContent() {
 
   if (success) {
     return (
-      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
         <div className="container max-w-md">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
+            className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
           >
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="text-green-600" size={32} />
+            <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="text-success" size={32} />
             </div>
 
-            <h1 className="font-display text-3xl font-bold text-forest mb-4">
+            <h1 className="font-display text-3xl font-bold text-fg mb-4">
               {isInitializing ? 'Contraseña Creada' : 'Contraseña Restablecida'}
             </h1>
-            <p className="text-gray mb-8">
+            <p className="text-muted mb-8">
               {isInitializing
                 ? 'Tu contraseña se creó exitosamente. Ahora puedes iniciar sesión con tu email y contraseña, o seguir usando Google.'
                 : 'Tu contraseña ha sido restablecida exitosamente. Serás redirigido al login en unos segundos.'}
             </p>
 
-            <Link href="/auth/login">
-              <Button variant="primary" size="lg" className="w-full">
-                Ir al Login
-              </Button>
-            </Link>
+            <Button variant="primary" size="lg" className="w-full" href="/auth/login">
+              Ir al Login
+            </Button>
           </motion.div>
         </div>
       </div>
@@ -191,17 +187,17 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
       <div className="container max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl"
+          className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl"
         >
-          <h1 className="font-display text-3xl font-bold text-forest mb-2">
+          <h1 className="font-display text-3xl font-bold text-fg mb-2">
             {isInitializing ? 'Crea tu Contraseña' : 'Restablecer Contraseña'}
           </h1>
-          <p className="text-gray mb-8">
+          <p className="text-muted mb-8">
             {isInitializing
               ? 'Tu cuenta se creó con Google. Define una contraseña para también iniciar sesión con email y contraseña. Debe tener al menos 8 caracteres.'
               : 'Ingresa tu nueva contraseña. Debe tener al menos 8 caracteres.'}
@@ -215,7 +211,7 @@ function ResetPasswordContent() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-forest mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-fg mb-2">
                 Nueva Contraseña
               </label>
               <Input
@@ -231,7 +227,7 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-forest mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-fg mb-2">
                 Confirmar Contraseña
               </label>
               <Input
@@ -265,7 +261,7 @@ function ResetPasswordContent() {
           </form>
 
           <div className="mt-6 text-center">
-            <Link href="/auth/login" className="text-sm text-musgo hover:text-forest font-medium">
+            <Link href="/auth/login" className="text-sm text-brand hover:text-fg font-medium">
               ← Volver al Login
             </Link>
           </div>
@@ -279,11 +275,11 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+        <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
           <div className="container max-w-md">
-            <div className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
-              <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={48} />
-              <h1 className="font-display text-2xl font-bold text-forest">
+            <div className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
+              <Loader2 className="animate-spin text-brand mx-auto mb-6" size={48} />
+              <h1 className="font-display text-2xl font-bold text-fg">
                 Cargando...
               </h1>
             </div>
