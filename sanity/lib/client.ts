@@ -41,3 +41,9 @@ export const getClient = (preview?: boolean) =>
 // Alias para compatibilidad: writeClient ahora es igual a client
 // (mantenemos esto para no romper código existente)
 export const writeClient = client;
+
+// Los documentos con un punto en el `_id` no se pueden leer sin token aunque el dataset sea
+// público (plan free). Todo documento con datos personales (user, order, newsletterSubscriber)
+// se crea con este prefijo.
+export const PRIVATE_ID_PREFIX = 'private.';
+export const newPrivateId = () => `${PRIVATE_ID_PREFIX}${crypto.randomUUID()}`;

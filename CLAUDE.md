@@ -55,6 +55,7 @@ npm run script:generate-favicons   # Regenerate favicon set with sharp
 
 ### Data layer — Sanity as source of truth
 - Schemas live in `sanity/schemas/` (terrarium, course, courseAccess, order, supply, workshop, blogPost, newsletter, user).
+- **Datos personales = `_id` privado.** El dataset es público (plan free); solo los `_id` con punto quedan ocultos sin token. Todo `user`, `order` y `newsletterSubscriber` se crea con `newPrivateId()` (`sanity/lib/client.ts`). Nunca leas esos tipos con un cliente sin token. Migración histórica: `scripts/migrate-private-ids.ts`.
 - **All data access goes through `lib/sanity/`** helpers — never call the Sanity client directly from components:
   - `fetch.ts` — base queries
   - `orders.ts`, `inventory.ts`, `course-access.ts`, `gifts.ts`, `newsletter.ts`
