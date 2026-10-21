@@ -38,3 +38,20 @@ describe('planMigration', () => {
     expect(plan.deletes).toEqual(['o1', 'drafts.u1', 'u1']);
   });
 });
+
+describe('planMigration --revert', () => {
+  it('deshace la migración: ids y referencias vuelven a los originales', () => {
+    const user = doc({ _id: 'u1', _type: 'user', email: 'a@x.cl', passwordResetToken: 't' });
+    const order = doc({ _id: 'o1', _type: 'order', userId: { _type: 'reference', _ref: 'u1' } });
+    const access = doc({ _id: 'a1', _type: 'courseAccess', user: { _type: 'reference', _ref: 'u1' } });
+    const fwd = planMigration([user, order], [order, access]);
+    const migrated = fwd.creates as SanityDocument[];
+    const migratedAccess = fwd.updates[0] as SanityDocument;
+
+    const back = planMigration(migrated, [migrated[1], migratedAccess], true);
+    expect(back.creates.map((d) => d._id)).toEqual(['u1', 'o1']);
+    expect(back.creates[1]).toMatchObject({ userId: { _ref: 'u1' } });
+    expect(back.updates).toEqual([expect.objectContaining({ _id: 'a1', user: { _type: 'reference', _ref: 'u1' } })]);
+    expect(back.deletes).toEqual(['private.o1', 'private.u1']);
+  });
+});
