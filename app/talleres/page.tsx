@@ -185,7 +185,6 @@ export default async function TalleresPage() {
                             as="span"
                             variant="primary"
                             className="w-full group-hover:bg-accent-hover transition-colors"
-                            disabled={!taller.hayCuposDisponibles}
                           >
                             {!taller.hayCuposDisponibles ? 'Agotado' : 'Ver Detalles'}
                             {taller.hayCuposDisponibles && <ArrowRight size={18} />}

@@ -108,9 +108,9 @@ export default async function TerrariosPage() {
                         </Card.Content>
                         <Card.Footer>
                           <Button
+                            as="span"
                             variant="primary"
                             className="w-full group-hover:bg-accent-hover transition-colors"
-                            disabled={!terrarium.inStock}
                           >
                             {terrarium.inStock ? 'Ver Detalles' : 'Agotado'}
                             {terrarium.inStock && <ArrowRight size={18} />}

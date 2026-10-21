@@ -174,7 +174,6 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
                             className="text-brand"
-                            disabled={!hayFechasDisponibles}
                           >
                             {hayFechasDisponibles ? 'Ver Detalles' : 'Agotado'}
                           </Button>

@@ -122,7 +122,6 @@ export default async function InsumosPage() {
                             as="span"
                             variant="primary"
                             className="w-full group-hover:bg-accent-hover transition-colors"
-                            disabled={!insumo.inStock}
                           >
                             {insumo.inStock ? 'Ver Detalles' : 'Agotado'}
                             {insumo.inStock && <ArrowRight size={18} />}

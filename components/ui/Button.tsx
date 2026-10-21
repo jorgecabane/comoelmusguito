@@ -3,7 +3,9 @@
  * Botón reutilizable con múltiples variantes y tamaños.
  * Con `href` se renderiza como enlace (Link interno o <a> externo) con el mismo
  * aspecto, evitando anidar un <button> dentro de un <a>. Con `as="span"` solo
- * toma el aspecto (para tarjetas completas que ya son un enlace).
+ * toma el aspecto (para tarjetas completas que ya son un enlace). El span no tiene
+ * estado deshabilitado: si la tarjeta sigue navegando, el botón tampoco debe verse
+ * deshabilitado; solo cambia su texto (p. ej. "Agotado").
  */
 
 import { cn } from '@/lib/utils/cn';
@@ -27,7 +29,7 @@ type ButtonAsLink = ButtonOwnProps &
 
 /** Aspecto de botón sin ser interactivo: para usar dentro de una tarjeta que ya es un enlace. */
 type ButtonAsSpan = ButtonOwnProps &
-  Omit<HTMLAttributes<HTMLSpanElement>, 'children'> & { as: 'span'; href?: undefined; disabled?: boolean };
+  Omit<HTMLAttributes<HTMLSpanElement>, 'children'> & { as: 'span'; href?: undefined };
 
 type ButtonProps = ButtonAsButton | ButtonAsLink | ButtonAsSpan;
 
@@ -69,10 +71,10 @@ export function Button(props: ButtonProps) {
   );
 
   if ('as' in rest && rest.as === 'span') {
-    const { as: _as, disabled, ...spanProps } = rest as Omit<ButtonAsSpan, keyof ButtonOwnProps>;
+    const { as: _as, ...spanProps } = rest as Omit<ButtonAsSpan, keyof ButtonOwnProps>;
     void _as;
     return (
-      <span className={cn(classes, disabled && 'opacity-50')} aria-disabled={disabled || undefined} {...spanProps}>
+      <span className={classes} {...spanProps}>
         {content}
       </span>
     );

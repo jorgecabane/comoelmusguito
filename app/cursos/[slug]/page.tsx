@@ -180,11 +180,13 @@ export default async function CoursePage({
                 <p className="text-sm text-muted mb-3">
                   Necesitas iniciar sesión para acceder a este curso.
                 </p>
-                <Link href={`/auth/login?callbackUrl=${encodeURIComponent(`/cursos/${slug}`)}`}>
-                  <Button variant="primary" size="sm">
-                    Iniciar Sesión
-                  </Button>
-                </Link>
+                <Button
+                  href={`/auth/login?callbackUrl=${encodeURIComponent(`/cursos/${slug}`)}`}
+                  variant="primary"
+                  size="sm"
+                >
+                  Iniciar Sesión
+                </Button>
               </div>
             </div>
           </div>
