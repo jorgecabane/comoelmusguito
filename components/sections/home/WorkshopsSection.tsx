@@ -170,6 +170,7 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
                             {formatPrice(workshop.price, workshop.currency)}
                           </div>
                           <Button
+                            as="span"
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
                             className="text-brand"

@@ -119,6 +119,7 @@ export default async function InsumosPage() {
                         </Card.Content>
                         <Card.Footer>
                           <Button
+                            as="span"
                             variant="primary"
                             className="w-full group-hover:bg-accent-hover transition-colors"
                             disabled={!insumo.inStock}

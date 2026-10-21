@@ -146,7 +146,7 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
                               </div>
                             )}
                           </div>
-                          <Button variant="primary">
+                          <Button as="span" variant="primary">
                             Comenzar Viaje
                             <ArrowRight size={18} />
                           </Button>
