@@ -48,16 +48,16 @@ export function AvailabilityErrorModal({ issue, onClose, onRemoveItem }: Availab
           aria-labelledby="availability-error-title"
         >
           <motion.div
-            className="mx-4 max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            className="mx-4 max-w-md rounded-2xl bg-surface p-6 shadow-xl"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 id="availability-error-title" className="mb-3 font-display text-xl font-semibold text-forest">No pudimos procesar tu compra</h2>
+            <h2 id="availability-error-title" className="mb-3 font-display text-xl font-semibold text-fg">No pudimos procesar tu compra</h2>
 
-            <p className="mb-5 text-sm leading-relaxed text-gray">{issue.message}</p>
+            <p className="mb-5 text-sm leading-relaxed text-muted">{issue.message}</p>
 
             <div className="flex flex-col gap-3">
               {canRemove && (
@@ -69,7 +69,7 @@ export function AvailabilityErrorModal({ issue, onClose, onRemoveItem }: Availab
               <button
                 type="button"
                 onClick={onClose}
-                className="text-sm text-gray transition-colors hover:text-forest hover:underline"
+                className="text-sm text-muted transition-colors hover:text-fg hover:underline"
               >
                 Cerrar
               </button>

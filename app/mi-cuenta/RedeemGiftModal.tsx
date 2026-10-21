@@ -88,12 +88,12 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
         aria-modal="true"
         aria-labelledby="redeem-gift-title"
         tabIndex={-1}
-        className="bg-white rounded-2xl shadow-natural-xl max-w-md w-full p-6 md:p-8 relative"
+        className="bg-surface rounded-2xl shadow-natural-xl max-w-md w-full p-6 md:p-8 relative"
       >
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray hover:text-forest transition-colors"
+          className="absolute top-4 right-4 text-muted hover:text-fg transition-colors"
           disabled={loading}
           aria-label="Cerrar"
         >
@@ -102,14 +102,14 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="bg-musgo/10 p-3 rounded-full">
-            <Gift className="text-musgo" size={24} />
+          <div className="bg-brand/10 p-3 rounded-full">
+            <Gift className="text-brand" size={24} />
           </div>
           <div>
-            <h2 id="redeem-gift-title" className="font-display text-2xl font-bold text-forest">
+            <h2 id="redeem-gift-title" className="font-display text-2xl font-bold text-fg">
               Canjear Regalo
             </h2>
-            <p className="text-sm text-gray">
+            <p className="text-sm text-muted">
               Ingresa el token que recibiste por email
             </p>
           </div>
@@ -121,8 +121,8 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-8"
           >
-            <CheckCircle className="mx-auto mb-4 text-musgo" size={48} />
-            <p className="text-forest font-medium whitespace-pre-line">
+            <CheckCircle className="mx-auto mb-4 text-brand" size={48} />
+            <p className="text-fg font-medium whitespace-pre-line">
               {successMessage}
             </p>
           </motion.div>
@@ -131,7 +131,7 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
             <div>
               <label
                 htmlFor="giftToken"
-                className="block text-sm font-semibold text-forest mb-2"
+                className="block text-sm font-semibold text-fg mb-2"
               >
                 Token de Regalo
               </label>
@@ -145,7 +145,7 @@ export function RedeemGiftModal({ isOpen, onClose, onSuccess }: RedeemGiftModalP
                 className="font-mono"
                 data-autofocus
               />
-              <p className="text-xs text-gray mt-2">
+              <p className="text-xs text-muted mt-2">
                 El token fue enviado al email del destinatario cuando se confirmó el pago
               </p>
             </div>

@@ -2,36 +2,56 @@
 
 /* ============================================
    Sistema de Diseño - comoelmusguito
-   Paleta: "Bosque Húmedo"
+   Identidad "Bosque nocturno" (look A)
+
+   Dos capas de tokens:
+   1. Paleta de marca: valores fijos del brandboard. Nunca se usan
+      directo en componentes salvo cuando el color es parte del diseño.
+   2. Tokens semánticos (bg, surface, fg, muted, line, brand, accent...):
+      lo que usan los componentes. Para cambiar el look del sitio
+      (por ejemplo un tema claro) solo se reasignan estos.
    ============================================ */
 
 :root {
-  /* Colores Principales */
-  --musgo: #2d5016;
-  --musgo-light: #3D6B22;
-  --musgo-dark: #1F3910;
-  
-  --tierra: #8B6F47;
-  --tierra-light: #A68A63;
-  --tierra-dark: #6D5636;
-  
-  --vida: #6B9362;
-  --vida-light: #85AB7D;
-  --vida-dark: #557548;
-  
-  --ambar: #D4A574;
-  --ambar-light: #E0B98F;
-  --ambar-dark: #B98F5E;
-  
-  /* Neutros */
-  --cream: #FDFAF6;
-  --forest: #1A1F16;
-  --gray: #6B7566;
-  --white: #FFFFFF;
+  color-scheme: dark;
 
-  /* Estados (contraste ≥4.5:1 sobre blanco/cream) */
-  --error: #B42318;
-  
+  /* --- Paleta de marca --- */
+  --bosque: #233529;
+  --bosque-deep: #1B2B20;
+  --bosque-raised: #2C4234;
+  --olivo: #6F7C27;
+  --olivo-light: #8A9A33;
+  --salvia: #A5AD84;
+  --niebla: #C1C9B3;
+  --crema: #F3EBD8;
+  --terracota: #BF6F4C;
+  --terracota-light: #E0956F;
+  --terracota-deep: #9E5434; /* terracota oscurecido: texto crema sobre él pasa AA (4.7:1) */
+  --terracota-dark: #7F3F22; /* terracota para texto sobre fondos claros (4.7:1 sobre niebla) */
+
+  /* --- Tokens semánticos --- */
+  --bg: var(--bosque);                 /* fondo de página */
+  --surface: var(--bosque-deep);       /* tarjetas, inputs, paneles */
+  --surface-raised: var(--bosque-raised); /* hover / elementos sobre surface */
+  --fg: var(--crema);                  /* texto principal */
+  --muted: #CFC8B4;                    /* texto secundario (7.8:1 sobre bg) */
+  --line: rgb(165 173 132 / 0.24);     /* bordes y divisores */
+  --brand: var(--salvia);              /* acentos de texto, links, iconos */
+  --accent: var(--terracota-deep);     /* acción primaria (botones) */
+  --accent-hover: #B5633F;
+  --on-accent: var(--crema);           /* texto sobre --accent */
+  --tint: var(--olivo);                /* rellenos y líneas de énfasis suave (usar con opacidad) */
+  --scrim: var(--bosque-deep);         /* velos sobre fotos (usar con opacidad) */
+  --chrome: var(--bosque-deep);        /* barras fijas oscuras (footer) en cualquier tema */
+  --on-chrome: var(--crema);           /* texto sobre --chrome */
+  --accent-text: var(--terracota-light); /* texto/bordes de acento sobre bg o surface */
+
+  /* Estados (todos con contraste ≥4.5:1 sobre bg y surface) */
+  --error: #F2998A;
+  --success: #A9D18E;
+  --warning: #E8C26A;
+  --info: #8FC1DE;
+
   /* Espaciado (Base-8) */
   --space-1: 0.25rem;   /* 4px */
   --space-2: 0.5rem;    /* 8px */
@@ -42,57 +62,53 @@
   --space-12: 3rem;     /* 48px */
   --space-16: 4rem;     /* 64px */
   --space-24: 6rem;     /* 96px */
-  
+
   /* Radios */
   --radius-sm: 0.25rem; /* 4px */
   --radius-md: 0.5rem;  /* 8px */
   --radius-lg: 0.75rem; /* 12px */
-  --radius-xl: 1rem;    /* 16px */
-  
-  /* Sombras */
-  --shadow-sm: 0 1px 3px rgba(45, 80, 22, 0.08);
-  --shadow-md: 0 4px 12px rgba(45, 80, 22, 0.12);
-  --shadow-lg: 0 8px 24px rgba(45, 80, 22, 0.16);
-  --shadow-xl: 0 12px 40px rgba(45, 80, 22, 0.20);
-  
+  --radius-xl: 1.125rem; /* 18px */
+
+  /* Sombras (sobre fondo oscuro se apoyan en negro, no en verde) */
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.25);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.35);
+  --shadow-xl: 0 12px 40px rgb(0 0 0 / 0.4);
+
   /* Transiciones */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 400ms;
-  
-  /* Tipografía */
-  --font-display: 'Playfair Display', serif;
-  --font-sans: 'Inter', sans-serif;
+
+  /* Tipografía: --font-display y --font-sans las inyecta app/layout.tsx (next/font) */
 }
 
 @theme inline {
-  /* Colores */
-  --color-musgo: var(--musgo);
-  --color-musgo-light: var(--musgo-light);
-  --color-musgo-dark: var(--musgo-dark);
-  
-  --color-tierra: var(--tierra);
-  --color-tierra-light: var(--tierra-light);
-  --color-tierra-dark: var(--tierra-dark);
-  
-  --color-vida: var(--vida);
-  --color-vida-light: var(--vida-light);
-  --color-vida-dark: var(--vida-dark);
-  
-  --color-ambar: var(--ambar);
-  --color-ambar-light: var(--ambar-light);
-  --color-ambar-dark: var(--ambar-dark);
-  
-  --color-cream: var(--cream);
-  --color-forest: var(--forest);
-  --color-gray: var(--gray);
-  --color-white: var(--white);
+  /* Semánticos */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-tint: var(--tint);
+  --color-scrim: var(--scrim);
+  --color-chrome: var(--chrome);
+  --color-on-chrome: var(--on-chrome);
+  --color-accent-text: var(--accent-text);
   --color-error: var(--error);
-  
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
   /* Fuentes */
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
-  
+
   /* Espaciado */
   --spacing-1: var(--space-1);
   --spacing-2: var(--space-2);
@@ -103,7 +119,7 @@
   --spacing-12: var(--space-12);
   --spacing-16: var(--space-16);
   --spacing-24: var(--space-24);
-  
+
   /* Radios */
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -119,6 +135,13 @@
   box-sizing: border-box;
 }
 
+/* El offset de los anillos de foco toma el color del fondo (por defecto es blanco) */
+*,
+::before,
+::after {
+  --tw-ring-offset-color: var(--bg);
+}
+
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -126,20 +149,28 @@ html {
 }
 
 body {
-  background: var(--cream);
-  color: var(--forest);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-sans);
   line-height: 1.6;
   margin: 0;
   padding: 0;
+  /* Las animaciones de entrada (FadeIn desde los lados) no deben generar scroll horizontal en móvil */
+  overflow-x: hidden;
 }
 
-/* Títulos con Playfair Display */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--forest);
+/* Títulos con Lumiflora (un solo grosor: sin negrita sintética).
+   Van en la capa base para que las utilidades de Tailwind (text-*, leading-*,
+   font-*) puedan sobrescribirlos. */
+@layer base {
+  h1, h2, h3, h4, h5, h6,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-synthesis: none;
+    line-height: 1.1;
+    color: var(--fg);
+  }
 }
 
 /* ============================================
@@ -207,6 +238,46 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Sección clara: reasigna los tokens semánticos para que todo lo de adentro
+   (text-fg, text-muted, bg-surface, text-brand, border-line) funcione sobre verde suave */
+.theme-soft {
+  --bg: var(--niebla);
+  --surface: var(--crema);
+  --surface-raised: #FAF5E8;
+  --fg: var(--bosque);
+  --muted: #38493D;                  /* 6.4:1 sobre niebla */
+  --line: rgb(35 53 41 / 0.28);
+  --brand: var(--terracota-dark);    /* 4.7:1 sobre niebla y 6.7:1 sobre crema */
+  --accent-text: var(--terracota-dark);
+  --tint: var(--bosque);
+  --error: #A32A1B;                  /* estados oscurecidos para fondo claro (≥4.5:1) */
+  --success: #2F6B2A;
+  --warning: #7A5A00;
+  --info: #1F5C80;
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+/* Cifras destacadas: la display (Lumiflora) confunde la "k", se usa la sans en liviano */
+.stat-number {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--brand);
+}
+
+/* Punteado decorativo para fondos de sección */
+.bg-dots {
+  background-image: radial-gradient(circle, var(--fg) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Entrada suave de menús desplegables */
+.animate-fade-in-slide {
+  animation: fadeInSlide 0.2s ease-out;
+}
+
 /* Sombras naturales */
 .shadow-natural-sm {
   box-shadow: var(--shadow-sm);
@@ -222,9 +293,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Glassmorphism sutil */
 .glass {
-  background: rgba(253, 250, 246, 0.8);
+  background: rgb(27 43 32 / 0.8);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(45, 80, 22, 0.1);
+  border: 1px solid var(--line);
 }
 
 /* ============================================
@@ -236,17 +307,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--cream);
+  background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--vida);
+  background: var(--olivo);
   border-radius: var(--radius-lg);
-  border: 3px solid var(--cream);
+  border: 3px solid var(--bg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--musgo);
+  background: var(--salvia);
 }
 
 /* ============================================
@@ -254,8 +325,8 @@ h1, h2, h3, h4, h5, h6 {
    ============================================ */
 
 ::selection {
-  background: var(--vida);
-  color: var(--white);
+  background: var(--terracota-deep);
+  color: var(--crema);
 }
 
 /* ============================================

@@ -7,7 +7,6 @@
 
 import { motion } from 'framer-motion';
 import { VideoBackground } from '@/components/animations';
-import { ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 
 export function HeroImmersive() {
@@ -16,39 +15,29 @@ export function HeroImmersive() {
       {/* Video Background */}
       <VideoBackground
         videoSrc="/videos/hero/hero-main.mp4"
-        fallbackImage="/images/hero/hero-fallback.jpg"
+        fallbackImage="/images/hero/hero-musguito.jpg"
         overlay="dark"
       />
 
-      {/* Contenido - Solo logo y texto */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-4 gap-12 md:gap-16">
-        {/* Logo arriba - Con círculo de fondo glassmorphism */}
-        <motion.div
+      {/* Contenido: logo y bajada */}
+      <div className="relative z-10 h-full flex flex-col items-center justify-center text-fg px-4 text-center">
+        <motion.h1
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex items-center justify-center"
+          className="relative w-[min(88vw,560px)] aspect-[1800/857]"
         >
-          {/* Círculo de fondo con glassmorphism */}
-          <div className="relative">
-            {/* Glow effect verde */}
-            <div className="absolute inset-0 bg-vida/40 blur-3xl rounded-full scale-125" />
-            
-            {/* Círculo glassmorphism */}
-            <div className="relative bg-white/5 backdrop-blur-md rounded-full p-8 md:p-10 lg:p-12 border-2 border-white/30 shadow-2xl">
-              <h1 className="relative w-26 h-26 md:w-32 md:h-32 lg:w-40 lg:h-40">
-                <Image
-                  src="/logo/logo-white.svg"
-                  alt="comoelmusguito"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-                <span className="sr-only">: terrarios artesanales, cursos y talleres</span>
-              </h1>
-            </div>
-          </div>
-        </motion.div>
+          <Image
+            src="/logo/logo-cream.png"
+            alt="Como el musguito"
+            fill
+            sizes="(max-width: 640px) 88vw, 560px"
+            className="object-contain"
+            priority
+          />
+          <span className="sr-only">: terrarios artesanales, cursos y talleres</span>
+        </motion.h1>
+
       </div>
 
       {/* Scroll indicator - Flechita simple */}
@@ -68,18 +57,17 @@ export function HeroImmersive() {
             nextSection.scrollIntoView({ behavior: 'smooth' });
           }
         }}
-        className="absolute bottom-25 left-1/2 -translate-x-1/2 z-20 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        className="absolute bottom-25 left-1/2 -translate-x-1/2 z-20 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
         aria-label="Scroll hacia abajo"
       >
-        <ChevronDown 
-          size={32} 
-          className="text-white/70 hover:text-white transition-colors" 
-          strokeWidth={2}
-        />
+        <span className="flex flex-col items-center gap-2 text-fg/80 hover:text-fg transition-colors">
+          <span className="text-sm font-medium uppercase tracking-[0.24em]">Descubre</span>
+          <Image src="/logo/snail-cream.png" alt="" width={44} height={24} className="w-11 h-auto" />
+        </span>
       </motion.button>
 
       {/* Overlay gradient bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-7 bg-gradient-to-t from-cream to-transparent z-10" />
+      <div className="absolute bottom-0 left-0 right-0 h-7 bg-gradient-to-t from-bg to-transparent z-10" />
     </section>
   );
 }

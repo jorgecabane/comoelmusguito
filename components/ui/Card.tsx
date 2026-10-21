@@ -30,7 +30,7 @@ export function Card({
   return (
     <div
       className={cn(
-        'bg-cream rounded-lg shadow-natural-md transition-all duration-300',
+        'bg-surface rounded-lg shadow-natural-md transition-all duration-300',
         hover && 'hover:shadow-natural-lg hover:-translate-y-1 cursor-pointer',
         paddingStyles[padding],
         className
@@ -98,7 +98,7 @@ Card.Title = function CardTitle({
 }: CardTitleProps) {
   return (
     <Component
-      className={cn('font-display text-2xl font-semibold text-forest', className)}
+      className={cn('font-display text-2xl font-semibold text-fg', className)}
       {...props}
     >
       {children}
@@ -116,7 +116,7 @@ Card.Description = function CardDescription({
   ...props
 }: CardDescriptionProps) {
   return (
-    <p className={cn('text-gray leading-relaxed', className)} {...props}>
+    <p className={cn('text-muted leading-relaxed', className)} {...props}>
       {children}
     </p>
   );
@@ -135,7 +135,7 @@ Card.Price = function CardPrice({ value, currency = 'CLP', className }: CardPric
   }).format(value);
 
   return (
-    <span className={cn('text-xl font-semibold text-musgo', className)}>{formatted}</span>
+    <span className={cn('text-xl font-semibold text-brand', className)}>{formatted}</span>
   );
 };
 

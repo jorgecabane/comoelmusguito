@@ -35,16 +35,16 @@ export function BlogCard({ post }: BlogCardProps) {
         <div className="p-6 space-y-4 flex flex-col flex-1">
           <Card.Content>
             {/* Metadatos */}
-            <div className="flex items-center gap-4 text-sm text-gray mb-3 flex-wrap">
+            <div className="flex items-center gap-4 text-sm text-muted mb-3 flex-wrap">
               {post.projectDate && (
                 <div className="flex items-center gap-1.5">
-                  <Calendar size={14} className="text-musgo" />
+                  <Calendar size={14} className="text-brand" />
                   <span>{formatDateLong(post.projectDate)}</span>
                 </div>
               )}
               {post.location && (
                 <div className="flex items-center gap-1.5">
-                  <MapPin size={14} className="text-musgo" />
+                  <MapPin size={14} className="text-brand" />
                   <span>{post.location}</span>
                 </div>
               )}
@@ -65,7 +65,7 @@ export function BlogCard({ post }: BlogCardProps) {
                   </Badge>
                 ))}
                 {post.tags.length > 3 && (
-                  <span className="text-xs text-gray">+{post.tags.length - 3} más</span>
+                  <span className="text-xs text-muted">+{post.tags.length - 3} más</span>
                 )}
               </div>
             )}

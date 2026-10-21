@@ -42,7 +42,7 @@ export function CourseNavigation({
 
   if (!course.modules || course.modules.length === 0) {
     return (
-      <div className="p-6 text-center text-gray">
+      <div className="p-6 text-center text-muted">
         No hay contenido disponible
       </div>
     );
@@ -51,10 +51,10 @@ export function CourseNavigation({
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h2 className="font-display text-xl font-bold text-forest mb-2">
+        <h2 className="font-display text-xl font-bold text-fg mb-2">
           {course.name}
         </h2>
-        <p className="text-sm text-gray line-clamp-4">
+        <p className="text-sm text-muted line-clamp-4">
           {course.shortDescription}
         </p>
       </div>
@@ -66,15 +66,15 @@ export function CourseNavigation({
           const hasLessons = module.lessons && module.lessons.length > 0;
 
           return (
-            <div key={moduleIdx} className="border-b border-gray/10 last:border-0 pb-2">
+            <div key={moduleIdx} className="border-b border-line last:border-0 pb-2">
               {/* Header del Módulo */}
               <button
                 onClick={() => toggleModule(moduleIdx)}
                 className={cn(
                   'w-full flex items-center justify-between p-3 rounded-lg transition-colors',
                   isCurrentModule
-                    ? 'bg-musgo/10 text-musgo'
-                    : 'hover:bg-cream text-forest'
+                    ? 'bg-brand/10 text-brand'
+                    : 'hover:bg-bg text-fg'
                 )}
               >
                 <div className="flex items-center gap-2 flex-1 text-left">
@@ -88,7 +88,7 @@ export function CourseNavigation({
                   </span>
                 </div>
                 {hasLessons && (
-                  <span className="text-xs text-gray/60">
+                  <span className="text-xs text-muted/60">
                     {module.lessons.length}
                   </span>
                 )}
@@ -111,20 +111,20 @@ export function CourseNavigation({
                         className={cn(
                           'flex items-center gap-3 p-2 rounded-lg transition-colors group',
                           isCurrent
-                            ? 'bg-musgo/20 text-musgo'
-                            : 'hover:bg-cream text-gray'
+                            ? 'bg-brand/20 text-brand'
+                            : 'hover:bg-bg text-muted'
                         )}
                       >
                         {isCompleted ? (
                           <CheckCircle2
                             size={18}
-                            className="text-vida flex-shrink-0"
+                            className="text-brand flex-shrink-0"
                             fill="currentColor"
                           />
                         ) : (
                           <Circle
                             size={18}
-                            className="text-gray/40 flex-shrink-0"
+                            className="text-muted/40 flex-shrink-0"
                           />
                         )}
                         <div className="flex-1 min-w-0">
@@ -132,7 +132,7 @@ export function CourseNavigation({
                             {lesson.order}. {lesson.title}
                           </div>
                           {lesson.duration && (
-                            <div className="text-xs text-gray/60 mt-0.5">
+                            <div className="text-xs text-muted/60 mt-0.5">
                               {lesson.duration} min
                             </div>
                           )}

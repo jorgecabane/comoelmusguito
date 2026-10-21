@@ -6,7 +6,7 @@
 'use client';
 
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/animations';
-import { Card, Badge, Button } from '@/components/ui';
+import { Card, Badge, Button, Section } from '@/components/ui';
 import { Calendar, MapPin, Clock, Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import type { Workshop } from '@/types/sanity';
@@ -22,27 +22,27 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
   }
 
   return (
-    <section className="py-32 bg-gradient-to-br from-white to-cream">
+    <Section tone="soft" contained={false}>
       <div className="container">
         {/* Header */}
         <div className="text-center mb-20 space-y-6">
           <FadeIn>
-            <div className="inline-flex items-center gap-3 bg-musgo/10 px-6 py-3 rounded-full mb-4">
-              <Users className="text-musgo" size={24} />
-              <span className="text-musgo font-semibold">Experiencias Presenciales</span>
+            <div className="inline-flex items-center gap-3 bg-brand/10 px-6 py-3 rounded-full mb-4">
+              <Users className="text-brand" size={24} />
+              <span className="text-brand font-semibold">Experiencias Presenciales</span>
             </div>
           </FadeIn>
 
           <FadeIn delay={0.2}>
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-forest">
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-fg">
               Aprende con las
               <br />
-              <span className="text-musgo">Manos en la Masa</span>
+              <span className="text-brand">Manos en la Masa</span>
             </h2>
           </FadeIn>
 
           <FadeIn delay={0.4}>
-            <p className="text-xl text-gray max-w-2xl mx-auto">
+            <p className="text-xl text-muted max-w-2xl mx-auto">
               Talleres presenciales en Santiago donde crearás tu terrario mientras aprendes
               las técnicas directamente. Grupos reducidos para atención personalizada.
             </p>
@@ -70,14 +70,14 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
               },
             ].map((benefit, i) => (
               <StaggerItem key={i}>
-                <div className="text-center p-8 rounded-xl bg-white shadow-natural-sm hover:shadow-natural-md transition-all">
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-musgo/10 text-musgo mb-4">
+                <div className="text-center p-8 rounded-xl bg-surface shadow-natural-sm hover:shadow-natural-md transition-all">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-brand/10 text-brand mb-4">
                     {benefit.icon}
                   </div>
-                  <h3 className="font-display text-xl font-semibold text-forest mb-2">
+                  <h3 className="font-display text-xl font-semibold text-fg mb-2">
                     {benefit.title}
                   </h3>
-                  <p className="text-gray">{benefit.description}</p>
+                  <p className="text-muted">{benefit.description}</p>
                 </div>
               </StaggerItem>
             ))}
@@ -131,48 +131,48 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
                               Sin fechas
                             </Badge>
                           )}
-                          <span className="text-xs text-gray uppercase tracking-wide">
+                          <span className="text-xs text-muted uppercase tracking-wide">
                             {levelLabel}
                           </span>
                         </div>
 
                         <div className="space-y-2">
-                          <h3 className="font-display text-2xl font-semibold text-forest group-hover:text-musgo transition-colors">
+                          <h3 className="font-display text-2xl font-semibold text-fg group-hover:text-brand transition-colors">
                             {workshop.name}
                           </h3>
-                          <p className="text-gray line-clamp-2">
+                          <p className="text-muted line-clamp-2">
                             {workshop.description}
                           </p>
                         </div>
 
                         {/* Próxima fecha */}
                         {proximaFecha && (
-                          <div className="flex items-center gap-2 text-sm text-gray pt-2">
-                            <Calendar size={16} className="text-musgo" />
+                          <div className="flex items-center gap-2 text-sm text-muted pt-2">
+                            <Calendar size={16} className="text-brand" />
                             <span>{formatDateShort(proximaFecha.date)}</span>
                           </div>
                         )}
 
                         {/* Ubicación y Duración */}
                         <div className="space-y-2 pt-2">
-                          <div className="flex items-center gap-2 text-sm text-gray">
-                            <MapPin size={16} className="text-musgo" />
+                          <div className="flex items-center gap-2 text-sm text-muted">
+                            <MapPin size={16} className="text-brand" />
                             <span>{workshop.location.city}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray">
-                            <Clock size={16} className="text-musgo" />
+                          <div className="flex items-center gap-2 text-sm text-muted">
+                            <Clock size={16} className="text-brand" />
                             <span>{workshop.duration}h</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-4 mt-auto border-t border-gray/20">
-                          <div className="text-2xl font-display font-bold text-forest">
+                        <div className="flex items-center justify-between pt-4 mt-auto border-t border-line">
+                          <div className="text-2xl font-display font-bold text-fg">
                             {formatPrice(workshop.price, workshop.currency)}
                           </div>
                           <Button
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
-                            className="text-musgo"
+                            className="text-brand"
                             disabled={!hayFechasDisponibles}
                           >
                             {hayFechasDisponibles ? 'Ver Detalles' : 'Agotado'}
@@ -199,6 +199,6 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
           </div>
         </FadeIn>
       </div>
-    </section>
+    </Section>
   );
 }
