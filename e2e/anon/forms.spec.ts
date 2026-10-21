@@ -44,7 +44,7 @@ test.describe('newsletter', () => {
       await footer.getByRole('button', { name: 'Suscribirme' }).click();
       await expect(footer.getByText('¡Te has suscrito exitosamente!')).toBeVisible();
 
-      const saved = await sanity.fetch<number>(`count(*[_type == "newsletterSubscriber" && email == $email])`, { email });
+      const saved = await sanity.fetch<number>(`count(*[_type == "newsletterSubscriber" && email == $email && _id in path("private.**")])`, { email });
       expect(saved).toBe(1);
     } finally {
       await sanity.delete({ query: `*[_type == "newsletterSubscriber" && email == $email]`, params: { email } });
