@@ -20,8 +20,9 @@ async function icon(size: number, radius = 0): Promise<Buffer> {
     .resize(Math.round(size * 0.74), Math.round(size * 0.74), { fit: 'inside' })
     .toBuffer();
 
-  const layers: sharp.OverlayOptions[] = [{ input: snail, gravity: 'center' }];
-  const base = sharp({ create: { width: size, height: size, channels: 4, background: BOSQUE } }).composite(layers);
+  const base = sharp({ create: { width: size, height: size, channels: 4, background: BOSQUE } }).composite([
+    { input: snail, gravity: 'center' },
+  ]);
 
   if (radius === 0) return base.png().toBuffer();
 
@@ -44,8 +45,8 @@ function buildIco(images: { size: number; data: Buffer }[]): Buffer {
   let offset = 6 + images.length * 16;
   const entries = images.map(({ size, data }) => {
     const entry = Buffer.alloc(16);
-    entry.writeUInt8(size === 256 ? 0 : size, 0);
-    entry.writeUInt8(size === 256 ? 0 : size, 1);
+    entry.writeUInt8(size, 0);
+    entry.writeUInt8(size, 1);
     entry.writeUInt16LE(1, 4);
     entry.writeUInt16LE(32, 6);
     entry.writeUInt32LE(data.length, 8);
@@ -64,17 +65,13 @@ async function generateFavicons() {
     await Promise.all([16, 32, 48].map(async (size) => ({ size, data: await icon(size, Math.round(size * 0.2)) })))
   );
   const png192 = await icon(192, 38);
-  const png512 = await icon(512, 102);
   const apple180 = await icon(180); // iOS aplica sus propias esquinas
 
+  // Solo en public/: app/layout.tsx los enlaza a mano y lib/seo/schema.tsx usa /favicon.png
   const files: Record<string, Buffer> = {
     'public/favicon.ico': ico,
-    'app/favicon.ico': ico,
     'public/favicon.png': png192,
-    'public/icon-512.png': png512,
-    'app/icon.png': png512,
     'public/apple-touch-icon.png': apple180,
-    'app/apple-icon.png': apple180,
   };
 
   for (const [path, data] of Object.entries(files)) {

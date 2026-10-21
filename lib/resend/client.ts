@@ -18,6 +18,30 @@ if (!RESEND_API_KEY) {
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
+/**
+ * Paleta de los emails (hex literales: los clientes de correo no entienden variables CSS).
+ * Mantener alineada con los tokens de app/globals.css; un ajuste de marca se hace aquí.
+ */
+const BRAND = {
+  bosque: '#233529', // --bosque
+  texto: '#4B5A4D',
+  textoSuave: '#5B6A5D',
+  terracota: '#9E5434', // --terracota-deep
+  terracotaOscuro: '#7F3F22', // --terracota-dark
+  terracotaClaro: '#E0956F', // --terracota-light
+  crema: '#F3EBD8', // --crema
+  cremaSuave: '#FAF5E8',
+  cremaPanel: '#F7F1E2',
+  niebla: '#E7EBDC',
+  linea: '#D9D3BF',
+  blanco: '#FFFFFF',
+  bordeMarca: 'rgba(35, 53, 41, 0.3)',
+  bordeTenue: 'rgba(35, 53, 41, 0.2)',
+  avisoFondo: '#FFF9E6',
+  avisoBorde: '#FFD700',
+  avisoTexto: '#856404',
+} as const;
+
 type EmailPayload = Parameters<Resend['emails']['send']>[0];
 
 /** resend v6 devuelve `{ data, error }` en vez de lanzar: lo convertimos en excepción. */
@@ -139,16 +163,16 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confirmación de Compra</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #F3EBD8; color: #233529;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F3EBD8; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: ${BRAND.crema}; color: ${BRAND.bosque};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${BRAND.crema}; padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: ${BRAND.blanco}; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           
           <!-- Header -->
           <tr>
-            <td style="background: #233529; padding: 40px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #F3EBD8; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: 32px; letter-spacing: -0.5px;">
+            <td style="background: ${BRAND.bosque}; padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: ${BRAND.crema}; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: 32px; letter-spacing: -0.5px;">
                 Como el musguito
               </h1>
             </td>
@@ -159,15 +183,15 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
             <td style="padding: 40px 30px;">
               
               <!-- Saludo -->
-              <h2 style="margin: 0 0 20px 0; color: #233529; font-size: 24px; font-weight: 600;">
+              <h2 style="margin: 0 0 20px 0; color: ${BRAND.bosque}; font-size: 24px; font-weight: 600;">
                 ¡Tu compra está confirmada!
               </h2>
               
-              <p style="margin: 0 0 30px 0; color: #4B5A4D; font-size: 16px; line-height: 1.6;">
+              <p style="margin: 0 0 30px 0; color: ${BRAND.texto}; font-size: 16px; line-height: 1.6;">
                 Hola${data.customerName ? ` ${escapeHtml(data.customerName)}` : ''},
               </p>
               
-              <p style="margin: 0 0 30px 0; color: #4B5A4D; font-size: 16px; line-height: 1.6;">
+              <p style="margin: 0 0 30px 0; color: ${BRAND.texto}; font-size: 16px; line-height: 1.6;">
                 ${data.isGift 
                   ? 'Gracias por crear vida con nosotros. Tu regalo está confirmado y el destinatario recibirá un email con los detalles.'
                   : 'Gracias por crear vida con nosotros. Tu pedido está confirmado y estamos preparando todo para ti.'}
@@ -175,82 +199,82 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
 
               ${data.isGift ? `
               <!-- Información del Regalo -->
-              <div style="background-color: #FAF5E8; border: 2px solid rgba(45, 80, 22, 0.3); border-radius: 12px; padding: 24px; margin: 30px 0;">
+              <div style="background-color: ${BRAND.cremaSuave}; border: 2px solid ${BRAND.bordeMarca}; border-radius: 12px; padding: 24px; margin: 30px 0;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <span style="font-size: 24px;">🎁</span>
-                  <h3 style="margin: 0; color: #233529; font-size: 18px; font-weight: 600;">
+                  <h3 style="margin: 0; color: ${BRAND.bosque}; font-size: 18px; font-weight: 600;">
                     Este pedido es un regalo
                   </h3>
                 </div>
                 <div style="margin-bottom: 12px;">
-                  <p style="margin: 0 0 4px 0; color: #5B6A5D; font-size: 14px; font-weight: 500;">
+                  <p style="margin: 0 0 4px 0; color: ${BRAND.textoSuave}; font-size: 14px; font-weight: 500;">
                     Destinatario:
                   </p>
-                  <p style="margin: 0; color: #233529; font-size: 15px; font-weight: 600;">
+                  <p style="margin: 0; color: ${BRAND.bosque}; font-size: 15px; font-weight: 600;">
                     ${data.recipientName ? escapeHtml(data.recipientName) : 'Sin nombre'} ${data.recipientEmail ? `(${escapeHtml(data.recipientEmail)})` : ''}
                   </p>
                 </div>
                 ${data.giftMessage ? `
-                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(45, 80, 22, 0.2);">
-                  <p style="margin: 0 0 4px 0; color: #5B6A5D; font-size: 14px; font-weight: 500;">
+                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${BRAND.bordeTenue};">
+                  <p style="margin: 0 0 4px 0; color: ${BRAND.textoSuave}; font-size: 14px; font-weight: 500;">
                     Tu mensaje:
                   </p>
-                  <p style="margin: 0; color: #233529; font-size: 14px; font-style: italic; line-height: 1.6; white-space: pre-wrap;">
+                  <p style="margin: 0; color: ${BRAND.bosque}; font-size: 14px; font-style: italic; line-height: 1.6; white-space: pre-wrap;">
                     "${escapeHtml(data.giftMessage)}"
                   </p>
                 </div>
                 ` : ''}
-                <p style="margin: 16px 0 0 0; color: #5B6A5D; font-size: 13px; line-height: 1.5;">
+                <p style="margin: 16px 0 0 0; color: ${BRAND.textoSuave}; font-size: 13px; line-height: 1.5;">
                   El destinatario recibirá un email con los detalles del regalo y un código para canjearlo.
                 </p>
               </div>
               ` : ''}
 
               <!-- Resumen de Orden -->
-              <div style="background-color: #F7F1E2; border-radius: 12px; padding: 24px; margin: 30px 0;">
-                <h3 style="margin: 0 0 20px 0; color: #233529; font-size: 18px; font-weight: 600;">
+              <div style="background-color: ${BRAND.cremaPanel}; border-radius: 12px; padding: 24px; margin: 30px 0;">
+                <h3 style="margin: 0 0 20px 0; color: ${BRAND.bosque}; font-size: 18px; font-weight: 600;">
                   Resumen de tu Compra
                 </h3>
                 
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
                   <tr>
-                    <td style="padding: 8px 0; color: #4B5A4D; font-size: 14px;">Número de Orden:</td>
-                    <td align="right" style="padding: 8px 0; color: #233529; font-weight: 600; font-size: 14px;">${escapeHtml(data.orderId)}</td>
+                    <td style="padding: 8px 0; color: ${BRAND.texto}; font-size: 14px;">Número de Orden:</td>
+                    <td align="right" style="padding: 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 14px;">${escapeHtml(data.orderId)}</td>
                   </tr>
                   ${data.flowOrder ? `
                   <tr>
-                    <td style="padding: 8px 0; color: #4B5A4D; font-size: 14px;">Orden Flow:</td>
-                    <td align="right" style="padding: 8px 0; color: #233529; font-weight: 600; font-size: 14px;">${escapeHtml(data.flowOrder)}</td>
+                    <td style="padding: 8px 0; color: ${BRAND.texto}; font-size: 14px;">Orden Flow:</td>
+                    <td align="right" style="padding: 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 14px;">${escapeHtml(data.flowOrder)}</td>
                   </tr>
                   ` : ''}
                   <tr>
-                    <td style="padding: 8px 0; color: #4B5A4D; font-size: 14px;">Fecha:</td>
-                    <td align="right" style="padding: 8px 0; color: #233529; font-weight: 600; font-size: 14px;">${formatDateLong(data.paymentDate)}</td>
+                    <td style="padding: 8px 0; color: ${BRAND.texto}; font-size: 14px;">Fecha:</td>
+                    <td align="right" style="padding: 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 14px;">${formatDateLong(data.paymentDate)}</td>
                   </tr>
                 </table>
 
-                <div style="border-top: 2px solid #D9D3BF; padding-top: 20px; margin-top: 20px;">
-                  <h4 style="margin: 0 0 16px 0; color: #233529; font-size: 16px; font-weight: 600;">
+                <div style="border-top: 2px solid ${BRAND.linea}; padding-top: 20px; margin-top: 20px;">
+                  <h4 style="margin: 0 0 16px 0; color: ${BRAND.bosque}; font-size: 16px; font-weight: 600;">
                     Productos
                   </h4>
                   
                   ${data.items.map((item) => `
-                    <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #D9D3BF;">
+                    <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid ${BRAND.linea};">
                       <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                         <div style="flex: 1;">
-                          <p style="margin: 0; color: #233529; font-weight: 600; font-size: 15px;">${escapeHtml(item.name)}</p>
-                          <p style="margin: 4px 0 0 0; color: #4B5A4D; font-size: 13px;">
+                          <p style="margin: 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">${escapeHtml(item.name)}</p>
+                          <p style="margin: 4px 0 0 0; color: ${BRAND.texto}; font-size: 13px;">
                             ${item.type === 'terrarium' ? '🌿 Terrario' : item.type === 'course' ? '🎓 Curso Online' : item.type === 'workshop' ? '🤝 Taller Presencial' : '🛠️ Insumo'}
                             ${item.quantity > 1 ? ` • Cantidad: ${item.quantity}` : ''}
                           </p>
                           ${item.selectedDate ? `
-                            <p style="margin: 4px 0 0 0; color: #9E5434; font-size: 13px; font-weight: 500;">
+                            <p style="margin: 4px 0 0 0; color: ${BRAND.terracota}; font-size: 13px; font-weight: 500;">
                               📅 ${formatWorkshopDateFull(item.selectedDate.date)}
                             </p>
                           ` : ''}
                         </div>
                         <div style="text-align: right;">
-                          <p style="margin: 0; color: #233529; font-weight: 600; font-size: 15px;">
+                          <p style="margin: 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                             ${formatPrice(item.price * item.quantity, item.currency)}
                           </p>
                         </div>
@@ -258,10 +282,10 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                     </div>
                   `).join('')}
                   
-                  <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #9E5434;">
+                  <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid ${BRAND.terracota};">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <span style="color: #233529; font-size: 18px; font-weight: 600;">Total:</span>
-                      <span style="color: #233529; font-size: 20px; font-weight: 700;">${formatPrice(data.total, data.currency)}</span>
+                      <span style="color: ${BRAND.bosque}; font-size: 18px; font-weight: 600;">Total:</span>
+                      <span style="color: ${BRAND.bosque}; font-size: 20px; font-weight: 700;">${formatPrice(data.total, data.currency)}</span>
                     </div>
                   </div>
                 </div>
@@ -270,16 +294,16 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
               ${!data.isGift ? `
               <!-- Próximos Pasos -->
               <div style="margin: 30px 0;">
-                <h3 style="margin: 0 0 16px 0; color: #233529; font-size: 18px; font-weight: 600;">
+                <h3 style="margin: 0 0 16px 0; color: ${BRAND.bosque}; font-size: 18px; font-weight: 600;">
                   Próximos Pasos
                 </h3>
                 
                 ${terrarios.length > 0 ? `
-                <div style="background-color: #E7EBDC; border-left: 4px solid #9E5434; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 8px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.niebla}; border-left: 4px solid ${BRAND.terracota}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🌿 Para tus Terrarios:
                   </p>
-                  <p style="margin: 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     ${terrarios.some((t) => t.selectedDate) 
                       ? 'Te contactaremos pronto para coordinar el retiro de tu terrario.'
                       : 'Te contactaremos en las próximas 24 horas para coordinar el retiro de tu terrario. Si tienes alguna pregunta, puedes escribirnos directamente.'}
@@ -288,11 +312,11 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                 ` : ''}
                 
                 ${cursos.length > 0 ? `
-                <div style="background-color: #E7EBDC; border-left: 4px solid #9E5434; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 8px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.niebla}; border-left: 4px solid ${BRAND.terracota}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🎓 Para tus Cursos Online:
                   </p>
-                  <p style="margin: 0 0 12px 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0 0 12px 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     ${data.hasAccount 
                       ? 'Tu acceso al curso está activo. Ya puedes acceder a tus cursos desde tu cuenta.'
                       : 'Para acceder a tus cursos online, necesitas crear una cuenta. Es rápido y te permitirá ver tu progreso, descargar materiales y acceder desde cualquier dispositivo.'}
@@ -300,23 +324,23 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                   ${data.hasAccount ? `
                     <div style="text-align: center; margin: 16px 0 0 0;">
                       <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl'}/mi-cuenta?tab=cursos" 
-                         style="display: inline-block; background-color: #9E5434; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                         style="display: inline-block; background-color: ${BRAND.terracota}; color: ${BRAND.blanco}; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                         Ir a Mis Cursos →
                       </a>
                     </div>
                   ` : `
-                    <div style="background-color: #fff9e6; border: 2px solid #ffd700; border-radius: 8px; padding: 12px; margin: 12px 0;">
-                      <p style="margin: 0; color: #856404; font-size: 13px; font-weight: 600; text-align: center; line-height: 1.5;">
+                    <div style="background-color: ${BRAND.avisoFondo}; border: 2px solid ${BRAND.avisoBorde}; border-radius: 8px; padding: 12px; margin: 12px 0;">
+                      <p style="margin: 0; color: ${BRAND.avisoTexto}; font-size: 13px; font-weight: 600; text-align: center; line-height: 1.5;">
                         ⚠️ Importante: Crea tu cuenta usando el mismo email con el que compraste (${escapeHtml(data.customerEmail)}) para que tus cursos se vinculen automáticamente.
                       </p>
                     </div>
                     <div style="text-align: center; margin: 16px 0 0 0;">
                       <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl'}/auth/register" 
-                         style="display: inline-block; background-color: #9E5434; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin-right: 8px;">
+                         style="display: inline-block; background-color: ${BRAND.terracota}; color: ${BRAND.blanco}; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin-right: 8px;">
                         Crear mi Cuenta →
                       </a>
                       <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl'}/auth/login" 
-                         style="display: inline-block; background-color: transparent; color: #9E5434; padding: 12px 24px; border: 2px solid #9E5434; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                         style="display: inline-block; background-color: transparent; color: ${BRAND.terracota}; padding: 12px 24px; border: 2px solid ${BRAND.terracota}; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                         Ya tengo cuenta
                       </a>
                     </div>
@@ -325,26 +349,26 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                 ` : ''}
                 
                 ${talleres.length > 0 ? `
-                <div style="background-color: #E7EBDC; border-left: 4px solid #9E5434; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 8px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.niebla}; border-left: 4px solid ${BRAND.terracota}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🤝 Para tus Talleres:
                   </p>
-                  <p style="margin: 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     Tu cupo está confirmado. Te esperamos en el taller en la fecha y hora que seleccionaste. 
                     ${talleres[0].selectedDate ? `Recuerda: ${formatWorkshopDateFull(talleres[0].selectedDate.date)}.` : ''}
                   </p>
-                  <p style="margin: 12px 0 0 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 12px 0 0 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     <strong>Ubicación:</strong> Santa Isabel 676, Providencia, Santiago
                   </p>
                 </div>
                 ` : ''}
 
                 ${insumos.length > 0 ? `
-                <div style="background-color: #E7EBDC; border-left: 4px solid #9E5434; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 8px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.niebla}; border-left: 4px solid ${BRAND.terracota}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🛠️ Para tus Insumos:
                   </p>
-                  <p style="margin: 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     ${data.requiresShipping 
                       ? 'Te contactaremos en las próximas 24 horas para coordinar el despacho de tus insumos.'
                       : 'Te contactaremos en las próximas 24 horas para coordinar el retiro o envío de tus insumos.'}
@@ -353,15 +377,15 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
                 ` : ''}
 
                 ${data.requiresShipping && data.shippingAddress ? `
-                <div style="background-color: #fff9e6; border-left: 4px solid #ffd700; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 12px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.avisoFondo}; border-left: 4px solid ${BRAND.avisoBorde}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 12px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🚚 Dirección de Despacho:
                   </p>
-                  <p style="margin: 0 0 8px 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     <strong>${escapeHtml(data.shippingAddress.address)} ${escapeHtml(data.shippingAddress.number)}</strong><br>
                     ${escapeHtml(data.shippingAddress.comuna)}, ${escapeHtml(data.shippingAddress.region)}${data.shippingAddress.details ? `<br>${escapeHtml(data.shippingAddress.details)}` : ''}
                   </p>
-                  <p style="margin: 12px 0 0 0; color: #856404; font-size: 13px; line-height: 1.6; font-weight: 500;">
+                  <p style="margin: 12px 0 0 0; color: ${BRAND.avisoTexto}; font-size: 13px; line-height: 1.6; font-weight: 500;">
                     ⚠️ Comoelmusguito te contactará después de la compra para coordinar el costo y fecha de envío. El despacho solo está disponible dentro de Chile.
                   </p>
                 </div>
@@ -373,21 +397,21 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
               <!-- Link a Boleta -->
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${escapeHtml(data.flowInvoiceUrl)}" 
-                   style="display: inline-block; background-color: #9E5434; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
+                   style="display: inline-block; background-color: ${BRAND.terracota}; color: ${BRAND.blanco}; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
                   Ver Boleta en Flow →
                 </a>
               </div>
               ` : ''}
 
               <!-- Footer -->
-              <div style="border-top: 1px solid #D9D3BF; padding-top: 30px; margin-top: 40px; text-align: center;">
-                <p style="margin: 0 0 12px 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+              <div style="border-top: 1px solid ${BRAND.linea}; padding-top: 30px; margin-top: 40px; text-align: center;">
+                <p style="margin: 0 0 12px 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                   Si tienes alguna pregunta, no dudes en escribirnos.
                 </p>
-                <p style="margin: 0; color: #233529; font-size: 14px; font-weight: 600;">
+                <p style="margin: 0; color: ${BRAND.bosque}; font-size: 14px; font-weight: 600;">
                   Con cariño,<br>
                   Tomás Barrera<br>
-                  <span style="color: #9E5434;">comoelmusguito</span>
+                  <span style="color: ${BRAND.terracota};">comoelmusguito</span>
                 </p>
               </div>
 
@@ -396,8 +420,8 @@ function generateOrderConfirmationEmail(data: EmailOrderData): { html: string; s
 
           <!-- Footer Background -->
           <tr>
-            <td style="background-color: #F7F1E2; padding: 20px 30px; text-align: center;">
-              <p style="margin: 0; color: #4B5A4D; font-size: 12px;">
+            <td style="background-color: ${BRAND.cremaPanel}; padding: 20px 30px; text-align: center;">
+              <p style="margin: 0; color: ${BRAND.texto}; font-size: 12px;">
                 Este email fue enviado a ${escapeHtml(data.customerEmail)}
               </p>
             </td>
@@ -464,16 +488,16 @@ function generateVerificationEmail(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verifica tu cuenta</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #F3EBD8; color: #233529;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F3EBD8; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: ${BRAND.crema}; color: ${BRAND.bosque};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${BRAND.crema}; padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: ${BRAND.blanco}; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           
           <!-- Header -->
           <tr>
-            <td style="background: #233529; padding: 40px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #F3EBD8; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: 32px; letter-spacing: -0.5px;">
+            <td style="background: ${BRAND.bosque}; padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: ${BRAND.crema}; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: 32px; letter-spacing: -0.5px;">
                 Como el musguito
               </h1>
             </td>
@@ -483,46 +507,46 @@ function generateVerificationEmail(
           <tr>
             <td style="padding: 40px 30px;">
               
-              <h2 style="margin: 0 0 20px 0; color: #233529; font-size: 24px; font-weight: 600;">
+              <h2 style="margin: 0 0 20px 0; color: ${BRAND.bosque}; font-size: 24px; font-weight: 600;">
                 ¡Bienvenido a comoelmusguito!
               </h2>
               
-              <p style="margin: 0 0 20px 0; color: #4B5A4D; font-size: 16px; line-height: 1.6;">
+              <p style="margin: 0 0 20px 0; color: ${BRAND.texto}; font-size: 16px; line-height: 1.6;">
                 Hola${name ? ` ${escapeHtml(name)}` : ''},
               </p>
               
-              <p style="margin: 0 0 30px 0; color: #4B5A4D; font-size: 16px; line-height: 1.6;">
+              <p style="margin: 0 0 30px 0; color: ${BRAND.texto}; font-size: 16px; line-height: 1.6;">
                 Gracias por registrarte. Para completar tu registro y activar tu cuenta, por favor verifica tu dirección de email haciendo clic en el botón de abajo.
               </p>
 
               <!-- Botón de Verificación -->
               <div style="text-align: center; margin: 40px 0;">
                 <a href="${verificationUrl}" 
-                   style="display: inline-block; background-color: #9E5434; color: #ffffff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+                   style="display: inline-block; background-color: ${BRAND.terracota}; color: ${BRAND.blanco}; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                   Verificar mi Email
                 </a>
               </div>
 
-              <p style="margin: 30px 0 0 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 30px 0 0 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                 Si el botón no funciona, copia y pega este enlace en tu navegador:
               </p>
-              <p style="margin: 8px 0 0 0; color: #9E5434; font-size: 13px; word-break: break-all;">
+              <p style="margin: 8px 0 0 0; color: ${BRAND.terracota}; font-size: 13px; word-break: break-all;">
                 ${verificationUrl}
               </p>
 
-              <p style="margin: 30px 0 0 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 30px 0 0 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                 Este enlace expirará en 48 horas. Si no verificas tu cuenta en ese tiempo, deberás registrarte nuevamente.
               </p>
 
               <!-- Footer -->
-              <div style="border-top: 1px solid #D9D3BF; padding-top: 30px; margin-top: 40px; text-align: center;">
-                <p style="margin: 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+              <div style="border-top: 1px solid ${BRAND.linea}; padding-top: 30px; margin-top: 40px; text-align: center;">
+                <p style="margin: 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                   Si no creaste esta cuenta, puedes ignorar este email.
                 </p>
-                <p style="margin: 12px 0 0 0; color: #233529; font-size: 14px; font-weight: 600;">
+                <p style="margin: 12px 0 0 0; color: ${BRAND.bosque}; font-size: 14px; font-weight: 600;">
                   Con cariño,<br>
                   Tomás Barrera<br>
-                  <span style="color: #9E5434;">comoelmusguito</span>
+                  <span style="color: ${BRAND.terracota};">comoelmusguito</span>
                 </p>
               </div>
 
@@ -531,8 +555,8 @@ function generateVerificationEmail(
 
           <!-- Footer Background -->
           <tr>
-            <td style="background-color: #F7F1E2; padding: 20px 30px; text-align: center;">
-              <p style="margin: 0; color: #4B5A4D; font-size: 12px;">
+            <td style="background-color: ${BRAND.cremaPanel}; padding: 20px 30px; text-align: center;">
+              <p style="margin: 0; color: ${BRAND.texto}; font-size: 12px;">
                 Este email fue enviado para verificar tu cuenta
               </p>
             </td>
@@ -616,16 +640,16 @@ function generatePasswordResetEmail(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${heading}</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #F3EBD8; color: #233529;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F3EBD8; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: ${BRAND.crema}; color: ${BRAND.bosque};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${BRAND.crema}; padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: ${BRAND.blanco}; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           
           <!-- Header -->
           <tr>
-            <td style="background: #233529; padding: 40px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #F3EBD8; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: 32px; letter-spacing: -0.5px;">
+            <td style="background: ${BRAND.bosque}; padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: ${BRAND.crema}; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: 32px; letter-spacing: -0.5px;">
                 Como el musguito
               </h1>
             </td>
@@ -635,46 +659,46 @@ function generatePasswordResetEmail(
           <tr>
             <td style="padding: 40px 30px;">
               
-              <h2 style="margin: 0 0 20px 0; color: #233529; font-size: 24px; font-weight: 600;">
+              <h2 style="margin: 0 0 20px 0; color: ${BRAND.bosque}; font-size: 24px; font-weight: 600;">
                 ${heading}
               </h2>
 
-              <p style="margin: 0 0 20px 0; color: #4B5A4D; font-size: 16px; line-height: 1.6;">
+              <p style="margin: 0 0 20px 0; color: ${BRAND.texto}; font-size: 16px; line-height: 1.6;">
                 Hola${name ? ` ${escapeHtml(name)}` : ''},
               </p>
 
-              <p style="margin: 0 0 30px 0; color: #4B5A4D; font-size: 16px; line-height: 1.6;">
+              <p style="margin: 0 0 30px 0; color: ${BRAND.texto}; font-size: 16px; line-height: 1.6;">
                 ${intro}
               </p>
 
               <!-- Botón de Reset -->
               <div style="text-align: center; margin: 40px 0;">
                 <a href="${resetUrl}"
-                   style="display: inline-block; background-color: #9E5434; color: #ffffff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+                   style="display: inline-block; background-color: ${BRAND.terracota}; color: ${BRAND.blanco}; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                   ${ctaLabel}
                 </a>
               </div>
 
-              <p style="margin: 30px 0 0 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 30px 0 0 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                 Si el botón no funciona, copia y pega este enlace en tu navegador:
               </p>
-              <p style="margin: 8px 0 0 0; color: #9E5434; font-size: 13px; word-break: break-all;">
+              <p style="margin: 8px 0 0 0; color: ${BRAND.terracota}; font-size: 13px; word-break: break-all;">
                 ${resetUrl}
               </p>
 
-              <p style="margin: 30px 0 0 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 30px 0 0 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                 Este enlace expirará en 1 hora por seguridad.
               </p>
 
               <!-- Footer -->
-              <div style="border-top: 1px solid #D9D3BF; padding-top: 30px; margin-top: 40px; text-align: center;">
-                <p style="margin: 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+              <div style="border-top: 1px solid ${BRAND.linea}; padding-top: 30px; margin-top: 40px; text-align: center;">
+                <p style="margin: 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                   Si no solicitaste este cambio, puedes ignorar este email de forma segura.
                 </p>
-                <p style="margin: 12px 0 0 0; color: #233529; font-size: 14px; font-weight: 600;">
+                <p style="margin: 12px 0 0 0; color: ${BRAND.bosque}; font-size: 14px; font-weight: 600;">
                   Con cariño,<br>
                   Tomás Barrera<br>
-                  <span style="color: #9E5434;">comoelmusguito</span>
+                  <span style="color: ${BRAND.terracota};">comoelmusguito</span>
                 </p>
               </div>
 
@@ -683,8 +707,8 @@ function generatePasswordResetEmail(
 
           <!-- Footer Background -->
           <tr>
-            <td style="background-color: #F7F1E2; padding: 20px 30px; text-align: center;">
-              <p style="margin: 0; color: #4B5A4D; font-size: 12px;">
+            <td style="background-color: ${BRAND.cremaPanel}; padding: 20px 30px; text-align: center;">
+              <p style="margin: 0; color: ${BRAND.texto}; font-size: 12px;">
                 ${footerNote}
               </p>
             </td>
@@ -735,47 +759,47 @@ export async function sendContactEmail(data: {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #233529; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: #233529; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-            <h1 style="color: #F3EBD8; margin: 0; font-size: 24px;">Nuevo Mensaje de Contacto</h1>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: ${BRAND.bosque}; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: ${BRAND.bosque}; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+            <h1 style="color: ${BRAND.crema}; margin: 0; font-size: 24px;">Nuevo Mensaje de Contacto</h1>
           </div>
           
-          <div style="background: #F3EBD8; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #D9D3BF;">
+          <div style="background: ${BRAND.crema}; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid ${BRAND.linea};">
             <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h2 style="color: #233529; margin-top: 0; font-size: 20px;">Información del Contacto</h2>
+              <h2 style="color: ${BRAND.bosque}; margin-top: 0; font-size: 20px;">Información del Contacto</h2>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 8px 0; color: #4B5A4D; font-weight: 600; width: 120px;">Nombre:</td>
-                  <td style="padding: 8px 0; color: #233529;">${name}</td>
+                  <td style="padding: 8px 0; color: ${BRAND.texto}; font-weight: 600; width: 120px;">Nombre:</td>
+                  <td style="padding: 8px 0; color: ${BRAND.bosque};">${name}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 0; color: #4B5A4D; font-weight: 600;">Email:</td>
-                  <td style="padding: 8px 0; color: #233529;">
-                    <a href="mailto:${email}" style="color: #9E5434; text-decoration: none;">${email}</a>
+                  <td style="padding: 8px 0; color: ${BRAND.texto}; font-weight: 600;">Email:</td>
+                  <td style="padding: 8px 0; color: ${BRAND.bosque};">
+                    <a href="mailto:${email}" style="color: ${BRAND.terracota}; text-decoration: none;">${email}</a>
                   </td>
                 </tr>
                 ${phone ? `
                 <tr>
-                  <td style="padding: 8px 0; color: #4B5A4D; font-weight: 600;">Teléfono:</td>
-                  <td style="padding: 8px 0; color: #233529;">
-                    <a href="tel:${phone}" style="color: #9E5434; text-decoration: none;">${phone}</a>
+                  <td style="padding: 8px 0; color: ${BRAND.texto}; font-weight: 600;">Teléfono:</td>
+                  <td style="padding: 8px 0; color: ${BRAND.bosque};">
+                    <a href="tel:${phone}" style="color: ${BRAND.terracota}; text-decoration: none;">${phone}</a>
                   </td>
                 </tr>
                 ` : ''}
                 <tr>
-                  <td style="padding: 8px 0; color: #4B5A4D; font-weight: 600;">Asunto:</td>
-                  <td style="padding: 8px 0; color: #233529;">${subject}</td>
+                  <td style="padding: 8px 0; color: ${BRAND.texto}; font-weight: 600;">Asunto:</td>
+                  <td style="padding: 8px 0; color: ${BRAND.bosque};">${subject}</td>
                 </tr>
               </table>
             </div>
 
             <div style="background: white; padding: 20px; border-radius: 8px;">
-              <h2 style="color: #233529; margin-top: 0; font-size: 20px;">Mensaje</h2>
-              <div style="color: #233529; white-space: pre-wrap; line-height: 1.8;">${message}</div>
+              <h2 style="color: ${BRAND.bosque}; margin-top: 0; font-size: 20px;">Mensaje</h2>
+              <div style="color: ${BRAND.bosque}; white-space: pre-wrap; line-height: 1.8;">${message}</div>
             </div>
 
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #D9D3BF; text-align: center;">
-              <p style="color: #4B5A4D; font-size: 14px; margin: 0;">
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid ${BRAND.linea}; text-align: center;">
+              <p style="color: ${BRAND.texto}; font-size: 14px; margin: 0;">
                 Puedes responder directamente a este email para contactar a ${name}
               </p>
             </div>
@@ -797,37 +821,37 @@ export async function sendContactEmail(data: {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #233529; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: #233529; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-            <h1 style="color: #F3EBD8; margin: 0; font-size: 24px;">¡Hola ${name}!</h1>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: ${BRAND.bosque}; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: ${BRAND.bosque}; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+            <h1 style="color: ${BRAND.crema}; margin: 0; font-size: 24px;">¡Hola ${name}!</h1>
           </div>
           
-          <div style="background: #F3EBD8; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #D9D3BF;">
-            <p style="color: #233529; font-size: 16px; margin-top: 0;">
+          <div style="background: ${BRAND.crema}; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid ${BRAND.linea};">
+            <p style="color: ${BRAND.bosque}; font-size: 16px; margin-top: 0;">
               Hemos recibido tu mensaje sobre: <strong>${subject}</strong>
             </p>
             
-            <p style="color: #233529; font-size: 16px;">
+            <p style="color: ${BRAND.bosque}; font-size: 16px;">
               Te responderemos lo antes posible, generalmente en un plazo de 24-48 horas hábiles.
             </p>
 
             <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p style="color: #4B5A4D; font-size: 14px; margin: 0 0 10px 0;"><strong>Tu mensaje:</strong></p>
-              <p style="color: #233529; font-size: 14px; white-space: pre-wrap; margin: 0;">${message}</p>
+              <p style="color: ${BRAND.texto}; font-size: 14px; margin: 0 0 10px 0;"><strong>Tu mensaje:</strong></p>
+              <p style="color: ${BRAND.bosque}; font-size: 14px; white-space: pre-wrap; margin: 0;">${message}</p>
             </div>
 
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #D9D3BF;">
-              <p style="color: #4B5A4D; font-size: 14px; margin: 0 0 10px 0;"><strong>¿Necesitas contactarnos urgentemente?</strong></p>
-              <p style="color: #233529; font-size: 14px; margin: 0;">
-                Teléfono: <a href="${getTelLink()}" style="color: #9E5434; text-decoration: none;">${getFormattedPhoneNumber()}</a><br>
-                Email: <a href="mailto:hola@comoelmusguito.cl" style="color: #9E5434; text-decoration: none;">hola@comoelmusguito.cl</a>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid ${BRAND.linea};">
+              <p style="color: ${BRAND.texto}; font-size: 14px; margin: 0 0 10px 0;"><strong>¿Necesitas contactarnos urgentemente?</strong></p>
+              <p style="color: ${BRAND.bosque}; font-size: 14px; margin: 0;">
+                Teléfono: <a href="${getTelLink()}" style="color: ${BRAND.terracota}; text-decoration: none;">${getFormattedPhoneNumber()}</a><br>
+                Email: <a href="mailto:hola@comoelmusguito.cl" style="color: ${BRAND.terracota}; text-decoration: none;">hola@comoelmusguito.cl</a>
               </p>
             </div>
 
-            <div style="margin-top: 30px; text-align: center; padding-top: 20px; border-top: 2px solid #D9D3BF;">
-              <p style="color: #4B5A4D; font-size: 12px; margin: 0;">
+            <div style="margin-top: 30px; text-align: center; padding-top: 20px; border-top: 2px solid ${BRAND.linea};">
+              <p style="color: ${BRAND.texto}; font-size: 12px; margin: 0;">
                 Gracias por contactarnos,<br>
-                <strong style="color: #233529;">El equipo de Como el Musguito</strong>
+                <strong style="color: ${BRAND.bosque};">El equipo de Como el Musguito</strong>
               </p>
             </div>
           </div>
@@ -886,16 +910,16 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>¡Tienes un Regalo!</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #F3EBD8; color: #233529;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F3EBD8; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: ${BRAND.crema}; color: ${BRAND.bosque};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${BRAND.crema}; padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: ${BRAND.blanco}; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           
           <!-- Header con gradiente especial para regalo -->
           <tr>
-            <td style="background: linear-gradient(135deg, #233529 0%, #7F3F22 50%, #7F3F22 100%); padding: 40px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #F3EBD8; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: 32px; letter-spacing: -0.5px;">
+            <td style="background-color: ${BRAND.bosque}; background: linear-gradient(135deg, ${BRAND.bosque} 0%, ${BRAND.terracotaOscuro} 50%, ${BRAND.terracotaOscuro} 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: ${BRAND.crema}; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: 32px; letter-spacing: -0.5px;">
                 🎁 ¡Tienes un Regalo!
               </h1>
             </td>
@@ -906,59 +930,59 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
             <td style="padding: 40px 30px;">
               
               <!-- Saludo -->
-              <h2 style="margin: 0 0 20px 0; color: #233529; font-size: 24px; font-weight: 600;">
+              <h2 style="margin: 0 0 20px 0; color: ${BRAND.bosque}; font-size: 24px; font-weight: 600;">
                 ¡Hola${data.recipientName ? ` ${escapeHtml(data.recipientName)}` : ''}!
               </h2>
               
-              <p style="margin: 0 0 20px 0; color: #5B6A5D; font-size: 16px; line-height: 1.6;">
+              <p style="margin: 0 0 20px 0; color: ${BRAND.textoSuave}; font-size: 16px; line-height: 1.6;">
                 <strong>${escapeHtml(data.senderName || data.senderEmail)}</strong> te ha enviado un regalo especial:
               </p>
 
               ${data.giftMessage ? `
               <!-- Mensaje Personalizado -->
-              <div style="background-color: #FAF5E8; border-left: 4px solid #E0956F; padding: 16px; margin: 20px 0; border-radius: 8px;">
-                <p style="margin: 0; color: #233529; font-size: 15px; font-style: italic; line-height: 1.6; white-space: pre-wrap;">"${escapeHtml(data.giftMessage)}"</p>
+              <div style="background-color: ${BRAND.cremaSuave}; border-left: 4px solid ${BRAND.terracotaClaro}; padding: 16px; margin: 20px 0; border-radius: 8px;">
+                <p style="margin: 0; color: ${BRAND.bosque}; font-size: 15px; font-style: italic; line-height: 1.6; white-space: pre-wrap;">"${escapeHtml(data.giftMessage)}"</p>
               </div>
               ` : ''}
 
               <!-- Resumen del Regalo -->
-              <div style="background-color: #FAF5E8; border-radius: 12px; padding: 24px; margin: 30px 0;">
-                <h3 style="margin: 0 0 20px 0; color: #233529; font-size: 18px; font-weight: 600;">
+              <div style="background-color: ${BRAND.cremaSuave}; border-radius: 12px; padding: 24px; margin: 30px 0;">
+                <h3 style="margin: 0 0 20px 0; color: ${BRAND.bosque}; font-size: 18px; font-weight: 600;">
                   Tu Regalo
                 </h3>
                 
                 ${cursos.length > 0 ? `
                 <div style="margin-bottom: 16px;">
-                  <h4 style="margin: 0 0 8px 0; color: #233529; font-size: 16px; font-weight: 600;">📚 Cursos Online:</h4>
+                  <h4 style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-size: 16px; font-weight: 600;">📚 Cursos Online:</h4>
                   ${cursos.map((item) => `
-                    <p style="margin: 4px 0; color: #233529; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: ${BRAND.bosque}; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
 
                 ${talleres.length > 0 ? `
                 <div style="margin-bottom: 16px;">
-                  <h4 style="margin: 0 0 8px 0; color: #233529; font-size: 16px; font-weight: 600;">🎨 Talleres:</h4>
+                  <h4 style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-size: 16px; font-weight: 600;">🎨 Talleres:</h4>
                   ${talleres.map((item) => `
-                    <p style="margin: 4px 0; color: #233529; font-size: 14px;">• ${escapeHtml(item.name)}${item.selectedDate ? ` - ${formatDateLong(item.selectedDate.date)}` : ''}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: ${BRAND.bosque}; font-size: 14px;">• ${escapeHtml(item.name)}${item.selectedDate ? ` - ${formatDateLong(item.selectedDate.date)}` : ''}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
 
                 ${terrarios.length > 0 ? `
                 <div style="margin-bottom: 16px;">
-                  <h4 style="margin: 0 0 8px 0; color: #233529; font-size: 16px; font-weight: 600;">🌿 Terrarios:</h4>
+                  <h4 style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-size: 16px; font-weight: 600;">🌿 Terrarios:</h4>
                   ${terrarios.map((item) => `
-                    <p style="margin: 4px 0; color: #233529; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: ${BRAND.bosque}; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
 
                 ${insumos.length > 0 ? `
                 <div style="margin-bottom: 16px;">
-                  <h4 style="margin: 0 0 8px 0; color: #233529; font-size: 16px; font-weight: 600;">🛠️ Insumos:</h4>
+                  <h4 style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-size: 16px; font-weight: 600;">🛠️ Insumos:</h4>
                   ${insumos.map((item) => `
-                    <p style="margin: 4px 0; color: #233529; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
+                    <p style="margin: 4px 0; color: ${BRAND.bosque}; font-size: 14px;">• ${escapeHtml(item.name)}${item.quantity > 1 ? ` x${item.quantity}` : ''}</p>
                   `).join('')}
                 </div>
                 ` : ''}
@@ -966,67 +990,67 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
 
               ${data.requiresShipping && data.shippingAddress ? `
               <!-- Información de Despacho -->
-              <div style="background-color: #fff9e6; border-left: 4px solid #ffd700; padding: 16px; margin: 20px 0; border-radius: 8px;">
-                <p style="margin: 0 0 12px 0; color: #233529; font-weight: 600; font-size: 15px;">
+              <div style="background-color: ${BRAND.avisoFondo}; border-left: 4px solid ${BRAND.avisoBorde}; padding: 16px; margin: 20px 0; border-radius: 8px;">
+                <p style="margin: 0 0 12px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                   🚚 Dirección de Despacho:
                 </p>
-                <p style="margin: 0 0 8px 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                <p style="margin: 0 0 8px 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                   <strong>${escapeHtml(data.shippingAddress.address)} ${escapeHtml(data.shippingAddress.number)}</strong><br>
                   ${escapeHtml(data.shippingAddress.comuna)}, ${escapeHtml(data.shippingAddress.region)}${data.shippingAddress.details ? `<br>${escapeHtml(data.shippingAddress.details)}` : ''}
                 </p>
-                <p style="margin: 12px 0 0 0; color: #856404; font-size: 13px; line-height: 1.6; font-weight: 500;">
+                <p style="margin: 12px 0 0 0; color: ${BRAND.avisoTexto}; font-size: 13px; line-height: 1.6; font-weight: 500;">
                   ⚠️ Comoelmusguito te contactará después de canjear tu regalo para coordinar el costo y fecha de envío.
                 </p>
               </div>
               ` : ''}
 
               <!-- Token de Canje -->
-              <div style="background-color: #FAF5E8; border: 2px dashed #7F3F22; border-radius: 12px; padding: 24px; margin: 30px 0; text-align: center;">
-                <p style="margin: 0 0 12px 0; color: #233529; font-size: 14px; font-weight: 600;">
+              <div style="background-color: ${BRAND.cremaSuave}; border: 2px dashed ${BRAND.terracotaOscuro}; border-radius: 12px; padding: 24px; margin: 30px 0; text-align: center;">
+                <p style="margin: 0 0 12px 0; color: ${BRAND.bosque}; font-size: 14px; font-weight: 600;">
                   Tu código de regalo:
                 </p>
-                <div style="background-color: #ffffff; border: 2px solid #7F3F22; border-radius: 8px; padding: 16px; margin: 12px 0;">
-                  <p style="margin: 0; color: #233529; font-size: 20px; font-weight: bold; font-family: monospace; letter-spacing: 2px;">
+                <div style="background-color: ${BRAND.blanco}; border: 2px solid ${BRAND.terracotaOscuro}; border-radius: 8px; padding: 16px; margin: 12px 0;">
+                  <p style="margin: 0; color: ${BRAND.bosque}; font-size: 20px; font-weight: bold; font-family: monospace; letter-spacing: 2px;">
                     ${escapeHtml(data.giftToken)}
                   </p>
                 </div>
-                <p style="margin: 12px 0 0 0; color: #5B6A5D; font-size: 13px; line-height: 1.5;">
+                <p style="margin: 12px 0 0 0; color: ${BRAND.textoSuave}; font-size: 13px; line-height: 1.5;">
                   Guarda este código. Lo necesitarás para canjear tu regalo.
                 </p>
               </div>
 
               <!-- Instrucciones -->
               <div style="background-color: rgba(107, 147, 98, 0.1); border: 1px solid rgba(61, 107, 34, 0.2); border-radius: 12px; padding: 20px; margin: 30px 0;">
-                <h4 style="margin: 0 0 12px 0; color: #233529; font-size: 16px; font-weight: 600;">
+                <h4 style="margin: 0 0 12px 0; color: ${BRAND.bosque}; font-size: 16px; font-weight: 600;">
                   ¿Cómo canjear tu regalo?
                 </h4>
-                <ol style="margin: 0; padding-left: 20px; color: #5B6A5D; font-size: 14px; line-height: 1.8;">
-                  <li>Si ya tienes cuenta, inicia sesión en <a href="${baseUrl}/mi-cuenta" style="color: #233529; text-decoration: none; font-weight: 600;">Mi Cuenta</a></li>
+                <ol style="margin: 0; padding-left: 20px; color: ${BRAND.textoSuave}; font-size: 14px; line-height: 1.8;">
+                  <li>Si ya tienes cuenta, inicia sesión en <a href="${baseUrl}/mi-cuenta" style="color: ${BRAND.bosque}; text-decoration: none; font-weight: 600;">Mi Cuenta</a></li>
                   <li>Haz clic en "Canjear Regalo" y pega el código</li>
-                  <li>Si no tienes cuenta, <a href="${baseUrl}/auth/register" style="color: #233529; text-decoration: none; font-weight: 600;">crea una aquí</a> y luego canjea tu regalo</li>
+                  <li>Si no tienes cuenta, <a href="${baseUrl}/auth/register" style="color: ${BRAND.bosque}; text-decoration: none; font-weight: 600;">crea una aquí</a> y luego canjea tu regalo</li>
                 </ol>
               </div>
 
               <!-- Botón de Acción -->
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${redeemUrl}" 
-                   style="display: inline-block; background-color: #233529; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+                   style="display: inline-block; background-color: ${BRAND.bosque}; color: ${BRAND.blanco}; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                   Canjear mi Regalo →
                 </a>
               </div>
 
               <!-- Próximos Pasos (para el destinatario después de canjear) -->
               <div style="margin: 30px 0;">
-                <h3 style="margin: 0 0 16px 0; color: #233529; font-size: 18px; font-weight: 600;">
+                <h3 style="margin: 0 0 16px 0; color: ${BRAND.bosque}; font-size: 18px; font-weight: 600;">
                   Próximos Pasos
                 </h3>
                 
                 ${terrarios.length > 0 ? `
-                <div style="background-color: #E7EBDC; border-left: 4px solid #9E5434; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 8px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.niebla}; border-left: 4px solid ${BRAND.terracota}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🌿 Para tus Terrarios:
                   </p>
-                  <p style="margin: 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     ${terrarios.some((t) => t.selectedDate) 
                       ? 'Te contactaremos pronto para coordinar el retiro de tu terrario.'
                       : 'Te contactaremos en las próximas 24 horas para coordinar el retiro de tu terrario. Si tienes alguna pregunta, puedes escribirnos directamente.'}
@@ -1035,16 +1059,16 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 ` : ''}
                 
                 ${cursos.length > 0 ? `
-                <div style="background-color: #E7EBDC; border-left: 4px solid #9E5434; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 8px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.niebla}; border-left: 4px solid ${BRAND.terracota}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🎓 Para tus Cursos Online:
                   </p>
-                  <p style="margin: 0 0 12px 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0 0 12px 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     Una vez que canjees tu regalo, tu acceso al curso estará activo. Podrás acceder a tus cursos desde tu cuenta y ver tu progreso, descargar materiales y acceder desde cualquier dispositivo.
                   </p>
                   <div style="text-align: center; margin: 16px 0 0 0;">
                     <a href="${baseUrl}/mi-cuenta?filter=courses" 
-                       style="display: inline-block; background-color: #9E5434; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                       style="display: inline-block; background-color: ${BRAND.terracota}; color: ${BRAND.blanco}; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                       Ir a Mis Cursos →
                     </a>
                   </div>
@@ -1052,26 +1076,26 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
                 ` : ''}
                 
                 ${talleres.length > 0 ? `
-                <div style="background-color: #E7EBDC; border-left: 4px solid #9E5434; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 8px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.niebla}; border-left: 4px solid ${BRAND.terracota}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🤝 Para tus Talleres:
                   </p>
-                  <p style="margin: 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     Tu cupo está confirmado. Te esperamos en el taller en la fecha y hora seleccionada. 
                     ${talleres[0].selectedDate ? `Recuerda: ${formatWorkshopDateFull(talleres[0].selectedDate.date)}.` : ''}
                   </p>
-                  <p style="margin: 12px 0 0 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 12px 0 0 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     <strong>Ubicación:</strong> Santa Isabel 676, Providencia, Santiago
                   </p>
                 </div>
                 ` : ''}
 
                 ${insumos.length > 0 ? `
-                <div style="background-color: #E7EBDC; border-left: 4px solid #9E5434; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
-                  <p style="margin: 0 0 8px 0; color: #233529; font-weight: 600; font-size: 15px;">
+                <div style="background-color: ${BRAND.niebla}; border-left: 4px solid ${BRAND.terracota}; padding: 16px; margin-bottom: 16px; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; color: ${BRAND.bosque}; font-weight: 600; font-size: 15px;">
                     🛠️ Para tus Insumos:
                   </p>
-                  <p style="margin: 0; color: #4B5A4D; font-size: 14px; line-height: 1.6;">
+                  <p style="margin: 0; color: ${BRAND.texto}; font-size: 14px; line-height: 1.6;">
                     Te contactaremos en las próximas 24 horas para coordinar el retiro o envío de tus insumos.
                   </p>
                 </div>
@@ -1080,13 +1104,13 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
 
               <!-- Footer -->
               <div style="border-top: 1px solid rgba(107, 117, 102, 0.2); padding-top: 30px; margin-top: 40px; text-align: center;">
-                <p style="margin: 0 0 12px 0; color: #5B6A5D; font-size: 14px; line-height: 1.6;">
+                <p style="margin: 0 0 12px 0; color: ${BRAND.textoSuave}; font-size: 14px; line-height: 1.6;">
                   Si tienes alguna pregunta, no dudes en escribirnos.
                 </p>
-                <p style="margin: 0; color: #233529; font-size: 14px; font-weight: 600;">
+                <p style="margin: 0; color: ${BRAND.bosque}; font-size: 14px; font-weight: 600;">
                   Con cariño,<br>
                   Tomás Barrera<br>
-                  <span style="color: #233529;">comoelmusguito</span>
+                  <span style="color: ${BRAND.bosque};">comoelmusguito</span>
                 </p>
               </div>
 
@@ -1095,8 +1119,8 @@ function generateGiftEmail(data: GiftEmailData): { html: string; subject: string
 
           <!-- Footer Background -->
           <tr>
-            <td style="background-color: #FAF5E8; padding: 20px 30px; text-align: center;">
-              <p style="margin: 0; color: #5B6A5D; font-size: 12px;">
+            <td style="background-color: ${BRAND.cremaSuave}; padding: 20px 30px; text-align: center;">
+              <p style="margin: 0; color: ${BRAND.textoSuave}; font-size: 12px;">
                 Este email fue enviado a ${escapeHtml(data.recipientEmail)}
               </p>
             </td>

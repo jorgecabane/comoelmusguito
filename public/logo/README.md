@@ -7,7 +7,7 @@ Archivos en uso (versión crema, pensada para fondos oscuros):
 
 El caracol del diseño original es una imagen de pixeles (no vectorial), por eso se usan PNG y no SVG. Si el diseño entrega una versión vectorial o de mayor resolución, reemplaza estos archivos manteniendo el nombre y la proporción.
 
-Los favicons y íconos (`public/favicon.*`, `public/icon-512.png`, `public/apple-touch-icon.png`, `app/icon.png`, `app/apple-icon.png`, `app/favicon.ico`) se generan desde `snail-cream.png` con:
+Los favicons (`public/favicon.ico`, `public/favicon.png`, `public/apple-touch-icon.png`) se generan desde `snail-cream.png` con:
 
 ```bash
 npm run script:generate-favicons
