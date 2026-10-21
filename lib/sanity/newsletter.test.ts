@@ -10,7 +10,7 @@ const m = vi.hoisted(() => {
 
 vi.mock('@/sanity/lib/client', () => {
   const c = { fetch: m.fetch, patch: m.patch, create: m.create };
-  return { client: c, writeClient: c };
+  return { client: c, writeClient: c, newPrivateId: () => 'private.nuevo' };
 });
 
 import {
@@ -69,6 +69,7 @@ describe('subscribeToNewsletter', () => {
       subscriberId: 'new-sub',
     });
     expect(m.create.mock.calls[0][0]).toMatchObject({
+      _id: 'private.nuevo',
       _type: 'newsletterSubscriber',
       email: 'new@x.cl',
       source: 'footer-home',

@@ -3,7 +3,7 @@
  */
 
 import 'server-only';
-import { client, writeClient } from '@/sanity/lib/client';
+import { client, newPrivateId, writeClient } from '@/sanity/lib/client';
 
 export interface NewsletterSubscriber {
   _id?: string;
@@ -111,7 +111,7 @@ export async function subscribeToNewsletter(data: {
       active: true,
     };
 
-    const result = await writeClient.create(subscriber);
+    const result = await writeClient.create({ _id: newPrivateId(), ...subscriber });
 
     return {
       success: true,
