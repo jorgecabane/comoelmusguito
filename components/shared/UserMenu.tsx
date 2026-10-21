@@ -79,7 +79,7 @@ export function UserMenu({ userName, userEmail, variant = 'desktop', onClose }: 
               <button
                 key={idx}
                 onClick={item.action}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left text-forest hover:bg-cream rounded-lg transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-fg hover:bg-bg rounded-lg transition-colors"
               >
                 <Icon size={20} />
                 <span>{item.label}</span>
@@ -91,7 +91,7 @@ export function UserMenu({ userName, userEmail, variant = 'desktop', onClose }: 
               <a
                 key={idx}
                 href={item.href}
-                className="flex items-center gap-3 px-4 py-3 text-forest hover:bg-cream rounded-lg transition-colors"
+                className="flex items-center gap-3 px-4 py-3 text-fg hover:bg-bg rounded-lg transition-colors"
               >
                 <Icon size={20} />
                 <span>{item.label}</span>
@@ -106,7 +106,7 @@ export function UserMenu({ userName, userEmail, variant = 'desktop', onClose }: 
                 if (onClose) onClose();
                 handleMenuItemClick(item.tab);
               }}
-              className="flex items-center gap-3 px-4 py-3 text-forest hover:bg-cream rounded-lg transition-colors"
+              className="flex items-center gap-3 px-4 py-3 text-fg hover:bg-bg rounded-lg transition-colors"
             >
               <Icon size={20} />
               <span>{item.label}</span>
@@ -122,21 +122,21 @@ export function UserMenu({ userName, userEmail, variant = 'desktop', onClose }: 
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-forest hover:text-musgo transition-all hover:scale-110 group"
+        className="relative p-2 text-fg hover:text-brand transition-all hover:scale-110 group"
         aria-label="Menú de usuario"
       >
         <User size={20} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-natural-lg border border-gray/10 overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-2 w-56 bg-surface rounded-xl shadow-natural-lg border border-line overflow-hidden z-50">
           {/* Header del dropdown */}
-          <div className="px-4 py-3 border-b border-gray/10 bg-cream/30">
-            <p className="font-semibold text-forest text-sm">
+          <div className="px-4 py-3 border-b border-line bg-bg/30">
+            <p className="font-semibold text-fg text-sm">
               {userName || 'Usuario'}
             </p>
             {userEmail && (
-              <p className="text-xs text-gray truncate">{userEmail}</p>
+              <p className="text-xs text-muted truncate">{userEmail}</p>
             )}
           </div>
 
@@ -149,7 +149,7 @@ export function UserMenu({ userName, userEmail, variant = 'desktop', onClose }: 
                   <button
                     key={idx}
                     onClick={item.action}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-forest hover:bg-cream transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-fg hover:bg-bg transition-colors"
                   >
                     <Icon size={18} />
                     <span>{item.label}</span>
@@ -161,7 +161,7 @@ export function UserMenu({ userName, userEmail, variant = 'desktop', onClose }: 
                   <a
                     key={idx}
                     href={item.href}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-forest hover:bg-cream transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-fg hover:bg-bg transition-colors"
                   >
                     <Icon size={18} />
                     <span>{item.label}</span>
@@ -173,7 +173,7 @@ export function UserMenu({ userName, userEmail, variant = 'desktop', onClose }: 
                   key={idx}
                   href={item.href || '/mi-cuenta'}
                   onClick={() => handleMenuItemClick(item.tab)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-forest hover:bg-cream transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-fg hover:bg-bg transition-colors"
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>

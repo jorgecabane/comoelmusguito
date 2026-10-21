@@ -3,7 +3,7 @@
  */
 
 import 'server-only';
-import { client, writeClient } from '@/sanity/lib/client';
+import { client, newPrivateId, writeClient } from '@/sanity/lib/client';
 import type { CartItem } from '@/types/cart';
 import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
 import type { EmailOrderData, EmailOrderItem, GiftEmailData } from '@/lib/resend/client';
@@ -178,7 +178,7 @@ export async function saveOrderToSanity(data: {
   };
 
   // Usar writeClient para operaciones de escritura
-  const created = await writeClient.create(orderDoc);
+  const created = await writeClient.create({ _id: newPrivateId(), ...orderDoc });
   return created as SanityOrder;
 }
 

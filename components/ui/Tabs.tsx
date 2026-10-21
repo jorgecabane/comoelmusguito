@@ -60,7 +60,7 @@ export function TabsList({ children, className }: TabsListProps) {
   return (
     <div
       className={cn(
-        'inline-flex h-12 items-center justify-center rounded-lg bg-cream p-1',
+        'inline-flex h-12 items-center justify-center rounded-lg bg-bg p-1',
         className
       )}
     >
@@ -89,10 +89,10 @@ export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
       onClick={() => context.onValueChange(value)}
       className={cn(
         'inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-all',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-musgo focus-visible:ring-offset-2',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2',
         isActive
-          ? 'bg-white text-forest shadow-sm'
-          : 'text-gray hover:text-forest hover:bg-white/50',
+          ? 'bg-surface text-fg shadow-sm'
+          : 'text-muted hover:text-fg hover:bg-surface/50',
         className
       )}
     >

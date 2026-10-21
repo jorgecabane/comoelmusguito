@@ -179,17 +179,17 @@ function RegisterContent() {
   };
 
   return (
-    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
       <div className="container max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl"
+          className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl"
         >
-          <h1 className="font-display text-3xl font-bold text-forest mb-2">
+          <h1 className="font-display text-3xl font-bold text-fg mb-2">
             Únete a nuestra comunidad 🌿
           </h1>
-          <p className="text-gray mb-8">
+          <p className="text-muted mb-8">
             Crea tu cuenta para acceder a cursos, talleres y más
           </p>
 
@@ -200,18 +200,18 @@ function RegisterContent() {
           )}
 
           {success && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+            <div className="bg-success/10 border border-success/30 rounded-lg p-6 mb-6">
               <div className="flex items-start gap-3">
-                <Mail className="text-green-600 mt-0.5" size={20} />
+                <Mail className="text-success mt-0.5" size={20} />
                 <div>
-                  <h3 className="font-semibold text-green-900 mb-2">
+                  <h3 className="font-semibold text-success mb-2">
                     ¡Cuenta creada exitosamente! 📧
                   </h3>
-                  <p className="text-green-800 text-sm mb-3">
+                  <p className="text-success text-sm mb-3">
                     Te hemos enviado un email de verificación a <strong>{email}</strong>. 
                     Por favor, revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
                   </p>
-                  <p className="text-green-700 text-xs">
+                  <p className="text-success text-xs">
                     ¿No recibiste el email? Revisa tu carpeta de spam o{' '}
                     <Link href="/auth/login" className="underline font-medium">
                       inicia sesión aquí
@@ -225,7 +225,7 @@ function RegisterContent() {
           {!success && (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-forest mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-fg mb-2">
                 Nombre
               </label>
               <Input
@@ -240,7 +240,7 @@ function RegisterContent() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-forest mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-fg mb-2">
                 Email
               </label>
               <Input
@@ -255,7 +255,7 @@ function RegisterContent() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-forest mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-fg mb-2">
                 Contraseña
               </label>
               <Input
@@ -271,7 +271,7 @@ function RegisterContent() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-forest mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-fg mb-2">
                 Confirmar Contraseña
               </label>
               <Input
@@ -309,15 +309,15 @@ function RegisterContent() {
           )}
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray">
+            <p className="text-sm text-muted">
               ¿Ya tienes cuenta?{' '}
-              <Link href="/auth/login" className="text-musgo hover:text-forest font-medium">
+              <Link href="/auth/login" className="text-brand hover:text-fg font-medium">
                 Inicia sesión aquí
               </Link>
             </p>
             {/* Texto de privacidad reCAPTCHA (requerido si se oculta el badge) */}
             {isRecaptchaConfigured && (
-              <p className="text-xs text-gray/60 mt-4">
+              <p className="text-xs text-muted/60 mt-4">
                 Este sitio está protegido por reCAPTCHA y se aplican la{' '}
                 <a 
                   href="https://policies.google.com/privacy" 
@@ -350,11 +350,11 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+        <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
           <div className="container max-w-md">
-            <div className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
-              <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={48} />
-              <h1 className="font-display text-2xl font-bold text-forest">
+            <div className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
+              <Loader2 className="animate-spin text-brand mx-auto mb-6" size={48} />
+              <h1 className="font-display text-2xl font-bold text-fg">
                 Cargando...
               </h1>
             </div>

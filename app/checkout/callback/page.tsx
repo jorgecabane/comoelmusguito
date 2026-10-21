@@ -10,7 +10,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui';
 import { CheckCircle2, XCircle, Loader2, ArrowRight, Gift } from 'lucide-react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useCartStore } from '@/lib/store/useCartStore';
 
@@ -164,20 +163,20 @@ function CheckoutCallbackContent() {
   };
 
   return (
-    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+    <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
       <div className="container max-w-2xl">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
+          className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center"
         >
           {status === 'loading' && (
             <>
-              <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={64} />
-              <h1 className="font-display text-3xl font-bold text-forest mb-4">
+              <Loader2 className="animate-spin text-brand mx-auto mb-6" size={64} />
+              <h1 className="font-display text-3xl font-bold text-fg mb-4">
                 Verificando pago...
               </h1>
-              <p className="text-gray">
+              <p className="text-muted">
                 Estamos confirmando el estado de tu pago
               </p>
             </>
@@ -191,23 +190,23 @@ function CheckoutCallbackContent() {
                 transition={{ type: 'spring', stiffness: 200 }}
                 className="mb-6"
               >
-                <div className="w-24 h-24 bg-vida/20 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="text-vida" size={48} />
+                <div className="w-24 h-24 bg-tint/20 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="text-brand" size={48} />
                 </div>
               </motion.div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-forest mb-4">
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-fg mb-4">
                 {isGift ? '¡Regalo Enviado Exitosamente! 🎁' : '¡Tu Compra Fue Exitosa! 🌿'}
               </h1>
-              <p className="text-gray text-lg mb-6 leading-relaxed">{message}</p>
+              <p className="text-muted text-lg mb-6 leading-relaxed">{message}</p>
               
               {/* Badge de Regalo */}
               {isGift && (
-                <div className="bg-cream border-2 border-musgo/30 rounded-xl p-4 mb-6">
+                <div className="bg-bg border-2 border-brand/30 rounded-xl p-4 mb-6">
                   <div className="flex items-center gap-2 mb-2">
-                    <Gift className="text-musgo" size={20} />
-                    <p className="font-semibold text-forest">Este pedido es un regalo</p>
+                    <Gift className="text-brand" size={20} />
+                    <p className="font-semibold text-fg">Este pedido es un regalo</p>
                   </div>
-                  <p className="text-xs text-gray mt-3">
+                  <p className="text-xs text-muted mt-3">
                     El destinatario recibirá un email con los detalles del regalo y un código para canjearlo.
                   </p>
                 </div>
@@ -215,47 +214,47 @@ function CheckoutCallbackContent() {
               
               {/* Badge de Despacho */}
               {requiresShipping && (
-                <div className="bg-amber-50 border-2 border-amber-300/50 rounded-xl p-4 mb-6">
+                <div className="bg-warning/10 border-2 border-warning/30/50 rounded-xl p-4 mb-6">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xl">🚚</span>
-                    <p className="font-semibold text-forest">Este pedido incluye despacho</p>
+                    <p className="font-semibold text-fg">Este pedido incluye despacho</p>
                   </div>
                   {shippingAddress && (
-                    <div className="text-sm text-gray mt-2">
-                      <p className="font-medium text-forest mb-1">Dirección de envío:</p>
+                    <div className="text-sm text-muted mt-2">
+                      <p className="font-medium text-fg mb-1">Dirección de envío:</p>
                       <p>{shippingAddress.address} {shippingAddress.number}</p>
                       <p>{shippingAddress.comuna}, {shippingAddress.region}</p>
                       {shippingAddress.details && <p className="text-xs mt-1">{shippingAddress.details}</p>}
                     </div>
                   )}
-                  <p className="text-xs text-amber-700 mt-3 font-medium">
+                  <p className="text-xs text-warning mt-3 font-medium">
                     ⚠️ Comoelmusguito te contactará para coordinar el costo y fecha de envío.
                   </p>
                 </div>
               )}
               
               {orderId && (
-                <div className="bg-cream rounded-xl p-4 mb-6">
-                  <p className="text-sm text-gray mb-2">Número de orden</p>
-                  <p className="font-mono font-semibold text-forest text-lg">{orderId}</p>
+                <div className="bg-bg rounded-xl p-4 mb-6">
+                  <p className="text-sm text-muted mb-2">Número de orden</p>
+                  <p className="font-mono font-semibold text-fg text-lg">{orderId}</p>
                 </div>
               )}
 
               {/* Lista de productos comprados */}
               {orderItems.length > 0 && (
-                <div className="bg-cream/50 rounded-xl p-6 mb-8 text-left">
-                  <h3 className="font-display text-lg font-semibold text-forest mb-4">
+                <div className="bg-bg/50 rounded-xl p-6 mb-8 text-left">
+                  <h3 className="font-display text-lg font-semibold text-fg mb-4">
                     Lo que compraste:
                   </h3>
                   <div className="space-y-3">
                     {orderItems.map((item, idx) => (
                       <div
                         key={idx}
-                        className="flex justify-between items-center pb-3 border-b border-gray/10 last:border-0"
+                        className="flex justify-between items-center pb-3 border-b border-line last:border-0"
                       >
                         <div className="flex-1">
-                          <p className="font-medium text-forest">{item.name}</p>
-                          <p className="text-sm text-gray">
+                          <p className="font-medium text-fg">{item.name}</p>
+                          <p className="text-sm text-muted">
                             {item.type === 'terrarium' && '🌿 Terrario'}
                             {item.type === 'course' && '🎓 Curso Online'}
                             {item.type === 'workshop' && '🤝 Taller Presencial'}
@@ -265,7 +264,7 @@ function CheckoutCallbackContent() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-forest">
+                          <p className="font-semibold text-fg">
                             {new Intl.NumberFormat('es-CL', {
                               style: 'currency',
                               currency: item.currency,
@@ -279,19 +278,19 @@ function CheckoutCallbackContent() {
               )}
 
               <div className="space-y-4 mb-8">
-                <p className="text-gray text-sm">
+                <p className="text-muted text-sm">
                   📧 Revisa tu email para ver los detalles completos de tu compra
                 </p>
                 
                 {/* Mensaje especial para cursos - Solo si NO es regalo */}
                 {hasCourses && !isGift && (
-                  <div className="bg-musgo/10 border border-musgo/20 rounded-lg p-4">
-                    <p className="text-sm font-semibold text-forest mb-2">
+                  <div className="bg-brand/10 border border-brand/20 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-fg mb-2">
                       🎓 Para acceder a tu curso online:
                     </p>
                     {!isLoggedIn && (
                       <>
-                        <p className="text-sm text-gray mb-3">
+                        <p className="text-sm text-muted mb-3">
                           {courseSlug ? (
                             <>
                               Necesitas crear una cuenta para ver tu curso y seguir tu progreso.
@@ -302,34 +301,26 @@ function CheckoutCallbackContent() {
                             </>
                           )}
                         </p>
-                        <p className="text-xs text-gray/60 mb-3">
+                        <p className="text-xs text-muted/60 mb-3">
                           Al crear tu cuenta con el mismo email que usaste en la compra, tu curso se vinculará automáticamente.
                         </p>
                       </>
                     )}
                     <div className="flex flex-col sm:flex-row gap-2 justify-center">
                       {isLoggedIn ? (
-                        <Link href="/mi-cuenta?filter=courses">
-                          <Button variant="primary" size="sm" className="w-full sm:w-auto">
-                            Ver mi Curso
-                          </Button>
-                        </Link>
+                        <Button variant="primary" size="sm" className="w-full sm:w-auto" href="/mi-cuenta?filter=courses">
+                          Ver mi Curso
+                        </Button>
                       ) : (
                         <>
                           {courseSlug && (
-                            <Link href={`/cursos/${courseSlug}`}>
-                              <Button variant="primary" size="sm" className="w-full sm:w-auto">
-                                Ver mi Curso
-                              </Button>
-                            </Link>
-                          )}
-                          <Link
-                            href="/auth/register"
-                          >
-                            <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                              Crear mi Cuenta
+                            <Button variant="primary" size="sm" className="w-full sm:w-auto" href={`/cursos/${courseSlug}`}>
+                              Ver mi Curso
                             </Button>
-                          </Link>
+                          )}
+                          <Button variant="secondary" size="sm" className="w-full sm:w-auto" href="/auth/register">
+                            Crear mi Cuenta
+                          </Button>
                         </>
                       )}
                     </div>
@@ -338,17 +329,13 @@ function CheckoutCallbackContent() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/">
-                  <Button variant="primary" size="lg">
-                    Seguir Explorando
-                    <ArrowRight size={20} />
-                  </Button>
-                </Link>
-                <Link href="/mi-cuenta">
-                  <Button variant="secondary" size="lg">
-                    Ver Mi Cuenta
-                  </Button>
-                </Link>
+                <Button variant="primary" size="lg" href="/">
+                  Seguir Explorando
+                  <ArrowRight size={20} />
+                </Button>
+                <Button variant="secondary" size="lg" href="/mi-cuenta">
+                  Ver Mi Cuenta
+                </Button>
               </div>
             </>
           )}
@@ -365,59 +352,53 @@ function CheckoutCallbackContent() {
                   <XCircle className="text-error" size={48} />
                 </div>
               </motion.div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-forest mb-4">
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-fg mb-4">
                 Algo Salió Mal
               </h1>
-              <p className="text-gray text-lg mb-6 leading-relaxed">{message}</p>
+              <p className="text-muted text-lg mb-6 leading-relaxed">{message}</p>
               
-              <div className="bg-cream/50 rounded-xl p-6 mb-8 text-left">
-                <p className="text-sm text-gray mb-2">💡 ¿Necesitas ayuda?</p>
-                <p className="text-sm text-gray">
+              <div className="bg-bg/50 rounded-xl p-6 mb-8 text-left">
+                <p className="text-sm text-muted mb-2">💡 ¿Necesitas ayuda?</p>
+                <p className="text-sm text-muted">
                   Si el problema persiste, escríbenos y te ayudaremos a completar tu compra.
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/carrito">
-                  <Button variant="primary" size="lg">
-                    Intentar Nuevamente
-                  </Button>
-                </Link>
-                <Link href="/">
-                  <Button variant="secondary" size="lg">
-                    Volver al Inicio
-                  </Button>
-                </Link>
+                <Button variant="primary" size="lg" href="/carrito">
+                  Intentar Nuevamente
+                </Button>
+                <Button variant="secondary" size="lg" href="/">
+                  Volver al Inicio
+                </Button>
               </div>
             </>
           )}
 
           {status === 'pending' && (
             <>
-              <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={64} />
-              <h1 className="font-display text-3xl font-bold text-forest mb-4">
+              <Loader2 className="animate-spin text-brand mx-auto mb-6" size={64} />
+              <h1 className="font-display text-3xl font-bold text-fg mb-4">
                 Procesando tu Pago
               </h1>
-              <p className="text-gray text-lg mb-6 leading-relaxed">{message}</p>
+              <p className="text-muted text-lg mb-6 leading-relaxed">{message}</p>
               
               {orderId && (
-                <div className="bg-cream rounded-xl p-4 mb-8">
-                  <p className="text-sm text-gray mb-2">Número de orden</p>
-                  <p className="font-mono font-semibold text-forest text-lg">{orderId}</p>
+                <div className="bg-bg rounded-xl p-4 mb-8">
+                  <p className="text-sm text-muted mb-2">Número de orden</p>
+                  <p className="font-mono font-semibold text-fg text-lg">{orderId}</p>
                 </div>
               )}
 
-              <div className="bg-cream/50 rounded-xl p-6 mb-8">
-                <p className="text-sm text-gray text-center">
+              <div className="bg-bg/50 rounded-xl p-6 mb-8">
+                <p className="text-sm text-muted text-center">
                   ⏳ Esto puede tomar unos minutos. Te notificaremos por email cuando se confirme.
                 </p>
               </div>
 
-              <Link href="/">
-                <Button variant="secondary" size="lg">
-                  Volver al Inicio
-                </Button>
-              </Link>
+              <Button variant="secondary" size="lg" href="/">
+                Volver al Inicio
+              </Button>
             </>
           )}
         </motion.div>
@@ -429,11 +410,11 @@ function CheckoutCallbackContent() {
 export default function CheckoutCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center">
+      <div className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-bg to-surface flex items-center justify-center">
         <div className="container max-w-2xl">
-          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
-            <Loader2 className="animate-spin text-musgo mx-auto mb-6" size={64} />
-            <h1 className="font-display text-3xl font-bold text-forest mb-4">
+          <div className="bg-surface rounded-2xl p-8 md:p-12 shadow-natural-xl text-center">
+            <Loader2 className="animate-spin text-brand mx-auto mb-6" size={64} />
+            <h1 className="font-display text-3xl font-bold text-fg mb-4">
               Cargando...
             </h1>
           </div>

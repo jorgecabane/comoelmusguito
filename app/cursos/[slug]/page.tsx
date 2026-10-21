@@ -16,7 +16,7 @@ import nextDynamic from 'next/dynamic';
 // VideoPlayer ya es un client component, así que no necesita ssr: false
 const VideoPlayer = nextDynamic(() => import('@/components/ui/VideoPlayer').then(mod => ({ default: mod.VideoPlayer })), {
   loading: () => (
-    <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream shadow-natural-xl animate-pulse" />
+    <div className="relative aspect-video rounded-2xl overflow-hidden bg-bg shadow-natural-xl animate-pulse" />
   ),
 });
 import { Play, Clock, BookOpen, Award, CheckCircle2, Download, Lock, AlertCircle } from 'lucide-react';
@@ -154,37 +154,39 @@ export default async function CoursePage({
       <div className="pt-32 pb-16">
         {/* Breadcrumb */}
         <div className="container mb-8">
-          <div className="flex items-center gap-2 text-sm text-gray">
-            <Link href="/" className="hover:text-musgo transition-colors">
+          <div className="flex items-center gap-2 text-sm text-muted">
+            <Link href="/" className="hover:text-brand transition-colors">
               Inicio
             </Link>
             <span>/</span>
-            <Link href="/cursos" className="hover:text-musgo transition-colors">
+            <Link href="/cursos" className="hover:text-brand transition-colors">
               Cursos
             </Link>
             <span>/</span>
-            <span className="text-forest">{course.name}</span>
+            <span className="text-fg">{course.name}</span>
           </div>
         </div>
 
       {/* Mensajes de alerta según query params */}
       {params_search?.requireAuth === 'true' && (
         <div className="container mb-6">
-          <div className="bg-musgo/10 border border-musgo/20 rounded-lg p-4">
+          <div className="bg-brand/10 border border-brand/20 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="text-musgo mt-0.5" size={20} />
+              <AlertCircle className="text-brand mt-0.5" size={20} />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-forest mb-1">
+                <p className="text-sm font-semibold text-fg mb-1">
                   Inicia sesión para continuar
                 </p>
-                <p className="text-sm text-gray mb-3">
+                <p className="text-sm text-muted mb-3">
                   Necesitas iniciar sesión para acceder a este curso.
                 </p>
-                <Link href={`/auth/login?callbackUrl=${encodeURIComponent(`/cursos/${slug}`)}`}>
-                  <Button variant="primary" size="sm">
-                    Iniciar Sesión
-                  </Button>
-                </Link>
+                <Button
+                  href={`/auth/login?callbackUrl=${encodeURIComponent(`/cursos/${slug}`)}`}
+                  variant="primary"
+                  size="sm"
+                >
+                  Iniciar Sesión
+                </Button>
               </div>
             </div>
           </div>
@@ -193,23 +195,21 @@ export default async function CoursePage({
 
       {params_search?.requireAccess === 'true' && (
         <div className="container mb-6">
-          <div className="bg-vida/10 border border-vida/20 rounded-lg p-4">
+          <div className="bg-tint/10 border border-tint/20 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <Lock className="text-vida mt-0.5" size={20} />
+              <Lock className="text-brand mt-0.5" size={20} />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-forest mb-1">
+                <p className="text-sm font-semibold text-fg mb-1">
                   Acceso Requerido
                 </p>
-                <p className="text-sm text-gray mb-3">
+                <p className="text-sm text-muted mb-3">
                   Necesitas comprar este curso para acceder al contenido completo.
                 </p>
                 <div className="flex gap-2">
                   <CourseDetail course={course} userCurrency={userCurrency} />
-                  <Link href="/mi-cuenta?filter=courses">
-                    <Button variant="secondary" size="sm">
-                      Ver Mis Cursos
-                    </Button>
-                  </Link>
+                  <Button variant="secondary" size="sm" href="/mi-cuenta?filter=courses">
+                    Ver Mis Cursos
+                  </Button>
                 </div>
               </div>
             </div>
@@ -229,10 +229,10 @@ export default async function CoursePage({
                   <Badge variant="error">¡Oferta!</Badge>
                 )}
               </div>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-forest mb-4">
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-4">
                 {course.name}
               </h1>
-              <p className="text-xl text-gray leading-relaxed">
+              <p className="text-xl text-muted leading-relaxed">
                 {course.shortDescription}
               </p>
             </div>
@@ -240,17 +240,17 @@ export default async function CoursePage({
             {/* Stats */}
             <div className="flex flex-wrap gap-6 py-4">
               <div className="flex items-center gap-2">
-                <Clock className="text-musgo" size={20} />
-                <span className="text-gray">{course.duration} horas</span>
+                <Clock className="text-brand" size={20} />
+                <span className="text-muted">{course.duration} horas</span>
               </div>
               <div className="flex items-center gap-2">
-                <BookOpen className="text-musgo" size={20} />
-                <span className="text-gray">{course.lessonCount} lecciones</span>
+                <BookOpen className="text-brand" size={20} />
+                <span className="text-muted">{course.lessonCount} lecciones</span>
               </div>
               {course.certificate && (
                 <div className="flex items-center gap-2">
-                  <Award className="text-musgo" size={20} />
-                  <span className="text-gray">Con certificado</span>
+                  <Award className="text-brand" size={20} />
+                  <span className="text-muted">Con certificado</span>
                 </div>
               )}
             </div>
@@ -262,7 +262,7 @@ export default async function CoursePage({
           {/* Video Player o Thumbnail */}
           {course.promoVideo?.url ? (
             <Suspense fallback={
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream shadow-natural-xl">
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-bg shadow-natural-xl">
                 <Image
                   src={getImageUrl(course.thumbnail, { width: 1200, height: 675 })}
                   alt={course.thumbnail?.alt || course.name}
@@ -282,7 +282,7 @@ export default async function CoursePage({
               />
             </Suspense>
           ) : (
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-cream shadow-natural-xl">
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-bg shadow-natural-xl">
               <Image
                 src={getImageUrl(course.thumbnail, { width: 1200, height: 675 })}
                 alt={course.thumbnail?.alt || course.name}
@@ -299,15 +299,15 @@ export default async function CoursePage({
       {/* What you'll learn */}
       {course.learningOutcomes && course.learningOutcomes.length > 0 && (
         <section className="container mb-16">
-          <div className="bg-cream rounded-2xl p-8 md:p-12">
-            <h2 className="font-display text-3xl font-semibold text-forest mb-8">
+          <div className="bg-bg rounded-2xl p-8 md:p-12">
+            <h2 className="font-display text-3xl font-semibold text-fg mb-8">
               ¿Qué Aprenderás?
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {course.learningOutcomes.map((outcome, index) => (
                 <div key={index} className="flex items-start gap-3">
-                  <CheckCircle2 className="text-vida shrink-0 mt-1" size={20} />
-                  <span className="text-gray">{outcome}</span>
+                  <CheckCircle2 className="text-brand shrink-0 mt-1" size={20} />
+                  <span className="text-muted">{outcome}</span>
                 </div>
               ))}
             </div>
@@ -319,7 +319,7 @@ export default async function CoursePage({
       {course.modules && course.modules.length > 0 && (
         <section className="container mb-16">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="font-display text-3xl font-semibold text-forest">
+            <h2 className="font-display text-3xl font-semibold text-fg">
               Contenido del Curso
             </h2>
             {!hasAccess && (
@@ -333,19 +333,19 @@ export default async function CoursePage({
             {course.modules.map((module, index) => (
               <details
                 key={index}
-                className="bg-white border border-gray/20 rounded-xl overflow-hidden group"
+                className="bg-surface border border-line rounded-xl overflow-hidden group"
                 open={hasAccess && index === 0} // Abrir primer módulo si tiene acceso
               >
-                <summary className="p-6 cursor-pointer list-none flex items-center justify-between hover:bg-cream/50 transition-colors">
+                <summary className="p-6 cursor-pointer list-none flex items-center justify-between hover:bg-bg/50 transition-colors">
                   <div>
-                    <h3 className="font-display text-xl font-semibold text-forest mb-2">
+                    <h3 className="font-display text-xl font-semibold text-fg mb-2">
                       Módulo {module.order}: {module.title}
                     </h3>
                     {module.description && (
-                      <p className="text-gray text-sm">{module.description}</p>
+                      <p className="text-muted text-sm">{module.description}</p>
                     )}
                   </div>
-                  <span className="text-2xl text-musgo">+</span>
+                  <span className="text-2xl text-brand">+</span>
                 </summary>
                 <div className="px-6 pb-6 space-y-3">
                   {module.lessons?.map((lesson, lessonIndex) => {
@@ -361,17 +361,17 @@ export default async function CoursePage({
                         key={lessonIndex}
                         href={lessonHref}
                         className={`
-                          flex items-center justify-between py-3 border-t border-gray/10 transition-colors
-                          ${canAccess ? 'hover:bg-cream/50 cursor-pointer' : 'opacity-60'}
+                          flex items-center justify-between py-3 border-t border-line transition-colors
+                          ${canAccess ? 'hover:bg-bg/50 cursor-pointer' : 'opacity-60'}
                         `}
                       >
                         <div className="flex items-center gap-3 flex-1">
                           {canAccess ? (
-                            <Play className="text-musgo" size={16} />
+                            <Play className="text-brand" size={16} />
                           ) : (
-                            <Lock className="text-gray/40" size={16} />
+                            <Lock className="text-muted/40" size={16} />
                           )}
-                          <span className={canAccess ? 'text-gray' : 'text-gray/60'}>
+                          <span className={canAccess ? 'text-muted' : 'text-muted/60'}>
                             {lesson.title}
                           </span>
                           {isFree && (
@@ -385,7 +385,7 @@ export default async function CoursePage({
                             </Badge>
                           )}
                         </div>
-                        <span className="text-sm text-gray">{lesson.duration} min</span>
+                        <span className="text-sm text-muted">{lesson.duration} min</span>
                       </LessonWrapper>
                     );
                   })}
@@ -394,8 +394,8 @@ export default async function CoursePage({
             ))}
           </div>
           {!hasAccess && (
-            <div className="mt-8 p-6 bg-cream rounded-xl text-center">
-              <p className="text-gray mb-4">
+            <div className="mt-8 p-6 bg-bg rounded-xl text-center">
+              <p className="text-muted mb-4">
                 Para acceder a todo el contenido del curso, necesitas comprarlo
               </p>
               <CourseDetail course={course} userCurrency={userCurrency} />
@@ -408,13 +408,13 @@ export default async function CoursePage({
       {course.requirements && course.requirements.length > 0 && (
         <section className="container mb-16">
           <div className="max-w-3xl">
-            <h2 className="font-display text-2xl font-semibold text-forest mb-6">
+            <h2 className="font-display text-2xl font-semibold text-fg mb-6">
               Requisitos
             </h2>
             <ul className="space-y-2">
               {course.requirements.map((req, index) => (
-                <li key={index} className="flex items-start gap-2 text-gray">
-                  <span className="text-musgo mt-1">•</span>
+                <li key={index} className="flex items-start gap-2 text-muted">
+                  <span className="text-brand mt-1">•</span>
                   {req}
                 </li>
               ))}
@@ -427,15 +427,15 @@ export default async function CoursePage({
       {course.materials && course.materials.length > 0 && (
         <section className="container mb-16">
           <div className="max-w-3xl">
-            <h2 className="font-display text-2xl font-semibold text-forest mb-6 flex items-center gap-2">
+            <h2 className="font-display text-2xl font-semibold text-fg mb-6 flex items-center gap-2">
               <Download size={24} />
               Materiales Incluidos
             </h2>
-            <div className="bg-cream rounded-xl p-6">
+            <div className="bg-bg rounded-xl p-6">
               <ul className="space-y-2">
                 {course.materials.map((material, index) => (
-                  <li key={index} className="flex items-start gap-2 text-gray">
-                    <span className="text-musgo mt-1">✓</span>
+                  <li key={index} className="flex items-start gap-2 text-muted">
+                    <span className="text-brand mt-1">✓</span>
                     {material}
                   </li>
                 ))}
@@ -449,10 +449,10 @@ export default async function CoursePage({
       {course.instructor && (
         <section className="container mb-16">
           <div className="max-w-3xl">
-            <h2 className="font-display text-2xl font-semibold text-forest mb-6">
+            <h2 className="font-display text-2xl font-semibold text-fg mb-6">
               Tu Instructor
             </h2>
-            <div className="flex items-start gap-6 bg-cream rounded-xl p-6">
+            <div className="flex items-start gap-6 bg-bg rounded-xl p-6">
               {course.instructor.photo && (
                 <div className="relative w-24 h-24 rounded-full overflow-hidden shrink-0">
                   <Image
@@ -464,11 +464,11 @@ export default async function CoursePage({
                 </div>
               )}
               <div>
-                <h3 className="font-display text-xl font-semibold text-forest mb-2">
+                <h3 className="font-display text-xl font-semibold text-fg mb-2">
                   {course.instructor.name}
                 </h3>
                 {course.instructor.bio && (
-                  <p className="text-gray">{course.instructor.bio}</p>
+                  <p className="text-muted">{course.instructor.bio}</p>
                 )}
               </div>
             </div>
@@ -478,9 +478,7 @@ export default async function CoursePage({
 
       {/* Back to catalog */}
       <section className="container mt-16">
-        <Link href="/cursos">
-          <Button variant="secondary">← Ver todos los cursos</Button>
-        </Link>
+        <Button variant="secondary" href="/cursos">← Ver todos los cursos</Button>
       </section>
     </div>
     </>

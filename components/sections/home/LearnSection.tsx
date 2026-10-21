@@ -24,27 +24,27 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
   }
 
   return (
-    <section className="py-32 bg-gradient-to-br from-cream to-white">
+    <section className="py-32 bg-gradient-to-br from-bg to-surface">
       <div className="container">
         {/* Header */}
         <div className="text-center mb-20 space-y-6">
           <FadeIn>
-            <div className="inline-flex items-center gap-3 bg-vida/10 px-6 py-3 rounded-full mb-4">
-              <BookOpen className="text-vida" size={24} />
-              <span className="text-vida font-semibold">Educación</span>
+            <div className="inline-flex items-center gap-3 bg-tint/10 px-6 py-3 rounded-full mb-4">
+              <BookOpen className="text-brand" size={24} />
+              <span className="text-brand font-semibold">Educación</span>
             </div>
           </FadeIn>
 
           <FadeIn delay={0.2}>
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-forest">
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-fg">
               Tú También Puedes
               <br />
-              <span className="text-musgo">Crear Vida</span>
+              <span className="text-brand">Crear Vida</span>
             </h2>
           </FadeIn>
 
           <FadeIn delay={0.4}>
-            <p className="text-xl text-gray max-w-2xl mx-auto">
+            <p className="text-xl text-muted max-w-2xl mx-auto">
               Aprende a crear terrarios desde cero. Cursos online completos
               donde te enseño todo lo que sé, a tu ritmo y desde cualquier lugar.
             </p>
@@ -72,14 +72,14 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
               },
             ].map((benefit, i) => (
               <StaggerItem key={i}>
-                <div className="text-center p-8 rounded-xl bg-white shadow-natural-sm hover:shadow-natural-md transition-all">
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-musgo/10 text-musgo mb-4">
+                <div className="text-center p-8 rounded-xl bg-surface shadow-natural-sm hover:shadow-natural-md transition-all">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-brand/10 text-brand mb-4">
                     {benefit.icon}
                   </div>
-                  <h3 className="font-display text-xl font-semibold text-forest mb-2">
+                  <h3 className="font-display text-xl font-semibold text-fg mb-2">
                     {benefit.title}
                   </h3>
-                  <p className="text-gray">{benefit.description}</p>
+                  <p className="text-muted">{benefit.description}</p>
                 </div>
               </StaggerItem>
             ))}
@@ -111,9 +111,9 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
                         />
                         
                         {/* Play overlay */}
-                        <div className="absolute inset-0 bg-forest/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
-                            <Play className="text-musgo ml-1" size={28} fill="currentColor" />
+                        <div className="absolute inset-0 bg-scrim/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="w-16 h-16 rounded-full bg-surface/90 flex items-center justify-center">
+                            <Play className="text-brand ml-1" size={28} fill="currentColor" />
                           </div>
                         </div>
                       </div>
@@ -121,32 +121,32 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
                       <div className="p-6 space-y-4 flex flex-col flex-1">
                         <div className="flex items-center gap-3">
                           <Badge variant="info" size="sm">{levelLabel}</Badge>
-                          <span className="text-sm text-gray">
+                          <span className="text-sm text-muted">
                             {course.lessonCount} lecciones • {course.duration}h
                           </span>
                         </div>
 
                         <div className="space-y-2">
-                          <h3 className="font-display text-2xl font-semibold text-forest group-hover:text-musgo transition-colors">
+                          <h3 className="font-display text-2xl font-semibold text-fg group-hover:text-brand transition-colors">
                             {course.name}
                           </h3>
-                          <p className="text-gray line-clamp-2">
+                          <p className="text-muted line-clamp-2">
                             {course.shortDescription}
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between pt-4 border-t border-gray/20 mt-auto">
+                        <div className="flex items-center justify-between pt-4 border-t border-line mt-auto">
                           <div className="space-y-1">
-                            <div className="text-2xl font-display font-bold text-forest">
+                            <div className="text-2xl font-display font-bold text-fg">
                               {pricing.current}
                             </div>
                             {pricing.hasDiscount && pricing.original && (
-                              <div className="text-sm text-gray line-through">
+                              <div className="text-sm text-muted line-through">
                                 {pricing.original}
                               </div>
                             )}
                           </div>
-                          <Button variant="primary">
+                          <Button as="span" variant="primary">
                             Comenzar Viaje
                             <ArrowRight size={18} />
                           </Button>
@@ -163,12 +163,10 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
         {/* CTA */}
         <FadeIn delay={0.6}>
           <div className="text-center mt-16">
-            <Link href="/cursos">
-              <Button variant="secondary" size="lg">
-                Ver Todos los Cursos
-                <ArrowRight size={20} />
-              </Button>
-            </Link>
+            <Button variant="secondary" size="lg" href="/cursos">
+              Ver Todos los Cursos
+              <ArrowRight size={20} />
+            </Button>
           </div>
         </FadeIn>
       </div>

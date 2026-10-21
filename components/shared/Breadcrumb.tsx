@@ -22,11 +22,11 @@ export function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
       aria-label="Breadcrumb"
       className={`container mb-8 ${className}`}
     >
-      <ol className="flex items-center gap-2 text-sm text-gray flex-wrap">
+      <ol className="flex items-center gap-2 text-sm text-muted flex-wrap">
         <li>
           <Link
             href="/"
-            className="hover:text-musgo transition-colors flex items-center gap-1"
+            className="hover:text-brand transition-colors flex items-center gap-1"
             aria-label="Ir al inicio"
           >
             <Home size={16} />
@@ -38,15 +38,15 @@ export function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
           
           return (
             <li key={index} className="flex items-center gap-2">
-              <ChevronRight size={16} className="text-gray/40" />
+              <ChevronRight size={16} className="text-muted/40" />
               {isLast || !item.href ? (
-                <span className={isLast ? 'text-forest font-medium' : 'text-gray'}>
+                <span className={isLast ? 'text-fg font-medium' : 'text-muted'}>
                   {item.label}
                 </span>
               ) : (
                 <Link
                   href={item.href}
-                  className="hover:text-musgo transition-colors"
+                  className="hover:text-brand transition-colors"
                 >
                   {item.label}
                 </Link>

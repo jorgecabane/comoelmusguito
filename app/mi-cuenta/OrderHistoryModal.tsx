@@ -36,7 +36,7 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-forest/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-scrim/60 backdrop-blur-sm z-50"
           />
 
           {/* Modal */}
@@ -50,17 +50,17 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
             aria-modal="true"
             aria-labelledby="order-history-title"
             tabIndex={-1}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-natural-xl overflow-hidden m-2 md:m-4"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl max-h-[90vh] bg-surface rounded-2xl shadow-natural-xl overflow-hidden m-2 md:m-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray/20 px-6 py-4 flex items-center justify-between z-10">
-              <h2 id="order-history-title" className="font-display text-2xl font-bold text-forest">
+            <div className="sticky top-0 bg-surface border-b border-line px-6 py-4 flex items-center justify-between z-10">
+              <h2 id="order-history-title" className="font-display text-2xl font-bold text-fg">
                 Historial de Pedidos
               </h2>
               <button
                 onClick={onClose}
-                className="text-gray hover:text-forest transition-colors p-2 hover:bg-cream rounded-lg"
+                className="text-muted hover:text-fg transition-colors p-2 hover:bg-bg rounded-lg"
                 aria-label="Cerrar"
               >
                 <X size={24} />
@@ -71,19 +71,19 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
             <div className="overflow-y-auto max-h-[calc(90vh-80px)] px-6 py-6">
               {allOrders.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-gray">Aún no tienes pedidos confirmados</p>
+                  <p className="text-muted">Aún no tienes pedidos confirmados</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {allOrders.map((order) => (
                     <div
                       key={order._id}
-                      className="bg-cream/30 rounded-xl p-6 border border-gray/10 hover:border-musgo/30 transition-colors"
+                      className="bg-bg/30 rounded-xl p-6 border border-line hover:border-brand/30 transition-colors"
                     >
                       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-display text-xl font-semibold text-forest">
+                            <h3 className="font-display text-xl font-semibold text-fg">
                               Orden {order.orderId}
                             </h3>
                             {order.isGift && (
@@ -93,7 +93,7 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray">
+                          <p className="text-sm text-muted">
                             {formatDateShort(order.createdAt)}
                             {order.paymentDate && (
                               <span className="ml-2">
@@ -102,27 +102,27 @@ export function OrderHistoryModal({ isOpen, onClose, orders, giftsSent = [] }: O
                             )}
                           </p>
                           {order.isGift && order.recipientEmail && (
-                            <p className="text-sm text-musgo mt-1">
+                            <p className="text-sm text-brand mt-1">
                               🎁 Regalado a: {order.recipientName || order.recipientEmail}
                             </p>
                           )}
                           {order.flowOrder && (
-                            <p className="text-xs text-gray/60 mt-1">
+                            <p className="text-xs text-muted/60 mt-1">
                               Flow: {order.flowOrder}
                             </p>
                           )}
                         </div>
                         <div className="text-right">
-                          <div className="font-display text-2xl font-bold text-forest mb-2">
+                          <div className="font-display text-2xl font-bold text-fg mb-2">
                             {formatCurrency(order.total, order.currency)}
                           </div>
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-vida/20 text-vida text-xs font-medium">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-tint/20 text-brand text-xs font-medium">
                             ✅ Confirmado
                           </span>
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-gray/20 space-y-2">
+                      <div className="pt-4 border-t border-line space-y-2">
                         {order.items.map((item, idx) => (
                           <OrderItemDetail
                             key={idx}

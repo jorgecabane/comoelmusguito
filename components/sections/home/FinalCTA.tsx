@@ -6,7 +6,7 @@
 'use client';
 
 import { FadeIn, ParallaxSection } from '@/components/animations';
-import { Button } from '@/components/ui';
+import { Button, Section } from '@/components/ui';
 import { Leaf, BookOpen, Users, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 
@@ -39,25 +39,19 @@ export function FinalCTA() {
   ];
 
   return (
-    <section className="relative py-32 overflow-hidden">
-      {/* Background con gradiente */}
-      <div className="absolute inset-0 bg-gradient-to-br from-musgo via-vida to-musgo-dark" />
-      
+    <Section tone="soft" contained={false} className="relative overflow-hidden">
       {/* Pattern decorativo */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }} />
+      <div className="absolute inset-0 opacity-[0.06]">
+        <div className="absolute inset-0 bg-dots" />
       </div>
 
       <ParallaxSection speed={-0.2} className="relative z-10">
         <div className="container">
-          <div className="max-w-6xl mx-auto text-center text-white space-y-16">
+          <div className="max-w-6xl mx-auto text-center text-fg space-y-16">
             {/* Header */}
             <FadeIn>
               <div className="space-y-6">
-                <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full mb-4">
+                <div className="inline-flex items-center gap-3 bg-fg/10 px-6 py-3 rounded-full mb-4">
                   <Leaf size={20} />
                   <span className="font-semibold">Capítulo Final</span>
                 </div>
@@ -65,10 +59,10 @@ export function FinalCTA() {
                 <h2 className="font-display text-4xl md:text-5xl lg:text-7xl font-bold leading-tight">
                   ¿Qué Crearás
                   <br />
-                  <span className="text-yellow-300">Tú</span>?
+                  <span className="text-brand">Tú</span>?
                 </h2>
 
-                <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed">
+                <p className="text-xl md:text-2xl text-muted max-w-2xl mx-auto leading-relaxed">
                   Tu viaje puede comenzar de muchas formas.
                   Elige la tuya.
                 </p>
@@ -80,10 +74,10 @@ export function FinalCTA() {
               {paths.map((path, i) => (
                 <FadeIn key={i} delay={0.2 + i * 0.1}>
                   <Link href={path.href}>
-                    <div className="group bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer border border-white/20">
+                    <div className="group bg-surface/60 rounded-2xl p-8 hover:bg-surface transition-all duration-300 hover:scale-105 hover:shadow-natural-lg cursor-pointer border border-line">
                       <div className="space-y-6">
                         {/* Icon */}
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 group-hover:bg-white/30 transition-colors">
+                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-fg/10 group-hover:bg-fg/15 transition-colors">
                           {path.icon}
                         </div>
 
@@ -92,7 +86,7 @@ export function FinalCTA() {
                           <h3 className="font-display text-2xl md:text-3xl font-bold">
                             {path.title}
                           </h3>
-                          <p className="text-white/80 text-lg">
+                          <p className="text-muted text-lg">
                             {path.description}
                           </p>
                         </div>
@@ -114,12 +108,12 @@ export function FinalCTA() {
             {/* Mensaje final */}
             <FadeIn delay={0.8}>
               <div className="pt-12 space-y-6">
-                <p className="text-2xl md:text-3xl font-display italic">
+                <p className="text-2xl md:text-3xl font-display">
                   "La vida encuentra su camino...
                   <br />
-                  <span className="text-yellow-300">incluso en un frasco de vidrio."</span>
+                  <span className="text-brand">incluso en un frasco de vidrio."</span>
                 </p>
-                <p className="text-white/60">
+                <p className="text-muted">
                   — Tomás Barrera, el Musguito 🌿
                 </p>
               </div>
@@ -127,7 +121,7 @@ export function FinalCTA() {
           </div>
         </div>
       </ParallaxSection>
-    </section>
+    </Section>
   );
 }
 

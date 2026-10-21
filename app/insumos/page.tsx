@@ -3,6 +3,7 @@
  * Datos desde Sanity CMS
  */
 
+import { cn } from '@/lib/utils/cn';
 import { Card, Badge, Button } from '@/components/ui';
 import { ArrowRight } from 'lucide-react';
 import { getAllSupplies } from '@/lib/sanity/fetch';
@@ -45,10 +46,10 @@ export default async function InsumosPage() {
       {/* Header */}
       <section className="container mb-16">
         <div className="max-w-3xl">
-          <h1 className="font-display text-5xl md:text-6xl font-bold text-forest mb-6">
+          <h1 className="font-display text-5xl md:text-6xl font-bold text-fg mb-6">
             Insumos Profesionales
           </h1>
-          <p className="text-xl text-gray leading-relaxed">
+          <p className="text-xl text-muted leading-relaxed">
             Todo lo que necesitas para crear y cultivar terrarios en casa.
             Sustratos, bioestimulantes, kits y más, productos ecológicos de alta calidad, todos con el sello de aprobación de Comoelmusguito.
           </p>
@@ -58,13 +59,11 @@ export default async function InsumosPage() {
       {/* Mensaje si no hay insumos */}
       {insumos.length === 0 ? (
         <section className="container">
-          <div className="bg-cream/50 rounded-2xl p-12 text-center">
-            <p className="text-xl text-gray mb-6">
+          <div className="bg-bg/50 rounded-2xl p-12 text-center">
+            <p className="text-xl text-muted mb-6">
               Estamos preparando nuevos insumos. Vuelve pronto 🛠️
             </p>
-            <Link href="/cursos">
-              <Button variant="primary">Ver Cursos Online</Button>
-            </Link>
+            <Button variant="primary" href="/cursos">Ver Cursos Online</Button>
           </div>
         </section>
       ) : (
@@ -92,7 +91,7 @@ export default async function InsumosPage() {
                                 ? `Stock: ${insumo.stock}`
                                 : 'Agotado'}
                             </Badge>
-                            <span className="text-xs text-gray uppercase tracking-wide">
+                            <span className="text-xs text-muted uppercase tracking-wide">
                               {categoryLabel}
                             </span>
                           </div>
@@ -111,19 +110,19 @@ export default async function InsumosPage() {
                           )}
 
                           <div className="flex items-center justify-between pt-2 mt-auto">
-                            <div className="text-2xl font-display font-bold text-forest">
+                            <div className="text-2xl font-display font-bold text-fg">
                               {formatPrice(insumo.price, insumo.currency)}
                             </div>
                             {insumo.localPickupOnly && (
-                              <span className="text-xs text-gray">Solo retiro</span>
+                              <span className="text-xs text-muted">Solo retiro</span>
                             )}
                           </div>
                         </Card.Content>
                         <Card.Footer>
                           <Button
+                            as="span"
                             variant="primary"
-                            className="w-full group-hover:bg-musgo-dark transition-colors"
-                            disabled={!insumo.inStock}
+                            className={cn('w-full group-hover:bg-accent-hover transition-colors', !insumo.inStock && 'opacity-60')}
                           >
                             {insumo.inStock ? 'Ver Detalles' : 'Agotado'}
                             {insumo.inStock && <ArrowRight size={18} />}

@@ -86,7 +86,7 @@ export function VideoPlayer({
 
   if (!src) {
     return (
-      <div className={cn('relative aspect-video rounded-2xl overflow-hidden bg-cream', className)}>
+      <div className={cn('relative aspect-video rounded-2xl overflow-hidden bg-bg', className)}>
         {poster && (
           <img
             src={poster}
@@ -155,14 +155,14 @@ export function VideoPlayer({
   // En el futuro, podemos integrar YouTube/Vimeo Player APIs para detectar onEnded
 
   return (
-    <div className={cn('relative group rounded-2xl overflow-hidden bg-cream aspect-video', className)}>
+    <div className={cn('relative group rounded-2xl overflow-hidden bg-bg aspect-video', className)}>
       {hasError ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-cream text-center z-10">
-          <AlertCircle className="text-musgo mb-4" size={48} />
-          <h3 className="font-display text-xl font-semibold text-forest mb-2">
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-bg text-center z-10">
+          <AlertCircle className="text-brand mb-4" size={48} />
+          <h3 className="font-display text-xl font-semibold text-fg mb-2">
             Video no disponible
           </h3>
-          <p className="text-gray mb-4 max-w-md">
+          <p className="text-muted mb-4 max-w-md">
             No se pudo cargar el video. Verifica que la URL sea correcta y que el video permita embedding.
           </p>
           {poster && (

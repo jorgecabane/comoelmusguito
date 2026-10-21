@@ -77,14 +77,14 @@ export function CourseCard({ course }: CourseCardProps) {
           />
           
           {/* Play overlay */}
-          <div className="absolute inset-0 bg-forest/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
-              <Play className="text-musgo ml-1" size={28} fill="currentColor" />
+          <div className="absolute inset-0 bg-scrim/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-surface/90 flex items-center justify-center">
+              <Play className="text-brand ml-1" size={28} fill="currentColor" />
             </div>
           </div>
 
           {/* Badge de progreso */}
-          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 text-sm font-semibold text-forest">
+          <div className="absolute top-4 right-4 bg-surface/90 backdrop-blur-sm rounded-full px-3 py-1.5 text-sm font-semibold text-fg">
             {course.progress.percentage}% completado
           </div>
         </div>
@@ -93,7 +93,7 @@ export function CourseCard({ course }: CourseCardProps) {
         <div className="p-6 space-y-4 flex flex-col flex-1">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-display text-xl font-bold text-forest group-hover:text-musgo transition-colors">
+              <h3 className="font-display text-xl font-bold text-fg group-hover:text-brand transition-colors">
                 {course.courseName}
               </h3>
               {course.isGift && (
@@ -103,7 +103,7 @@ export function CourseCard({ course }: CourseCardProps) {
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray">
+            <p className="text-sm text-muted">
               {course.isGift && course.giftSenderName ? (
                 <>
                   Regalo de <strong>{course.giftSenderName}</strong> • {formatDateShort(course.accessGrantedAt)}
@@ -116,7 +116,7 @@ export function CourseCard({ course }: CourseCardProps) {
 
           {/* Stats */}
           <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2 text-gray">
+            <div className="flex items-center gap-2 text-muted">
               <BookOpen size={16} />
               <span>{course.progress.completedLessons.length} lecciones completadas</span>
             </div>
@@ -128,7 +128,7 @@ export function CourseCard({ course }: CourseCardProps) {
               if (!hasWatchTime) return null;
               
               return (
-                <div className="flex items-center gap-2 text-gray">
+                <div className="flex items-center gap-2 text-muted">
                   <Clock size={16} />
                   <span>{formatWatchTime(watchTime)} vistos</span>
                 </div>
@@ -138,16 +138,16 @@ export function CourseCard({ course }: CourseCardProps) {
 
           {/* Barra de progreso */}
           <div className="pt-2">
-            <div className="h-2 bg-cream rounded-full overflow-hidden">
+            <div className="h-2 bg-bg rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-musgo to-vida transition-all duration-500"
+                className="h-full bg-gradient-to-r from-tint to-tint transition-all duration-500"
                 style={{ width: `${course.progress.percentage}%` }}
               />
             </div>
           </div>
 
           {/* CTA */}
-          <div className="pt-2 flex items-center gap-2 text-musgo font-medium group-hover:gap-3 transition-all">
+          <div className="pt-2 flex items-center gap-2 text-brand font-medium group-hover:gap-3 transition-all">
             <span>Continuar aprendiendo</span>
             <ArrowRight size={18} />
           </div>

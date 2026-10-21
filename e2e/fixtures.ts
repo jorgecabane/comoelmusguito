@@ -3,13 +3,13 @@
  *
  * - Catálogo (productos, cursos, taller, blog): `_id` fijos `e2e-`, compartidos por todas las
  *   corridas y sembrados por scripts/seed-e2e.ts. Los tests solo los LEEN.
- * - Por corrida (USERS, ORDERS, BUYER_COURSE_ACCESS): `_id` `e2e-run-<runId>-…` y emails con el
+ * - Por corrida (USERS, ORDERS, BUYER_COURSE_ACCESS): `_id` `private.e2e-run-<runId>-…` (privados, como en producción) y emails con el
  *   runId, creados por e2e/global-setup.ts y borrados en e2e/global-teardown.ts. Son los únicos
  *   fixtures que un test puede mutar.
  */
 import { E2E_RUN_ID } from './env';
 
-export const RUN_ID_PREFIX = 'e2e-run-';
+export const RUN_ID_PREFIX = 'private.e2e-run-';
 const runId = (name: string) => `${RUN_ID_PREFIX}${E2E_RUN_ID}-${name}`;
 
 export const USERS = {

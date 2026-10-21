@@ -205,10 +205,10 @@ export function AccountFeed({
       <div className="mb-8 md:mb-12">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-forest mb-2">
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-fg mb-2">
               Hola, {userName} 👋
             </h1>
-            <p className="text-gray text-lg">
+            <p className="text-muted text-lg">
               Tu espacio personal para gestionar tus compras y aprendizajes
             </p>
           </div>
@@ -267,8 +267,8 @@ export function AccountFeed({
                 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all
                 ${
                   isActive
-                    ? 'bg-musgo text-white shadow-md'
-                    : 'bg-white text-forest border border-gray/20 hover:border-musgo/40 hover:bg-cream'
+                    ? 'bg-accent text-white shadow-md'
+                    : 'bg-surface text-fg border border-line hover:border-brand/40 hover:bg-bg'
                 }
               `}
             >
@@ -277,7 +277,7 @@ export function AccountFeed({
               <span
                 className={`
                   px-2 py-0.5 rounded-full text-xs
-                  ${isActive ? 'bg-white/20 text-white' : 'bg-cream text-gray'}
+                  ${isActive ? 'bg-white/20 text-white' : 'bg-bg text-muted'}
                 `}
               >
                 {filter.count}
@@ -289,12 +289,12 @@ export function AccountFeed({
 
       {/* Feed/Timeline */}
       {filteredItems.length === 0 ? (
-        <div className="bg-white rounded-2xl p-8 md:p-12 text-center border border-gray/20">
-          <Package className="mx-auto mb-4 text-gray/40" size={48} />
-          <h3 className="font-display text-xl font-semibold text-forest mb-2">
+        <div className="bg-surface rounded-2xl p-8 md:p-12 text-center border border-line">
+          <Package className="mx-auto mb-4 text-muted/40" size={48} />
+          <h3 className="font-display text-xl font-semibold text-fg mb-2">
             No hay items para mostrar
           </h3>
-          <p className="text-gray mb-6">
+          <p className="text-muted mb-6">
             {activeFilter === 'all'
               ? 'Cuando hagas tu primera compra, aparecerá aquí'
               : `No tienes ${filters.find((f) => f.value === activeFilter)?.label.toLowerCase()} aún`}

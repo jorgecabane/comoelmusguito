@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Package, BookOpen, Calendar } from 'lucide-react';
 import { Card, Button } from '@/components/ui';
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import { formatDateShort, formatDateLong, formatTime, formatCurrency } from '@/lib/sanity/utils';
 import { OrderItemDetail } from '@/components/orders/OrderItemDetail';
 import { CourseProgressCard } from '@/components/courses/CourseProgressCard';
@@ -77,19 +76,17 @@ export function TabsController({
       <TabsContent value="pedidos" className="space-y-6">
         {orders.length === 0 ? (
           <Card className="p-12 text-center">
-            <Package className="mx-auto mb-4 text-gray/40" size={48} />
-            <h3 className="font-display text-xl font-semibold text-forest mb-2">
+            <Package className="mx-auto mb-4 text-muted/40" size={48} />
+            <h3 className="font-display text-xl font-semibold text-fg mb-2">
               Aún no tienes pedidos
             </h3>
-            <p className="text-gray mb-6">
+            <p className="text-muted mb-6">
               Cuando hagas tu primera compra, aparecerá aquí
             </p>
-            <Link href="/terrarios">
-              <Button variant="primary">
-                Explorar Terrarios
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
+            <Button variant="primary" href="/terrarios">
+              Explorar Terrarios
+              <ArrowRight size={18} />
+            </Button>
           </Card>
         ) : (
           <div className="grid gap-6">
@@ -97,23 +94,23 @@ export function TabsController({
               <Card key={order._id} className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-display text-xl font-semibold text-forest mb-1">
+                    <h3 className="font-display text-xl font-semibold text-fg mb-1">
                       Orden {order.orderId}
                     </h3>
-                    <p className="text-sm text-gray">
+                    <p className="text-sm text-muted">
                       {formatDateShort(order.createdAt)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="font-display text-2xl font-bold text-forest mb-1">
+                    <div className="font-display text-2xl font-bold text-fg mb-1">
                       {formatCurrency(order.total, order.currency)}
                     </div>
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
                         order.paymentStatus === 2
-                          ? 'bg-vida/20 text-vida'
+                          ? 'bg-tint/20 text-brand'
                           : order.paymentStatus === 1
-                          ? 'bg-musgo/20 text-musgo'
+                          ? 'bg-brand/20 text-brand'
                           : 'bg-error/20 text-error'
                       }`}
                     >
@@ -126,7 +123,7 @@ export function TabsController({
                   </div>
                 </div>
 
-                <div className="space-y-1 pt-4 border-t border-gray/20">
+                <div className="space-y-1 pt-4 border-t border-line">
                   {order.items.map((item, idx) => (
                     <OrderItemDetail
                       key={idx}
@@ -145,19 +142,17 @@ export function TabsController({
       <TabsContent value="cursos" className="space-y-6">
         {userCourses.length === 0 ? (
           <Card className="p-12 text-center">
-            <BookOpen className="mx-auto mb-4 text-gray/40" size={48} />
-            <h3 className="font-display text-xl font-semibold text-forest mb-2">
+            <BookOpen className="mx-auto mb-4 text-muted/40" size={48} />
+            <h3 className="font-display text-xl font-semibold text-fg mb-2">
               Aún no tienes cursos
             </h3>
-            <p className="text-gray mb-6">
+            <p className="text-muted mb-6">
               Explora nuestros cursos online y aprende a crear vida
             </p>
-            <Link href="/cursos">
-              <Button variant="primary">
-                Ver Cursos
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
+            <Button variant="primary" href="/cursos">
+              Ver Cursos
+              <ArrowRight size={18} />
+            </Button>
           </Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -179,19 +174,17 @@ export function TabsController({
       <TabsContent value="talleres" className="space-y-6">
         {ordersWithWorkshops.length === 0 ? (
           <Card className="p-12 text-center">
-            <Calendar className="mx-auto mb-4 text-gray/40" size={48} />
-            <h3 className="font-display text-xl font-semibold text-forest mb-2">
+            <Calendar className="mx-auto mb-4 text-muted/40" size={48} />
+            <h3 className="font-display text-xl font-semibold text-fg mb-2">
               Aún no tienes talleres reservados
             </h3>
-            <p className="text-gray mb-6">
+            <p className="text-muted mb-6">
               Únete a nuestros talleres presenciales y aprende en persona
             </p>
-            <Link href="/talleres">
-              <Button variant="primary">
-                Ver Talleres
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
+            <Button variant="primary" href="/talleres">
+              Ver Talleres
+              <ArrowRight size={18} />
+            </Button>
           </Card>
         ) : (
           <div className="grid gap-6">
@@ -202,22 +195,22 @@ export function TabsController({
                   <Card key={`${order._id}-${item.id}`} className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
-                        <h3 className="font-display text-xl font-semibold text-forest mb-2">
+                        <h3 className="font-display text-xl font-semibold text-fg mb-2">
                           {item.name}
                         </h3>
                         {item.selectedDate && (
-                          <div className="space-y-1 text-sm text-gray">
+                          <div className="space-y-1 text-sm text-muted">
                             <p>📅 {formatDateLong(item.selectedDate.date)}</p>
                             <p>🕐 {formatTime(item.selectedDate.date)}</p>
                           </div>
                         )}
-                        <p className="text-sm text-gray mt-2">
+                        <p className="text-sm text-muted mt-2">
                           Reservado el {formatDateShort(order.createdAt)}
                         </p>
                       </div>
                     </div>
-                    <div className="pt-4 border-t border-gray/20">
-                      <p className="text-sm text-gray mb-2">
+                    <div className="pt-4 border-t border-line">
+                      <p className="text-sm text-muted mb-2">
                         <strong>Ubicación:</strong> Santa Isabel 676, Providencia,
                         Santiago
                       </p>

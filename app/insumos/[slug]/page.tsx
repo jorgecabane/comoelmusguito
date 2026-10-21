@@ -107,11 +107,11 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
       <div className="container">
         {/* Breadcrumb */}
         <nav className="mb-8 text-sm">
-          <Link href="/insumos" className="hover:text-musgo transition-colors">
+          <Link href="/insumos" className="hover:text-brand transition-colors">
             Insumos
           </Link>
-          <span className="mx-2 text-gray">/</span>
-          <span className="text-gray">{insumo.name}</span>
+          <span className="mx-2 text-muted">/</span>
+          <span className="text-muted">{insumo.name}</span>
         </nav>
 
         {/* Grid Principal */}
@@ -146,12 +146,12 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
             </div>
 
             {/* Título */}
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-forest">
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-fg">
               {insumo.name}
             </h1>
 
             {/* Descripción Corta */}
-            <p className="text-xl text-gray leading-relaxed">
+            <p className="text-xl text-muted leading-relaxed">
               {insumo.description}
             </p>
 
@@ -159,21 +159,21 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
             <SupplyDetail supply={insumo} />
 
             {/* Especificaciones */}
-            <div className="border-t border-gray/20 pt-6 space-y-4">
-              <h3 className="font-display text-xl font-semibold text-forest">
+            <div className="border-t border-line pt-6 space-y-4">
+              <h3 className="font-display text-xl font-semibold text-fg">
                 Especificaciones
               </h3>
               
               <div className="grid grid-cols-2 gap-4">
                 {insumo.weight && (
                   <div>
-                    <p className="text-sm text-gray mb-1">Peso</p>
+                    <p className="text-sm text-muted mb-1">Peso</p>
                     <p className="font-semibold">{insumo.weight}g</p>
                   </div>
                 )}
                 {insumo.dimensions && (
                   <div>
-                    <p className="text-sm text-gray mb-1">Dimensiones</p>
+                    <p className="text-sm text-muted mb-1">Dimensiones</p>
                     <p className="font-semibold">
                       {insumo.dimensions.length && `${insumo.dimensions.length}×`}
                       {insumo.dimensions.width && `${insumo.dimensions.width}×`}
@@ -183,13 +183,13 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
                 )}
                 {insumo.localPickupOnly && (
                   <div>
-                    <p className="text-sm text-gray mb-1">Disponibilidad</p>
+                    <p className="text-sm text-muted mb-1">Disponibilidad</p>
                     <p className="font-semibold">Solo retiro en tienda</p>
                   </div>
                 )}
                 {insumo.shippingAvailable && (
                   <div>
-                    <p className="text-sm text-gray mb-1">Envío</p>
+                    <p className="text-sm text-muted mb-1">Envío</p>
                     <p className="font-semibold">Disponible</p>
                   </div>
                 )}
@@ -198,8 +198,8 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
 
             {/* Compatibilidad */}
             {insumo.compatibility && insumo.compatibility.length > 0 && (
-              <div className="border-t border-gray/20 pt-6">
-                <h3 className="font-display text-xl font-semibold text-forest mb-4">
+              <div className="border-t border-line pt-6">
+                <h3 className="font-display text-xl font-semibold text-fg mb-4">
                   Compatibilidad
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -214,11 +214,11 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
 
             {/* Garantía */}
             {insumo.warranty && (
-              <div className="border-t border-gray/20 pt-6">
-                <h3 className="font-display text-xl font-semibold text-forest mb-2">
+              <div className="border-t border-line pt-6">
+                <h3 className="font-display text-xl font-semibold text-fg mb-2">
                   Garantía / Política
                 </h3>
-                <p className="text-gray">{insumo.warranty}</p>
+                <p className="text-muted">{insumo.warranty}</p>
               </div>
             )}
           </div>
@@ -227,12 +227,12 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
         {/* Descripción Detallada */}
         {insumo.longDescription && insumo.longDescription.length > 0 && (
           <section className="mb-16">
-            <h2 className="font-display text-3xl font-bold text-forest mb-6">
+            <h2 className="font-display text-3xl font-bold text-fg mb-6">
               Descripción Detallada
             </h2>
             <div className="prose prose-lg max-w-none">
               {/* Aquí iría el renderizado de rich text blocks */}
-              <p className="text-gray leading-relaxed">
+              <p className="text-muted leading-relaxed">
                 {insumo.description}
               </p>
             </div>
@@ -242,12 +242,12 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
         {/* Instrucciones de Uso */}
         {insumo.instructions && insumo.instructions.length > 0 && (
           <section className="mb-16">
-            <h2 className="font-display text-3xl font-bold text-forest mb-6">
+            <h2 className="font-display text-3xl font-bold text-fg mb-6">
               Instrucciones de Uso
             </h2>
             <div className="prose prose-lg max-w-none">
               {/* Aquí iría el renderizado de rich text blocks */}
-              <p className="text-gray leading-relaxed">
+              <p className="text-muted leading-relaxed">
                 Consulta las instrucciones incluidas con el producto.
               </p>
             </div>
@@ -256,9 +256,7 @@ export default async function SupplyPage({ params }: SupplyPageProps) {
 
         {/* CTA Final */}
         <div className="text-center">
-          <Link href="/insumos">
-            <Button variant="secondary">← Ver todos los insumos</Button>
-          </Link>
+          <Button variant="secondary" href="/insumos">← Ver todos los insumos</Button>
         </div>
       </div>
     </div>

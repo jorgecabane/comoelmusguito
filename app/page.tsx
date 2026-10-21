@@ -35,6 +35,10 @@ const SuppliesSection = nextDynamic(() => import('@/components/sections/home/Sup
   loading: () => null,
 });
 
+const CommunitySection = nextDynamic(() => import('@/components/sections/home/CommunitySection').then(mod => ({ default: mod.CommunitySection })), {
+  loading: () => null,
+});
+
 const FinalCTA = nextDynamic(() => import('@/components/sections/home/FinalCTA').then(mod => ({ default: mod.FinalCTA })), {
   loading: () => null,
 });
@@ -92,7 +96,9 @@ export default async function Home() {
       </Suspense>
 
       {/* CAPÍTULO 6: LA COMUNIDAD */}
-      {/* <CommunitySection /> */}
+      <Suspense fallback={null}>
+        <CommunitySection />
+      </Suspense>
 
       {/* CAPÍTULO 7: TU TURNO - Below the fold, lazy load */}
       <Suspense fallback={null}>

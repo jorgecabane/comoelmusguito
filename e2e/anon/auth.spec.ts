@@ -74,7 +74,9 @@ test.describe('registro', () => {
       await login(page, email, password);
       await expect(page.getByText(/Tu email no ha sido verificado/)).toBeVisible();
 
-      const token = (await getUserByEmail(email))?.emailVerificationToken;
+      const created = await getUserByEmail(email);
+      expect(created?._id, 'usuario con _id privado').toMatch(/^private\./);
+      const token = created?.emailVerificationToken;
       expect(token).toBeTruthy();
       await page.goto(`/api/auth/verify-email?token=${token}`);
       await expect(page).toHaveURL(/\/auth\/login\?verified=true/);
@@ -150,7 +152,7 @@ test.describe('recuperar contraseña', () => {
   test('token inválido muestra error', async ({ page }) => {
     await page.goto('/auth/reset-password?token=token-que-no-existe');
     await expect(page.getByRole('heading', { name: 'Token Inválido' })).toBeVisible();
-    await page.getByRole('button', { name: 'Solicitar Nuevo Enlace' }).click();
+    await page.getByRole('link', { name: 'Solicitar Nuevo Enlace' }).click();
     await expect(page).toHaveURL('/auth/forgot-password');
   });
 
