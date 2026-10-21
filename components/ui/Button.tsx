@@ -22,12 +22,11 @@ interface ButtonOwnProps {
 }
 
 type ButtonAsButton = ButtonOwnProps &
-  ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined };
+  ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined; as?: undefined };
 
 type ButtonAsLink = ButtonOwnProps &
-  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { href: string };
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { href: string; as?: undefined };
 
-/** Aspecto de botón sin ser interactivo: para usar dentro de una tarjeta que ya es un enlace. */
 type ButtonAsSpan = ButtonOwnProps &
   Omit<HTMLAttributes<HTMLSpanElement>, 'children'> & { as: 'span'; href?: undefined };
 
@@ -70,8 +69,8 @@ export function Button(props: ButtonProps) {
     </>
   );
 
-  if ('as' in rest && rest.as === 'span') {
-    const { as: _as, ...spanProps } = rest as Omit<ButtonAsSpan, keyof ButtonOwnProps>;
+  if (rest.as === 'span') {
+    const { as: _as, ...spanProps } = rest;
     void _as;
     return (
       <span className={classes} {...spanProps}>
