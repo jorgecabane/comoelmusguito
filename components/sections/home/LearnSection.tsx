@@ -146,7 +146,7 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
                               </div>
                             )}
                           </div>
-                          <Button variant="primary">
+                          <Button as="span" variant="primary">
                             Comenzar Viaje
                             <ArrowRight size={18} />
                           </Button>
@@ -163,12 +163,8 @@ export function LearnSection({ courses, userCurrency }: LearnSectionProps) {
         {/* CTA */}
         <FadeIn delay={0.6}>
           <div className="text-center mt-16">
-            <Link href="/cursos">
-              <Button variant="secondary" size="lg">
-                Ver Todos los Cursos
-                <ArrowRight size={20} />
-              </Button>
-            </Link>
+            <Button href="/cursos" variant="secondary" size="lg">Ver Todos los Cursos
+                <ArrowRight size={20} /></Button>
           </div>
         </FadeIn>
       </div>

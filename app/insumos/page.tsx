@@ -62,9 +62,7 @@ export default async function InsumosPage() {
             <p className="text-xl text-muted mb-6">
               Estamos preparando nuevos insumos. Vuelve pronto 🛠️
             </p>
-            <Link href="/cursos">
-              <Button variant="primary">Ver Cursos Online</Button>
-            </Link>
+            <Button href="/cursos" variant="primary">Ver Cursos Online</Button>
           </div>
         </section>
       ) : (
@@ -121,6 +119,7 @@ export default async function InsumosPage() {
                         </Card.Content>
                         <Card.Footer>
                           <Button
+                            as="span"
                             variant="primary"
                             className="w-full group-hover:bg-accent-hover transition-colors"
                             disabled={!insumo.inStock}

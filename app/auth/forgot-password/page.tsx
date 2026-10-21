@@ -70,11 +70,7 @@ export default function ForgotPasswordPage() {
             </p>
 
             <div className="space-y-4">
-              <Link href="/auth/login">
-                <Button variant="primary" size="lg" className="w-full">
-                  Volver al Login
-                </Button>
-              </Link>
+              <Button href="/auth/login" variant="primary" size="lg" className="w-full">Volver al Login</Button>
               <button
                 onClick={() => {
                   setSuccess(false);

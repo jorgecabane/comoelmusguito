@@ -8,7 +8,6 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { Button } from '@/components/ui';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 function ErrorContent() {
@@ -83,17 +82,9 @@ function ErrorContent() {
           <p className="text-muted text-lg mb-8 leading-relaxed">{message}</p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/login">
-              <Button variant="primary" size="lg">
-                Intentar Nuevamente
-                <ArrowLeft size={20} className="rotate-180" />
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="secondary" size="lg">
-                Volver al Inicio
-              </Button>
-            </Link>
+            <Button href="/auth/login" variant="primary" size="lg">Intentar Nuevamente
+                <ArrowLeft size={20} className="rotate-180" /></Button>
+            <Button href="/" variant="secondary" size="lg">Volver al Inicio</Button>
           </div>
         </motion.div>
       </div>

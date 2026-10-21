@@ -1,83 +1,90 @@
 /**
- * Script para generar favicons desde logo.svg
+ * Genera los íconos del sitio (favicon, apple-touch, PWA) desde el caracol de marca.
+ * Fuente: public/logo/snail-cream.png (caracol crema con fondo transparente).
  * Ejecutar: npm run script:generate-favicons
  */
 
 import sharp from 'sharp';
-import { readFileSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { join } from 'path';
 
-const LOGO_SVG = join(process.cwd(), 'public/logo/logo.svg');
-const OUTPUT_DIR = join(process.cwd(), 'public');
+const ROOT = process.cwd();
+const SNAIL = join(ROOT, 'public/logo/snail-cream.png');
 
-async function generateFavicons() {
-  try {
-    console.log('🎨 Generando favicons desde logo.svg...\n');
+/** Verde bosque de la marca (--bosque en app/globals.css) */
+const BOSQUE = { r: 35, g: 53, b: 41, alpha: 1 };
 
-    // Leer el SVG
-    const svgBuffer = readFileSync(LOGO_SVG);
-    
-    // 1. favicon.ico (múltiples tamaños: 16x16, 32x32, 48x48)
-    console.log('📦 Generando favicon.ico...');
-    const favicon16 = await sharp(svgBuffer)
-      .resize(16, 16, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
-      .png()
-      .toBuffer();
-    
-    const favicon32 = await sharp(svgBuffer)
-      .resize(32, 32, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
-      .png()
-      .toBuffer();
-    
-    const favicon48 = await sharp(svgBuffer)
-      .resize(48, 48, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
-      .png()
-      .toBuffer();
+/** Caracol centrado sobre fondo bosque; `radius` redondea las esquinas (0 = cuadrado). */
+async function icon(size: number, radius = 0): Promise<Buffer> {
+  const snail = await sharp(SNAIL)
+    .resize(Math.round(size * 0.74), Math.round(size * 0.74), { fit: 'inside' })
+    .toBuffer();
 
-    // Combinar en un ICO (formato simple)
-    // Nota: Para un ICO real necesitarías una librería especializada
-    // Por ahora generamos PNGs y el navegador los aceptará
-    writeFileSync(join(OUTPUT_DIR, 'favicon.ico'), favicon32);
-    console.log('✅ favicon.ico generado (32x32)');
+  const layers: sharp.OverlayOptions[] = [{ input: snail, gravity: 'center' }];
+  const base = sharp({ create: { width: size, height: size, channels: 4, background: BOSQUE } }).composite(layers);
 
-    // 2. favicon.png (192x192 para Android)
-    console.log('📱 Generando favicon.png (192x192)...');
-    const favicon192 = await sharp(svgBuffer)
-      .resize(192, 192, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
-      .png()
-      .toBuffer();
-    writeFileSync(join(OUTPUT_DIR, 'favicon.png'), favicon192);
-    console.log('✅ favicon.png generado (192x192)');
+  if (radius === 0) return base.png().toBuffer();
 
-    // 3. apple-touch-icon.png (180x180 para iOS)
-    console.log('🍎 Generando apple-touch-icon.png (180x180)...');
-    const appleIcon = await sharp(svgBuffer)
-      .resize(180, 180, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
-      .png()
-      .toBuffer();
-    writeFileSync(join(OUTPUT_DIR, 'apple-touch-icon.png'), appleIcon);
-    console.log('✅ apple-touch-icon.png generado (180x180)');
-
-    // 4. icon-512.png (512x512 para PWA)
-    console.log('📲 Generando icon-512.png (512x512)...');
-    const icon512 = await sharp(svgBuffer)
-      .resize(512, 512, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
-      .png()
-      .toBuffer();
-    writeFileSync(join(OUTPUT_DIR, 'icon-512.png'), icon512);
-    console.log('✅ icon-512.png generado (512x512)');
-
-    console.log('\n✨ ¡Todos los favicons generados exitosamente!');
-    console.log('\n📝 Archivos creados:');
-    console.log('   - public/favicon.ico (32x32)');
-    console.log('   - public/favicon.png (192x192)');
-    console.log('   - public/apple-touch-icon.png (180x180)');
-    console.log('   - public/icon-512.png (512x512)');
-    
-  } catch (error) {
-    console.error('❌ Error generando favicons:', error);
-    process.exit(1);
-  }
+  const mask = Buffer.from(
+    `<svg width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${radius}" ry="${radius}"/></svg>`
+  );
+  return sharp(await base.png().toBuffer())
+    .composite([{ input: mask, blend: 'dest-in' }])
+    .png()
+    .toBuffer();
 }
 
-generateFavicons();
+/** Arma un .ico real con imágenes PNG incrustadas (16, 32 y 48 px). */
+function buildIco(images: { size: number; data: Buffer }[]): Buffer {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(images.length, 4);
+
+  let offset = 6 + images.length * 16;
+  const entries = images.map(({ size, data }) => {
+    const entry = Buffer.alloc(16);
+    entry.writeUInt8(size === 256 ? 0 : size, 0);
+    entry.writeUInt8(size === 256 ? 0 : size, 1);
+    entry.writeUInt16LE(1, 4);
+    entry.writeUInt16LE(32, 6);
+    entry.writeUInt32LE(data.length, 8);
+    entry.writeUInt32LE(offset, 12);
+    offset += data.length;
+    return entry;
+  });
+
+  return Buffer.concat([header, ...entries, ...images.map((i) => i.data)]);
+}
+
+async function generateFavicons() {
+  console.log('🎨 Generando íconos desde snail-cream.png...\n');
+
+  const ico = buildIco(
+    await Promise.all([16, 32, 48].map(async (size) => ({ size, data: await icon(size, Math.round(size * 0.2)) })))
+  );
+  const png192 = await icon(192, 38);
+  const png512 = await icon(512, 102);
+  const apple180 = await icon(180); // iOS aplica sus propias esquinas
+
+  const files: Record<string, Buffer> = {
+    'public/favicon.ico': ico,
+    'app/favicon.ico': ico,
+    'public/favicon.png': png192,
+    'public/icon-512.png': png512,
+    'app/icon.png': png512,
+    'public/apple-touch-icon.png': apple180,
+    'app/apple-icon.png': apple180,
+  };
+
+  for (const [path, data] of Object.entries(files)) {
+    writeFileSync(join(ROOT, path), data);
+    console.log(`✅ ${path}`);
+  }
+  console.log('\n✨ Listo.');
+}
+
+generateFavicons().catch((error) => {
+  console.error('❌ Error generando íconos:', error);
+  process.exit(1);
+});

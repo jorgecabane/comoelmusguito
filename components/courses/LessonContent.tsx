@@ -214,19 +214,16 @@ export function LessonContent({
 
         <div>
           {nextLesson ? (
-            <Link
+            <Button
               href={`/cursos/${course.slug.current}/leccion/${nextLesson.moduleIndex}/${nextLesson.lessonIndex}`}
+              variant="primary"
             >
-              <Button variant="primary">
-                Siguiente →
-              </Button>
-            </Link>
+              Siguiente →
+            </Button>
           ) : (
-            <Link href={`/cursos/${course.slug.current}`}>
-              <Button variant="primary">
-                Finalizar Curso
-              </Button>
-            </Link>
+            <Button href={`/cursos/${course.slug.current}`} variant="primary">
+              Finalizar Curso
+            </Button>
           )}
         </div>
       </div>

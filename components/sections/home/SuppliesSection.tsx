@@ -97,6 +97,7 @@ export function SuppliesSection({ insumos }: SuppliesSectionProps) {
                             {formatPrice(insumo.price, insumo.currency)}
                           </div>
                           <Button
+                            as="span"
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
                             className="text-brand"
@@ -116,12 +117,8 @@ export function SuppliesSection({ insumos }: SuppliesSectionProps) {
         {/* CTA */}
         <FadeIn delay={0.4}>
           <div className="text-center mt-16">
-            <Link href="/insumos">
-              <Button variant="primary" size="lg">
-                Ver Todos los Insumos
-                <ArrowRight size={20} />
-              </Button>
-            </Link>
+            <Button href="/insumos" variant="primary" size="lg">Ver Todos los Insumos
+                <ArrowRight size={20} /></Button>
           </div>
         </FadeIn>
       </div>

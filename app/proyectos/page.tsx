@@ -8,7 +8,6 @@ import { BlogCard } from '@/components/blog';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { FadeIn } from '@/components/animations';
 import { Leaf, Camera, Video } from 'lucide-react';
-import Link from 'next/link';
 import { Button, CtaBanner } from '@/components/ui';
 
 export const revalidate = 60;

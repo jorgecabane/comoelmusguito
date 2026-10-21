@@ -65,15 +65,16 @@ export function CommunitySection() {
             <p className="text-muted text-lg">
               Únete a la comunidad en Instagram y comparte tu viaje
             </p>
-            <a
+            <Button
               href="https://www.instagram.com/comoelmusguito"
               target="_blank"
               rel="noopener noreferrer"
+              variant="primary"
+              size="lg"
+              icon={<Instagram size={24} />}
             >
-              <Button variant="primary" size="lg" icon={<Instagram size={24} />}>
-                @comoelmusguito
-              </Button>
-            </a>
+              @comoelmusguito
+            </Button>
           </div>
         </FadeIn>
 

@@ -153,11 +153,7 @@ export function Header() {
               </div>
             ) : (
               <div className="hidden lg:flex items-center gap-3">
-                <Link href="/auth/login">
-                  <Button variant="secondary" size="sm">
-                    Iniciar Sesión
-                  </Button>
-                </Link>
+                <Button href="/auth/login" variant="secondary" size="sm">Iniciar Sesión</Button>
               </div>
             )}
 
@@ -208,11 +204,15 @@ export function Header() {
                       {session.user.name || session.user.email?.split('@')[0] || 'Mi Cuenta'}
                     </button>
                   ) : (
-                    <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="secondary" size="sm" className="w-full">
-                        Iniciar Sesión
-                      </Button>
-                    </Link>
+                    <Button
+                      href="/auth/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                    >
+                      Iniciar Sesión
+                    </Button>
                   )}
                 </div>
               </>
