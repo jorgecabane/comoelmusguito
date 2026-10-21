@@ -3,6 +3,7 @@
  * Datos desde Sanity CMS
  */
 
+import { cn } from '@/lib/utils/cn';
 import { Card, Badge, Button } from '@/components/ui';
 import { ArrowRight } from 'lucide-react';
 import { getAllSupplies } from '@/lib/sanity/fetch';
@@ -119,9 +120,9 @@ export default async function InsumosPage() {
                         </Card.Content>
                         <Card.Footer>
                           <Button
+                            as="span"
                             variant="primary"
-                            className="w-full group-hover:bg-accent-hover transition-colors"
-                            disabled={!insumo.inStock}
+                            className={cn('w-full group-hover:bg-accent-hover transition-colors', !insumo.inStock && 'opacity-60')}
                           >
                             {insumo.inStock ? 'Ver Detalles' : 'Agotado'}
                             {insumo.inStock && <ArrowRight size={18} />}

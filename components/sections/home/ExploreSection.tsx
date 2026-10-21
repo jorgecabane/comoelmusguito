@@ -97,6 +97,7 @@ export function ExploreSection({ terrarios }: ExploreSectionProps) {
                             {formatPrice(terrarium.price, terrarium.currency)}
                           </div>
                           <Button
+                            as="span"
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
                             className="text-brand"

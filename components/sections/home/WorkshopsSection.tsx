@@ -5,6 +5,7 @@
 
 'use client';
 
+import { cn } from '@/lib/utils/cn';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/animations';
 import { Card, Badge, Button, Section } from '@/components/ui';
 import { Calendar, MapPin, Clock, Users, ArrowRight } from 'lucide-react';
@@ -170,10 +171,10 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
                             {formatPrice(workshop.price, workshop.currency)}
                           </div>
                           <Button
+                            as="span"
                             variant="ghost"
-                            icon={<ArrowRight size={18} />}
-                            className="text-brand"
-                            disabled={!hayFechasDisponibles}
+                            icon={hayFechasDisponibles ? <ArrowRight size={18} /> : undefined}
+                            className={cn('text-brand', !hayFechasDisponibles && 'opacity-60')}
                           >
                             {hayFechasDisponibles ? 'Ver Detalles' : 'Agotado'}
                           </Button>

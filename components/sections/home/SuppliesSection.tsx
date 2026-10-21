@@ -97,6 +97,7 @@ export function SuppliesSection({ insumos }: SuppliesSectionProps) {
                             {formatPrice(insumo.price, insumo.currency)}
                           </div>
                           <Button
+                            as="span"
                             variant="ghost"
                             icon={<ArrowRight size={18} />}
                             className="text-brand"

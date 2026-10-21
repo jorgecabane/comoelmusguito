@@ -2,13 +2,16 @@
  * Componente Button
  * Botón reutilizable con múltiples variantes y tamaños.
  * Con `href` se renderiza como enlace (Link interno o <a> externo) con el mismo
- * aspecto, evitando anidar un <button> dentro de un <a>.
+ * aspecto, evitando anidar un <button> dentro de un <a>. Con `as="span"` solo
+ * toma el aspecto (para tarjetas completas que ya son un enlace). El span no tiene
+ * estado deshabilitado: si la tarjeta sigue navegando, el botón tampoco debe verse
+ * deshabilitado; solo cambia su texto (p. ej. "Agotado").
  */
 
 import { cn } from '@/lib/utils/cn';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
+import { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 
 interface ButtonOwnProps {
   variant?: 'primary' | 'secondary' | 'ghost';
@@ -19,12 +22,15 @@ interface ButtonOwnProps {
 }
 
 type ButtonAsButton = ButtonOwnProps &
-  ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined };
+  ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined; as?: undefined };
 
 type ButtonAsLink = ButtonOwnProps &
-  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { href: string };
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { href: string; as?: undefined };
 
-type ButtonProps = ButtonAsButton | ButtonAsLink;
+type ButtonAsSpan = ButtonOwnProps &
+  Omit<HTMLAttributes<HTMLSpanElement>, 'children'> & { as: 'span'; href?: undefined };
+
+type ButtonProps = ButtonAsButton | ButtonAsLink | ButtonAsSpan;
 
 const baseStyles =
   'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
@@ -62,6 +68,16 @@ export function Button(props: ButtonProps) {
       {children && <span className="inline-flex items-center gap-2">{children}</span>}
     </>
   );
+
+  if (rest.as === 'span') {
+    const { as: _as, ...spanProps } = rest;
+    void _as;
+    return (
+      <span className={classes} {...spanProps}>
+        {content}
+      </span>
+    );
+  }
 
   if (rest.href !== undefined) {
     const { href, ...anchorProps } = rest as Omit<ButtonAsLink, keyof ButtonOwnProps>;
