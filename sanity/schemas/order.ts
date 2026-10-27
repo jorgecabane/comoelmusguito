@@ -362,6 +362,7 @@ export default defineType({
       readOnly: true,
       options: { collapsible: true, collapsed: true },
       fields: [
+        defineField({ name: 'consent', title: 'Aceptó cookies publicitarias', type: 'boolean' }),
         defineField({ name: 'fbp', title: 'Cookie _fbp', type: 'string' }),
         defineField({ name: 'fbc', title: 'Cookie _fbc (clic en anuncio)', type: 'string' }),
         defineField({ name: 'clientIp', title: 'IP del comprador', type: 'string' }),

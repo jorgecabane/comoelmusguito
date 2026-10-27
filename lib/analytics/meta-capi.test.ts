@@ -11,7 +11,7 @@ const order = {
     { _key: 'k1', id: 'p1', type: 'terrarium' as const, name: 'Terrario', slug: 't', price: 15990, currency: 'CLP' as const, quantity: 2 },
     { _key: 'k2', id: 'p2', type: 'course' as const, name: 'Curso', slug: 'c', price: 0, currency: 'CLP' as const, quantity: 1 },
   ],
-  metaAttribution: { fbp: 'fb.1.123.456', fbc: 'fb.1.123.AbC', clientIp: '200.1.2.3', userAgent: 'UA/1.0' },
+  metaAttribution: { consent: true as const, fbp: 'fb.1.123.456', fbc: 'fb.1.123.AbC', clientIp: '200.1.2.3', userAgent: 'UA/1.0' },
 };
 const now = new Date('2026-10-26T16:00:00.000Z');
 
@@ -101,6 +101,11 @@ describe('sendMetaPurchase', () => {
   it('no hace nada sin token (dev, vistas previas, CI)', async () => {
     vi.stubEnv('META_CAPI_ACCESS_TOKEN', '');
     await sendMetaPurchase(order);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('no hace nada si el comprador no aceptó las cookies publicitarias', async () => {
+    await sendMetaPurchase({ ...order, metaAttribution: undefined });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

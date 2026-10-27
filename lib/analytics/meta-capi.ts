@@ -72,6 +72,8 @@ export async function sendMetaPurchase(order: PurchaseOrder): Promise<void> {
   const accessToken = process.env.META_CAPI_ACCESS_TOKEN;
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   if (!accessToken || !pixelId) return;
+  // Sin consentimiento al crear el pedido no se envía nada a Meta
+  if (!order.metaAttribution?.consent) return;
 
   try {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';

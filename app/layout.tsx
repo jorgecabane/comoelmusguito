@@ -92,6 +92,7 @@ import { SessionProvider } from "@/components/auth/SessionProvider";
 import { LazyRecaptchaProvider } from "@/components/auth/LazyRecaptchaProvider";
 import { Analytics } from "@vercel/analytics/next";
 import { MetaPixel } from "@/components/analytics/MetaPixel";
+import { CookieBanner } from "@/components/analytics/CookieBanner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function RootLayout({
@@ -138,6 +139,7 @@ export default function RootLayout({
         <Analytics />
         <SpeedInsights />
         <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+        <CookieBanner enabled={Boolean(process.env.NEXT_PUBLIC_META_PIXEL_ID)} />
       </body>
     </html>
   );

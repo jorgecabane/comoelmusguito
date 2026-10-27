@@ -2,8 +2,10 @@
  * Pixel de Meta (Facebook / Instagram)
  * Mide visitas para campañas y audiencias. Se carga solo si existe
  * NEXT_PUBLIC_META_PIXEL_ID, que en Vercel está definida únicamente en
- * Production: dev, vistas previas, local y CI no la tienen y el Pixel no se
- * carga. Se excluye /studio (panel de contenido).
+ * Production (dev, vistas previas, local y CI no la tienen) Y la persona aceptó
+ * las cookies publicitarias (CookieBanner). Se excluye /studio (panel de contenido).
+ *
+ * No hay <noscript> de respaldo: sin JavaScript no se puede dar consentimiento.
  *
  * El snippet oficial dispara PageView una vez al cargar; en un sitio con
  * navegación del lado del cliente hay que disparar uno más en cada cambio de ruta.
@@ -14,6 +16,7 @@
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { useAdsConsent } from '@/lib/analytics/useAdsConsent';
 
 interface MetaPixelProps {
   pixelId?: string;
@@ -23,6 +26,7 @@ export function MetaPixel({ pixelId }: MetaPixelProps) {
   const pathname = usePathname();
   const isFirstRender = useRef(true);
   const excluded = pathname?.startsWith('/studio') ?? false;
+  const granted = useAdsConsent() === 'granted';
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -30,10 +34,12 @@ export function MetaPixel({ pixelId }: MetaPixelProps) {
       isFirstRender.current = false;
       return;
     }
-    if (pixelId && !excluded) window.fbq?.('track', 'PageView');
+    if (pixelId && !excluded && granted) window.fbq?.('track', 'PageView');
+    // Al aceptar a mitad de la sesión no se repite el PageView: lo dispara el snippet al cargar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, pixelId, excluded]);
 
-  if (!pixelId || excluded) return null;
+  if (!pixelId || excluded || !granted) return null;
 
   return (
     <>
@@ -53,16 +59,6 @@ export function MetaPixel({ pixelId }: MetaPixelProps) {
           window.__metaPending = [];
         `}
       </Script>
-      <noscript>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          height="1"
-          width="1"
-          className="hidden"
-          alt=""
-          src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`}
-        />
-      </noscript>
     </>
   );
 }

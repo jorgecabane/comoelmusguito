@@ -6,6 +6,7 @@
  */
 
 import type { CartItem } from '@/types/cart';
+import { parseAdsConsent } from '@/lib/analytics/consent';
 
 declare global {
   interface Window {
@@ -37,6 +38,8 @@ export interface MetaEventParams {
  */
 export function trackMeta(event: MetaStandardEvent, params: MetaEventParams, eventId?: string): void {
   if (typeof window === 'undefined') return;
+  // Sin consentimiento no se envía ni se encola nada: al aceptar después no se "reproduce" lo anterior
+  if (parseAdsConsent(document.cookie) !== 'granted') return;
   const args = eventId ? ['track', event, params, { eventID: eventId }] : ['track', event, params];
 
   if (typeof window.fbq === 'function') {

@@ -215,7 +215,7 @@ export default function PrivacidadPage() {
               </p>
             </section>
 
-            <section>
+            <section id="cookies">
               <h2 className="font-display text-2xl font-semibold text-fg mb-4">
                 10. Cookies y Tecnologías Similares
               </h2>
@@ -230,6 +230,13 @@ export default function PrivacidadPage() {
                 legible), la dirección IP, el navegador y los identificadores de las cookies de Meta. Puede limitar el
                 seguimiento publicitario desde la configuración de anuncios de su cuenta de Meta o con las opciones de
                 privacidad de su navegador.
+              </p>
+              <p className="text-muted leading-relaxed mt-4">
+                Estas cookies publicitarias solo se instalan, y los datos de compra solo se envían a Meta, si usted las
+                acepta en el aviso del sitio. Puede rechazarlas, y cambiar su elección en cualquier momento desde
+                «Preferencias de cookies», al final de cada página; al rechazarlas eliminamos las cookies de Meta de su
+                navegador. Para recordar su elección guardamos una cookie técnica propia (<code>cem_consent</code>) por
+                180 días.
               </p>
             </section>
 
