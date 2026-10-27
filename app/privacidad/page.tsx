@@ -4,7 +4,6 @@
 
 import { FadeIn } from '@/components/animations';
 import { Shield, Lock, Eye } from 'lucide-react';
-import Link from 'next/link';
 import { getFormattedPhoneNumber } from '@/lib/config/contact';
 
 export const metadata = {
@@ -187,6 +186,11 @@ export default function PrivacidadPage() {
                 <li><strong>Datos de cuenta:</strong> Mientras la cuenta esté activa</li>
                 <li><strong>Datos de transacciones:</strong> 7 años (requerimiento fiscal)</li>
                 <li><strong>Datos de marketing:</strong> Hasta que retire su consentimiento</li>
+                <li>
+                  <strong>Datos de atribución publicitaria</strong> (cookies de Meta, dirección IP y navegador guardados
+                  al crear un pedido): se eliminan al informar la compra a Meta o, si el pago es rechazado o anulado,
+                  al registrarse ese estado
+                </li>
               </ul>
             </section>
 
@@ -216,17 +220,16 @@ export default function PrivacidadPage() {
                 10. Cookies y Tecnologías Similares
               </h2>
               <p className="text-muted leading-relaxed">
-                Utilizamos cookies y tecnologías similares para mejorar su experiencia. Para más información, 
-                consulte nuestra <Link href="/politica-cookies" className="text-brand hover:text-fg underline">
-                  Política de Cookies
-                </Link> (si aplica).
+                Utilizamos cookies y tecnologías similares para mejorar su experiencia y para medir nuestra publicidad.
               </p>
               <p className="text-muted leading-relaxed mt-4">
                 En particular, nuestro sitio usa el Pixel de Meta, que instala cookies (como <code>_fbp</code> y{' '}
                 <code>_fbc</code>) para medir el resultado de nuestra publicidad en Facebook e Instagram. Al confirmarse
                 una compra, también enviamos a Meta, desde nuestro servidor, el monto y los productos de la compra junto
-                con su correo electrónico en forma cifrada (no en claro). Puede limitar el seguimiento publicitario
-                desde la configuración de anuncios de su cuenta de Meta o con las opciones de privacidad de su navegador.
+                con su correo electrónico seudonimizado mediante una función hash (Meta no recibe el correo en texto
+                legible), la dirección IP, el navegador y los identificadores de las cookies de Meta. Puede limitar el
+                seguimiento publicitario desde la configuración de anuncios de su cuenta de Meta o con las opciones de
+                privacidad de su navegador.
               </p>
             </section>
 

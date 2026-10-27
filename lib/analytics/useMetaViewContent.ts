@@ -36,6 +36,10 @@ export function useMetaViewContent({ id, name, price, currency }: ViewedProduct)
       value: price,
       currency,
     });
+    // Al salir de la ruta se limpia la clave: volver al mismo producto más tarde cuenta otra vista
+    return () => {
+      lastTracked = '';
+    };
     // Solo al ver un producto distinto: un cambio de precio o moneda no debe repetir el evento
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, id]);

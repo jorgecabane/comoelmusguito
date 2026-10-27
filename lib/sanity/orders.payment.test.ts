@@ -10,7 +10,7 @@ import { sendMetaPurchase } from '@/lib/analytics/meta-capi';
 
 const m = vi.hoisted(() => {
   const fn = vi.fn<(...a: any[]) => any>;
-  const b = { set: fn(() => b), ifRevisionId: fn(() => b), commit: fn(async () => ({})) };
+  const b = { set: fn(() => b), unset: fn(() => b), ifRevisionId: fn(() => b), commit: fn(async () => ({})) };
   const create = fn();
   const txPatch = fn();
   // writeClient.transaction(): delega create a m.create y commit espera ese create
@@ -131,6 +131,29 @@ describe('processSuccessfulPayment', () => {
     await processSuccessfulPayment({ orderId: 'ORD-1' });
     expect(sendMetaPurchase).toHaveBeenCalledTimes(1);
     expect(sendMetaPurchase).toHaveBeenCalledWith(expect.objectContaining({ orderId: 'ORD-1', customerEmail: 'buyer@x.cl' }));
+  });
+
+  it('deletes the Meta attribution data right after sending the Purchase', async () => {
+    const attribution = { fbp: 'fb.1.1.2', clientIp: '1.2.3.4' };
+    db(baseOrder({ metaAttribution: attribution }));
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    const sentOrder = vi.mocked(sendMetaPurchase).mock.calls[0][0];
+    expect(sentOrder.metaAttribution).toEqual(attribution); // el envío aún la recibe
+    expect(m.unset).toHaveBeenCalledWith(['metaAttribution']);
+    expect(vi.mocked(sendMetaPurchase).mock.invocationCallOrder[0]).toBeLessThan(m.unset.mock.invocationCallOrder[0]);
+  });
+
+  it('does not touch the order when there is no attribution data to delete', async () => {
+    db(baseOrder());
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(m.unset).not.toHaveBeenCalled();
+  });
+
+  it('a failure while deleting the attribution data never breaks the payment', async () => {
+    db(baseOrder({ metaAttribution: { fbp: 'x' } }));
+    m.unset.mockImplementationOnce(() => { throw new Error('sanity caído'); });
+    await expect(processSuccessfulPayment({ orderId: 'ORD-1' })).resolves.toEqual({ success: true, alreadyProcessed: false });
+    expect(sendOrderConfirmationEmail).toHaveBeenCalled();
   });
 
   it('does not send the Meta Purchase again for an order that was already claimed (webhook retry)', async () => {

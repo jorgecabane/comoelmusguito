@@ -125,13 +125,10 @@ describe('sendMetaPurchase', () => {
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it('permite cambiar la versión de la API y usar un código de prueba', async () => {
-    vi.stubEnv('META_GRAPH_API_VERSION', 'v27.0');
+  it('agrega el código de prueba cuando está configurado', async () => {
     vi.stubEnv('META_CAPI_TEST_EVENT_CODE', 'TEST123');
     await sendMetaPurchase(order);
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe('https://graph.facebook.com/v27.0/999/events');
-    expect(JSON.parse(init.body).test_event_code).toBe('TEST123');
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).test_event_code).toBe('TEST123');
   });
 
   it('nunca lanza: una respuesta de error de Meta solo se registra', async () => {

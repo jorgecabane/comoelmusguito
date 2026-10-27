@@ -16,8 +16,8 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import type { SanityOrder } from '@/lib/sanity/orders';
 
-/** Versión de la Graph API; configurable porque Meta retira versiones antiguas */
-const DEFAULT_GRAPH_VERSION = 'v25.0';
+/** Versión de la Graph API. Meta retira las antiguas: subirla es un cambio de una línea */
+const GRAPH_API_VERSION = 'v25.0';
 const REQUEST_TIMEOUT_MS = 3000;
 /** Meta rechaza eventos con más de 7 días de antigüedad */
 const MAX_EVENT_AGE_SECONDS = 7 * 24 * 60 * 60;
@@ -74,11 +74,10 @@ export async function sendMetaPurchase(order: PurchaseOrder): Promise<void> {
   if (!accessToken || !pixelId) return;
 
   try {
-    const version = process.env.META_GRAPH_API_VERSION || DEFAULT_GRAPH_VERSION;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://comoelmusguito.cl';
     const testEventCode = process.env.META_CAPI_TEST_EVENT_CODE;
 
-    const response = await fetch(`https://graph.facebook.com/${version}/${pixelId}/events`, {
+    const response = await fetch(`https://graph.facebook.com/${GRAPH_API_VERSION}/${pixelId}/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // El token va en el cuerpo para que no quede en URLs ni en logs de acceso

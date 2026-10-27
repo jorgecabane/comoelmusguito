@@ -235,10 +235,12 @@ export async function updateOrderPaymentStatus(
     throw new Error(`Orden ${orderId} no encontrada`);
   }
 
-  await writeClient
+  let patch = writeClient
     .patch(order._id)
-    .set(paymentStatusUpdates(order, paymentStatus, paymentDate, flowOrder))
-    .commit();
+    .set(paymentStatusUpdates(order, paymentStatus, paymentDate, flowOrder));
+  // Pago rechazado (3) o anulado (4): nunca habrá Purchase, los datos de atribución ya no sirven
+  if (paymentStatus === 3 || paymentStatus === 4) patch = patch.unset(['metaAttribution']);
+  await patch.commit();
 }
 /**
  * Marcar email como enviado en una orden
@@ -375,6 +377,19 @@ export async function getLastShippingAddressByUserId(userId: string): Promise<Sa
   }`;
   const result = await client.fetch<{ shippingAddress: SanityOrder['shippingAddress'] } | null>(query, { userId });
   return result?.shippingAddress ?? null;
+}
+
+/**
+ * Borra los datos de atribución de Meta (cookies, IP, navegador) de una orden.
+ * No lanza: no puede romper el webhook de pago.
+ */
+async function clearMetaAttribution(order: Pick<SanityOrder, '_id' | 'orderId' | 'metaAttribution'>): Promise<void> {
+  if (!order._id || !order.metaAttribution) return;
+  try {
+    await writeClient.patch(order._id).unset(['metaAttribution']).commit();
+  } catch (error) {
+    console.error(`[orders] No se pudo borrar metaAttribution de la orden ${order.orderId}:`, error);
+  }
 }
 
 const MAX_CLAIM_ATTEMPTS = 3;
@@ -584,6 +599,8 @@ export async function processSuccessfulPayment(params: {
     await decreaseInventory(order);
     // Una sola vez por pedido (aquí solo llega el ganador del claim). No lanza nunca.
     await sendMetaPurchase(order);
+    // Esos datos solo sirven para este envío: se borran enseguida (ver /privacidad, sección 8)
+    await clearMetaAttribution(order);
   }
 
   // ponytail: dos entregas concurrentes pueden enviar el email de confirmación dos
