@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
 
     const details = {
       success: true,
+      total: order.total,
+      currency: order.currency,
       items: order.items.map((item) => ({
+        id: item.id,
         name: item.name,
         type: item.type,
         quantity: item.quantity,

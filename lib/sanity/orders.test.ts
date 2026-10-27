@@ -3,7 +3,8 @@ import type { CartItem } from '@/types/cart';
 
 const m = vi.hoisted(() => {
   const commit = vi.fn<(...a: any[]) => any>(async () => ({}));
-  const set = vi.fn<(...a: any[]) => any>(() => ({ commit }));
+  const unset = vi.fn<(...a: any[]) => any>(() => ({ commit }));
+  const set = vi.fn<(...a: any[]) => any>(() => ({ commit, unset }));
   const patch = vi.fn<(...a: any[]) => any>(() => ({ set }));
   const fetch = vi.fn<(...a: any[]) => any>();
   const create = vi.fn<(...a: any[]) => any>(async (doc: any) => ({ _id: 'new-id', ...doc }));
@@ -18,7 +19,7 @@ const m = vi.hoisted(() => {
     };
     return tx;
   };
-  return { commit, set, patch, fetch, create, txPatch, transaction };
+  return { commit, set, unset, patch, fetch, create, txPatch, transaction };
 });
 
 vi.mock('@/sanity/lib/client', () => {
@@ -37,6 +38,7 @@ vi.mock('@/lib/auth/sanity-adapter', () => ({ getUserByEmail: vi.fn() }));
 import {
   saveOrderToSanity,
   updateOrderPaymentStatus,
+  purgeStaleMetaAttribution,
   markOrderEmailSent,
   getOrderByOrderId,
   getOrdersByEmail,
@@ -135,6 +137,29 @@ describe('saveOrderToSanity', () => {
   });
 });
 
+describe('purgeStaleMetaAttribution', () => {
+  it('busca pedidos pendientes con atribución de más de 7 días y la borra en una transacción', async () => {
+    m.fetch.mockResolvedValue([{ _id: 'o1' }, { _id: 'o2' }]);
+    const now = new Date('2026-11-10T12:00:00.000Z');
+    await expect(purgeStaleMetaAttribution(now)).resolves.toBe(2);
+
+    const [query, params] = m.fetch.mock.calls[0];
+    expect(query).toContain('paymentStatus == 1');
+    expect(query).toContain('defined(metaAttribution)');
+    expect(query).toContain('createdAt < $cutoff');
+    expect(params).toEqual({ cutoff: '2026-11-03T12:00:00.000Z' });
+    expect(m.txPatch).toHaveBeenCalledWith('o1', { unset: ['metaAttribution'] });
+    expect(m.txPatch).toHaveBeenCalledWith('o2', { unset: ['metaAttribution'] });
+    expect(m.txPatch).toHaveBeenCalledTimes(2);
+  });
+
+  it('no abre transacción si no hay pedidos que limpiar', async () => {
+    m.fetch.mockResolvedValue([]);
+    await expect(purgeStaleMetaAttribution()).resolves.toBe(0);
+    expect(m.txPatch).not.toHaveBeenCalled();
+  });
+});
+
 describe('updateOrderPaymentStatus', () => {
   it('throws when the order does not exist', async () => {
     m.fetch.mockResolvedValue(null);
@@ -159,6 +184,19 @@ describe('updateOrderPaymentStatus', () => {
     const updates = m.set.mock.calls[0][0];
     expect(updates.flowOrder).toBe('abc');
     expect(updates).not.toHaveProperty('paymentDate'); // not paid → no fallback date
+  });
+
+  it.each([3, 4])('borra los datos de atribución de Meta cuando el pago queda en estado %i (rechazado/anulado)', async (status) => {
+    m.fetch.mockResolvedValue({ _id: 'doc1' });
+    await updateOrderPaymentStatus('O1', status);
+    expect(m.unset).toHaveBeenCalledWith(['metaAttribution']);
+    expect(m.commit).toHaveBeenCalled();
+  });
+
+  it.each([1, 2])('conserva los datos de atribución con el estado %i (pendiente/pagado)', async (status) => {
+    m.fetch.mockResolvedValue({ _id: 'doc1' });
+    await updateOrderPaymentStatus('O1', status);
+    expect(m.unset).not.toHaveBeenCalled();
   });
 
   it('falls back to now as paymentDate when paid without a date', async () => {

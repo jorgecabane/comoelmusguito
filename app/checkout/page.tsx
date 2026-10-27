@@ -6,7 +6,8 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { trackMeta } from '@/lib/analytics/meta';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
@@ -146,6 +147,27 @@ export default function CheckoutPage() {
     // Sin esperar la rehidratación, un load directo de /checkout rebota al carrito.
     if (cartHydrated && items.length === 0) router.push('/carrito');
   }, [cartHydrated, items, router]);
+
+  // InitiateCheckout (Meta): una vez por visita, cuando el carrito ya se rehidrató y tiene productos.
+  // Si el carrito mezcla monedas se envía un evento por moneda (Meta no suma monedas distintas).
+  const checkoutTracked = useRef(false);
+  useEffect(() => {
+    if (!cartHydrated || items.length === 0 || checkoutTracked.current) return;
+    checkoutTracked.current = true;
+    for (const [currency, value] of totalsByCurrency) {
+      const group = items.filter((item) => item.currency === currency);
+      trackMeta('InitiateCheckout', {
+        content_type: 'product',
+        content_ids: group.map((item) => item.id),
+        contents: group.map((item) => ({ id: item.id, quantity: item.quantity, item_price: item.price })),
+        num_items: group.reduce((sum, item) => sum + item.quantity, 0),
+        value,
+        currency,
+      });
+    }
+    // totalsByCurrency se deriva de items; basta con reaccionar a la hidratación
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartHydrated, items]);
 
   // Auto-detect country for default gateway
   useEffect(() => {

@@ -10,6 +10,7 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { Badge } from '@/components/ui';
 import type { Workshop, WorkshopDate } from '@/types/sanity';
 import type { CartItem } from '@/types/cart';
+import { useMetaViewContent } from '@/lib/analytics/useMetaViewContent';
 import { getImageUrl, formatPrice, formatWorkshopDateTime } from '@/lib/sanity/utils';
 import { Calendar } from 'lucide-react';
 
@@ -22,6 +23,8 @@ function isDateSoldOut(fecha: WorkshopDate): boolean {
 }
 
 export function WorkshopDetail({ workshop }: WorkshopDetailProps) {
+  useMetaViewContent({ id: workshop._id, name: workshop.name, price: workshop.price, currency: workshop.currency });
+
   // Filtrar fechas futuras y disponibles
   const fechasDisponibles = workshop.dates
     ?.filter((date) => {

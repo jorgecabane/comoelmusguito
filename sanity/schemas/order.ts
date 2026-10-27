@@ -353,6 +353,22 @@ export default defineType({
       description: 'Se escribe una sola vez al confirmar el pago; evita descontar stock o crear accesos dos veces',
       readOnly: true,
     }),
+    defineField({
+      name: 'metaAttribution',
+      title: 'Atribución de Meta (anuncios)',
+      type: 'object',
+      description:
+        'Datos del navegador del comprador que se envían a Meta junto con la compra (API de conversiones) para atribuirla a un anuncio. Se escriben solos al crear el pedido.',
+      readOnly: true,
+      options: { collapsible: true, collapsed: true },
+      fields: [
+        defineField({ name: 'consent', title: 'Aceptó cookies publicitarias', type: 'boolean' }),
+        defineField({ name: 'fbp', title: 'Cookie _fbp', type: 'string' }),
+        defineField({ name: 'fbc', title: 'Cookie _fbc (clic en anuncio)', type: 'string' }),
+        defineField({ name: 'clientIp', title: 'IP del comprador', type: 'string' }),
+        defineField({ name: 'userAgent', title: 'Navegador (user agent)', type: 'string' }),
+      ],
+    }),
     // Campos de Regalo
     defineField({
       name: 'isGift',

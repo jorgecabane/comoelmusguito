@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Instagram, Youtube, Mail, Leaf } from 'lucide-react';
 import { Logo } from './Logo';
 import { NewsletterForm } from './NewsletterForm';
+import { CookiePreferencesLink } from '@/components/analytics/CookiePreferencesLink';
 
 const footerLinks = {
   shop: [
@@ -173,6 +174,9 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <CookiePreferencesLink className="text-on-chrome/70 hover:text-brand transition-colors text-sm" />
+              </li>
             </ul>
           </div>
         </div>
