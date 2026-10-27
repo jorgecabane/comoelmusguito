@@ -15,12 +15,6 @@ import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
-declare global {
-  interface Window {
-    fbq?: (...args: unknown[]) => void;
-  }
-}
-
 interface MetaPixelProps {
   pixelId?: string;
 }
@@ -55,6 +49,8 @@ export function MetaPixel({ pixelId }: MetaPixelProps) {
           'https://connect.facebook.net/en_US/fbevents.js');
           fbq('init', '${pixelId}');
           fbq('track', 'PageView');
+          (window.__metaPending || []).forEach(function(a){ fbq.apply(null, a); });
+          window.__metaPending = [];
         `}
       </Script>
       <noscript>

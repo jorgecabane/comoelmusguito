@@ -6,6 +6,7 @@ import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
 import { markGiftAsRedeemed } from '@/lib/sanity/gifts';
 import { decreaseTerrariumStock, decreaseWorkshopSpots, decreaseSupplyStock } from '@/lib/sanity/inventory';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
+import { sendMetaPurchase } from '@/lib/analytics/meta-capi';
 
 const m = vi.hoisted(() => {
   const fn = vi.fn<(...a: any[]) => any>;
@@ -37,6 +38,7 @@ vi.mock('@/lib/sanity/inventory', () => ({
   decreaseSupplyStock: vi.fn(),
 }));
 vi.mock('@/lib/auth/sanity-adapter', () => ({ getUserByEmail: vi.fn() }));
+vi.mock('@/lib/analytics/meta-capi', () => ({ sendMetaPurchase: vi.fn() }));
 
 import { processSuccessfulPayment } from './orders';
 
@@ -121,6 +123,20 @@ describe('processSuccessfulPayment', () => {
     expect(m.patch).not.toHaveBeenCalled();
     expect(m.create).not.toHaveBeenCalled();
     expect(sendOrderConfirmationEmail).not.toHaveBeenCalled();
+    expect(sendMetaPurchase).not.toHaveBeenCalled();
+  });
+
+  it('sends the Meta Purchase exactly once, only for the delivery that claims the order', async () => {
+    db(baseOrder());
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(sendMetaPurchase).toHaveBeenCalledTimes(1);
+    expect(sendMetaPurchase).toHaveBeenCalledWith(expect.objectContaining({ orderId: 'ORD-1', customerEmail: 'buyer@x.cl' }));
+  });
+
+  it('does not send the Meta Purchase again for an order that was already claimed (webhook retry)', async () => {
+    db(baseOrder({ paymentProcessedAt: '2026-01-01T00:00:00.000Z' }));
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(sendMetaPurchase).not.toHaveBeenCalled();
   });
 
   it('runs the full direct-purchase flow', async () => {

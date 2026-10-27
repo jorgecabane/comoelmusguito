@@ -146,6 +146,12 @@ export default function PrivacidadPage() {
                 <li><strong>Sanity:</strong> Plataforma CMS para almacenamiento de datos</li>
                 <li><strong>Vercel:</strong> Proveedor de hosting (datos técnicos)</li>
                 <li><strong>Google reCAPTCHA:</strong> Verificación de seguridad (datos de navegación)</li>
+                <li>
+                  <strong>Meta (Facebook e Instagram):</strong> Medición de visitas y compras para nuestras campañas
+                  publicitarias, mediante el Pixel de Meta y la API de conversiones (páginas y productos vistos,
+                  productos agregados al carrito, monto y productos de la compra, dirección de correo cifrada,
+                  dirección IP y navegador)
+                </li>
               </ul>
               <p className="text-muted leading-relaxed mt-4">
                 Todos estos proveedores cumplen con estándares de seguridad y protección de datos. 
@@ -214,6 +220,13 @@ export default function PrivacidadPage() {
                 consulte nuestra <Link href="/politica-cookies" className="text-brand hover:text-fg underline">
                   Política de Cookies
                 </Link> (si aplica).
+              </p>
+              <p className="text-muted leading-relaxed mt-4">
+                En particular, nuestro sitio usa el Pixel de Meta, que instala cookies (como <code>_fbp</code> y{' '}
+                <code>_fbc</code>) para medir el resultado de nuestra publicidad en Facebook e Instagram. Al confirmarse
+                una compra, también enviamos a Meta, desde nuestro servidor, el monto y los productos de la compra junto
+                con su correo electrónico en forma cifrada (no en claro). Puede limitar el seguimiento publicitario
+                desde la configuración de anuncios de su cuenta de Meta o con las opciones de privacidad de su navegador.
               </p>
             </section>
 

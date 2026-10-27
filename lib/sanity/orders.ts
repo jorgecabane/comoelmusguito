@@ -4,6 +4,8 @@
 
 import 'server-only';
 import { client, newPrivateId, writeClient } from '@/sanity/lib/client';
+import { sendMetaPurchase } from '@/lib/analytics/meta-capi';
+import type { MetaAttribution } from '@/lib/analytics/meta-attribution';
 import type { CartItem } from '@/types/cart';
 import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
 import type { EmailOrderData, EmailOrderItem, GiftEmailData } from '@/lib/resend/client';
@@ -66,6 +68,8 @@ export interface SanityOrder {
   refundAmount?: number;
   emailSent?: boolean;
   paymentProcessedAt?: string; // Marca atómica: accesos e inventario ya aplicados
+  // Datos para atribuir la compra a un anuncio de Meta (API de conversiones)
+  metaAttribution?: MetaAttribution;
   // Campos de Regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -106,6 +110,7 @@ export async function saveOrderToSanity(data: {
   total: number;
   currency: 'CLP' | 'USD';
   paymentProvider?: 'flow' | 'paypal';
+  metaAttribution?: MetaAttribution;
   // Campos de regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -164,6 +169,7 @@ export async function saveOrderToSanity(data: {
     currency: data.currency,
     paymentStatus: 1, // Pendiente
     paymentProvider: data.paymentProvider ?? 'flow',
+    metaAttribution: data.metaAttribution,
     // Campos de regalo
     isGift: data.isGift || false,
     recipientEmail: data.recipientEmail,
@@ -576,6 +582,8 @@ export async function processSuccessfulPayment(params: {
   if (claimed) {
     await grantCourseAccess(order as SanityOrder & { _id: string });
     await decreaseInventory(order);
+    // Una sola vez por pedido (aquí solo llega el ganador del claim). No lanza nunca.
+    await sendMetaPurchase(order);
   }
 
   // ponytail: dos entregas concurrentes pueden enviar el email de confirmación dos

@@ -265,3 +265,34 @@ describe('POST /api/checkout — PayPal', () => {
     expect(m(saveOrderToSanity).mock.calls[0][0]).not.toHaveProperty('flowOrder');
   });
 });
+
+describe('POST /api/checkout — atribución de Meta', () => {
+  const postWith = (body: unknown, headers: Record<string, string>) =>
+    POST(new NextRequest('http://localhost/api/checkout', { method: 'POST', body: JSON.stringify(body), headers }));
+
+  it('guarda las cookies de Meta, la IP y el navegador del comprador junto a la orden (Flow)', async () => {
+    await postWith(base, {
+      cookie: '_fbp=fb.1.111.222; _fbc=fb.1.111.AbC; otra=x',
+      'x-forwarded-for': '200.1.2.3, 10.0.0.1',
+      'user-agent': 'Mozilla/5.0 Test',
+    });
+    expect(m(saveOrderToSanity).mock.calls[0][0].metaAttribution).toEqual({
+      fbp: 'fb.1.111.222',
+      fbc: 'fb.1.111.AbC',
+      clientIp: '200.1.2.3',
+      userAgent: 'Mozilla/5.0 Test',
+    });
+  });
+
+  it('también la guarda con PayPal', async () => {
+    m(calculateOrderTotals).mockResolvedValue({ validatedItems: base.items, total: 27.36, currency: 'USD' });
+    await postWith({ ...base, gateway: 'paypal' }, { cookie: '_fbp=fb.1.1.2' });
+    expect(m(saveOrderToSanity).mock.calls[0][0].metaAttribution).toMatchObject({ fbp: 'fb.1.1.2' });
+  });
+
+  it('no rompe el checkout si no hay datos de Meta (sin cookies de Meta)', async () => {
+    const res = await post(base);
+    expect(res.status).toBe(200);
+    expect(m(saveOrderToSanity).mock.calls[0][0].metaAttribution).toBeUndefined();
+  });
+});

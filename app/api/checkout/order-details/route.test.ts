@@ -14,6 +14,8 @@ const get = (qs = '') => GET(new NextRequest(`http://localhost/api/checkout/orde
 const fullOrder = {
   customerEmail: 'a@b.cl',
   customerName: 'Ana',
+  total: 100,
+  currency: 'CLP',
   items: [{ id: 'i', name: 'Curso', type: 'course', quantity: 1, price: 100, currency: 'CLP', slug: 'curso', snapshot: { x: 1 } }],
   isGift: true,
   recipientEmail: 'r@x.cl',
@@ -24,7 +26,9 @@ const fullOrder = {
 };
 const publicFields = {
   success: true,
-  items: [{ name: 'Curso', type: 'course', quantity: 1, price: 100, currency: 'CLP', slug: 'curso' }],
+  total: 100,
+  currency: 'CLP',
+  items: [{ id: 'i', name: 'Curso', type: 'course', quantity: 1, price: 100, currency: 'CLP', slug: 'curso' }],
   isGift: true,
   requiresShipping: true,
 };

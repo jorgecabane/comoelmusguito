@@ -10,6 +10,7 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { Heart } from 'lucide-react';
 import type { Supply } from '@/types/sanity';
 import type { CartItem } from '@/types/cart';
+import { useMetaViewContent } from '@/lib/analytics/useMetaViewContent';
 import { getImageUrl, formatPrice, supplyCategoryLabels } from '@/lib/sanity/utils';
 
 interface SupplyDetailProps {
@@ -38,6 +39,8 @@ export function SupplyDetail({ supply }: SupplyDetailProps) {
     // Solo marcar como disponible para envío si shippingAvailable es true Y localPickupOnly es false
     shippingAvailable: supply.shippingAvailable === true && supply.localPickupOnly !== true,
   };
+
+  useMetaViewContent(cartItem);
 
   return (
     <>
