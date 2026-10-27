@@ -1,7 +1,9 @@
 /**
  * Pixel de Meta (Facebook / Instagram)
- * Mide visitas para campañas y audiencias. Solo se carga en producción
- * (ver lib/config/analytics.ts). Se excluye /studio (panel de contenido).
+ * Mide visitas para campañas y audiencias. Se carga solo si existe
+ * NEXT_PUBLIC_META_PIXEL_ID, que en Vercel está definida únicamente en
+ * Production: dev, vistas previas, local y CI no la tienen y el Pixel no se
+ * carga. Se excluye /studio (panel de contenido).
  *
  * El snippet oficial dispara PageView una vez al cargar; en un sitio con
  * navegación del lado del cliente hay que disparar uno más en cada cambio de ruta.
@@ -20,7 +22,7 @@ declare global {
 }
 
 interface MetaPixelProps {
-  pixelId: string | null;
+  pixelId?: string;
 }
 
 export function MetaPixel({ pixelId }: MetaPixelProps) {

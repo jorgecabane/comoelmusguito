@@ -92,7 +92,6 @@ import { SessionProvider } from "@/components/auth/SessionProvider";
 import { LazyRecaptchaProvider } from "@/components/auth/LazyRecaptchaProvider";
 import { Analytics } from "@vercel/analytics/next";
 import { MetaPixel } from "@/components/analytics/MetaPixel";
-import { getMetaPixelId } from "@/lib/config/analytics";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function RootLayout({
@@ -138,7 +137,7 @@ export default function RootLayout({
         {/* Analytics y Speed Insights al final para no bloquear render */}
         <Analytics />
         <SpeedInsights />
-        <MetaPixel pixelId={getMetaPixelId()} />
+        <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
       </body>
     </html>
   );
