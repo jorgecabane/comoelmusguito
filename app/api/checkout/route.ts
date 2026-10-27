@@ -9,6 +9,7 @@ import { createPaymentOrder } from '@/lib/flow/client';
 import { getUserCurrency } from '@/lib/utils/geolocation';
 import { saveOrderToSanity } from '@/lib/sanity/orders';
 import { calculateOrderTotals, CheckoutValidationError } from '@/lib/checkout/calculateOrderTotals';
+import { getMetaAttribution } from '@/lib/analytics/meta-attribution';
 import { generateGiftToken } from '@/lib/utils/gift-token';
 import { sanitizeEmail, sanitizeString } from '@/lib/utils/sanitize';
 import type { CartItem } from '@/types/cart';
@@ -215,6 +216,8 @@ export async function POST(request: NextRequest) {
       total: finalAmount,
       currency: finalCurrency,
       paymentProvider: gateway,
+      // Para atribuir la compra a un anuncio de Meta (se envía al confirmar el pago)
+      metaAttribution: getMetaAttribution(request),
       // Campos de regalo
       isGift: isGift || false,
       recipientEmail: sanitizedRecipientEmail,

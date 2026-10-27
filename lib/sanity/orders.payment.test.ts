@@ -6,10 +6,11 @@ import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
 import { markGiftAsRedeemed } from '@/lib/sanity/gifts';
 import { decreaseTerrariumStock, decreaseWorkshopSpots, decreaseSupplyStock } from '@/lib/sanity/inventory';
 import { getUserByEmail } from '@/lib/auth/sanity-adapter';
+import { sendMetaPurchase } from '@/lib/analytics/meta-capi';
 
 const m = vi.hoisted(() => {
   const fn = vi.fn<(...a: any[]) => any>;
-  const b = { set: fn(() => b), ifRevisionId: fn(() => b), commit: fn(async () => ({})) };
+  const b = { set: fn(() => b), unset: fn(() => b), ifRevisionId: fn(() => b), commit: fn(async () => ({})) };
   const create = fn();
   const txPatch = fn();
   // writeClient.transaction(): delega create a m.create y commit espera ese create
@@ -37,6 +38,7 @@ vi.mock('@/lib/sanity/inventory', () => ({
   decreaseSupplyStock: vi.fn(),
 }));
 vi.mock('@/lib/auth/sanity-adapter', () => ({ getUserByEmail: vi.fn() }));
+vi.mock('@/lib/analytics/meta-capi', () => ({ sendMetaPurchase: vi.fn() }));
 
 import { processSuccessfulPayment } from './orders';
 
@@ -121,6 +123,43 @@ describe('processSuccessfulPayment', () => {
     expect(m.patch).not.toHaveBeenCalled();
     expect(m.create).not.toHaveBeenCalled();
     expect(sendOrderConfirmationEmail).not.toHaveBeenCalled();
+    expect(sendMetaPurchase).not.toHaveBeenCalled();
+  });
+
+  it('sends the Meta Purchase exactly once, only for the delivery that claims the order', async () => {
+    db(baseOrder());
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(sendMetaPurchase).toHaveBeenCalledTimes(1);
+    expect(sendMetaPurchase).toHaveBeenCalledWith(expect.objectContaining({ orderId: 'ORD-1', customerEmail: 'buyer@x.cl' }));
+  });
+
+  it('deletes the Meta attribution data right after sending the Purchase', async () => {
+    const attribution = { fbp: 'fb.1.1.2', clientIp: '1.2.3.4' };
+    db(baseOrder({ metaAttribution: attribution }));
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    const sentOrder = vi.mocked(sendMetaPurchase).mock.calls[0][0];
+    expect(sentOrder.metaAttribution).toEqual(attribution); // el envío aún la recibe
+    expect(m.unset).toHaveBeenCalledWith(['metaAttribution']);
+    expect(vi.mocked(sendMetaPurchase).mock.invocationCallOrder[0]).toBeLessThan(m.unset.mock.invocationCallOrder[0]);
+  });
+
+  it('does not touch the order when there is no attribution data to delete', async () => {
+    db(baseOrder());
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(m.unset).not.toHaveBeenCalled();
+  });
+
+  it('a failure while deleting the attribution data never breaks the payment', async () => {
+    db(baseOrder({ metaAttribution: { fbp: 'x' } }));
+    m.unset.mockImplementationOnce(() => { throw new Error('sanity caído'); });
+    await expect(processSuccessfulPayment({ orderId: 'ORD-1' })).resolves.toEqual({ success: true, alreadyProcessed: false });
+    expect(sendOrderConfirmationEmail).toHaveBeenCalled();
+  });
+
+  it('does not send the Meta Purchase again for an order that was already claimed (webhook retry)', async () => {
+    db(baseOrder({ paymentProcessedAt: '2026-01-01T00:00:00.000Z' }));
+    await processSuccessfulPayment({ orderId: 'ORD-1' });
+    expect(sendMetaPurchase).not.toHaveBeenCalled();
   });
 
   it('runs the full direct-purchase flow', async () => {

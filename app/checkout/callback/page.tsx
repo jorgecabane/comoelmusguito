@@ -5,17 +5,19 @@
 
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui';
 import { CheckCircle2, XCircle, Loader2, ArrowRight, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCartStore } from '@/lib/store/useCartStore';
+import { trackMeta } from '@/lib/analytics/meta';
 
 type PaymentStatus = 'loading' | 'success' | 'error' | 'pending';
 
 interface OrderItem {
+  id?: string;
   name: string;
   type: 'terrarium' | 'course' | 'workshop' | 'supply';
   quantity: number;
@@ -29,6 +31,7 @@ function CheckoutCallbackContent() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
   const clearCart = useCartStore((state) => state.clearCart);
+  const purchaseTracked = useRef(false);
   const [status, setStatus] = useState<PaymentStatus>('loading');
   const [message, setMessage] = useState('');
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -133,6 +136,27 @@ function CheckoutCallbackContent() {
         const data = await response.json();
         if (data.items) {
           setOrderItems(data.items);
+
+          // Purchase del navegador. Mismo event_id (orderId) que el envío por servidor:
+          // Meta deduplica, así que recargar esta página no cuenta la compra otra vez.
+          if (!purchaseTracked.current && typeof data.total === 'number') {
+            purchaseTracked.current = true;
+            trackMeta(
+              'Purchase',
+              {
+                content_type: 'product',
+                content_ids: data.items.map((item: OrderItem) => item.id).filter(Boolean),
+                contents: data.items
+                  .filter((item: OrderItem) => item.id)
+                  .map((item: OrderItem) => ({ id: item.id as string, quantity: item.quantity, item_price: item.price })),
+                num_items: data.items.reduce((sum: number, item: OrderItem) => sum + item.quantity, 0),
+                value: data.total,
+                currency: data.currency,
+                order_id: orderId,
+              },
+              orderId
+            );
+          }
           
           // Verificar si hay cursos
           const courses = data.items.filter((item: OrderItem) => item.type === 'course');

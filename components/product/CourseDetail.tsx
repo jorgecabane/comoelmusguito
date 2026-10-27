@@ -9,6 +9,7 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { Badge } from '@/components/ui';
 import type { Course } from '@/types/sanity';
 import type { CartItem } from '@/types/cart';
+import { useMetaViewContent } from '@/lib/analytics/useMetaViewContent';
 import { getImageUrl, formatPriceWithSale, getCoursePrice } from '@/lib/sanity/utils';
 import { Play } from 'lucide-react';
 import { useMemo } from 'react';
@@ -45,6 +46,8 @@ export function CourseDetail({ course, userCurrency }: CourseDetailProps) {
     maxQuantity: 1, // Un curso solo se compra una vez
     inStock: course.published !== false, // Habilitado por defecto, solo deshabilitado si explícitamente published: false
   };
+
+  useMetaViewContent(cartItem);
 
   return (
     <div className="border-t border-b border-line py-6">

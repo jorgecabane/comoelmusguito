@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { ShoppingCart, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useCartStore } from '@/lib/store/useCartStore';
+import { paramsFromCartItem, trackMeta } from '@/lib/analytics/meta';
 import type { CartItem } from '@/types/cart';
 
 interface AddToCartButtonProps {
@@ -55,6 +56,7 @@ export function AddToCartButton({
 
         // Stock disponible, agregar al carrito
         addItem(item);
+        trackMeta('AddToCart', paramsFromCartItem(item));
         setIsValidating(false);
       } catch (err) {
         setError('Error validando stock. Por favor, intenta nuevamente.');
@@ -63,6 +65,7 @@ export function AddToCartButton({
     } else {
       // Para cursos y talleres, agregar directamente
       addItem(item);
+      trackMeta('AddToCart', paramsFromCartItem(item));
     }
   };
 

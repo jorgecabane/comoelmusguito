@@ -11,6 +11,7 @@ import { Heart } from 'lucide-react';
 import Image from 'next/image';
 import type { Terrarium } from '@/types/sanity';
 import type { CartItem } from '@/types/cart';
+import { useMetaViewContent } from '@/lib/analytics/useMetaViewContent';
 import { getImageUrl, formatPrice, sizeLabels, categoryLabels } from '@/lib/sanity/utils';
 
 interface TerrariumDetailProps {
@@ -39,6 +40,8 @@ export function TerrariumDetail({ terrarium }: TerrariumDetailProps) {
     // Solo marcar como disponible para envío si shippingAvailable es true Y localPickupOnly es false
     shippingAvailable: terrarium.shippingAvailable === true && terrarium.localPickupOnly !== true,
   };
+
+  useMetaViewContent(cartItem);
 
   return (
     <>

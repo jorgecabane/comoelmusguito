@@ -4,6 +4,8 @@
 
 import 'server-only';
 import { client, newPrivateId, writeClient } from '@/sanity/lib/client';
+import { sendMetaPurchase } from '@/lib/analytics/meta-capi';
+import type { MetaAttribution } from '@/lib/analytics/meta-attribution';
 import type { CartItem } from '@/types/cart';
 import { sendOrderConfirmationEmail, sendGiftEmail } from '@/lib/resend/client';
 import type { EmailOrderData, EmailOrderItem, GiftEmailData } from '@/lib/resend/client';
@@ -66,6 +68,8 @@ export interface SanityOrder {
   refundAmount?: number;
   emailSent?: boolean;
   paymentProcessedAt?: string; // Marca atómica: accesos e inventario ya aplicados
+  // Datos para atribuir la compra a un anuncio de Meta (API de conversiones)
+  metaAttribution?: MetaAttribution;
   // Campos de Regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -106,6 +110,7 @@ export async function saveOrderToSanity(data: {
   total: number;
   currency: 'CLP' | 'USD';
   paymentProvider?: 'flow' | 'paypal';
+  metaAttribution?: MetaAttribution;
   // Campos de regalo
   isGift?: boolean;
   recipientEmail?: string;
@@ -164,6 +169,7 @@ export async function saveOrderToSanity(data: {
     currency: data.currency,
     paymentStatus: 1, // Pendiente
     paymentProvider: data.paymentProvider ?? 'flow',
+    metaAttribution: data.metaAttribution,
     // Campos de regalo
     isGift: data.isGift || false,
     recipientEmail: data.recipientEmail,
@@ -229,10 +235,12 @@ export async function updateOrderPaymentStatus(
     throw new Error(`Orden ${orderId} no encontrada`);
   }
 
-  await writeClient
+  let patch = writeClient
     .patch(order._id)
-    .set(paymentStatusUpdates(order, paymentStatus, paymentDate, flowOrder))
-    .commit();
+    .set(paymentStatusUpdates(order, paymentStatus, paymentDate, flowOrder));
+  // Pago rechazado (3) o anulado (4): nunca habrá Purchase, los datos de atribución ya no sirven
+  if (paymentStatus === 3 || paymentStatus === 4) patch = patch.unset(['metaAttribution']);
+  await patch.commit();
 }
 /**
  * Marcar email como enviado en una orden
@@ -369,6 +377,42 @@ export async function getLastShippingAddressByUserId(userId: string): Promise<Sa
   }`;
   const result = await client.fetch<{ shippingAddress: SanityOrder['shippingAddress'] } | null>(query, { userId });
   return result?.shippingAddress ?? null;
+}
+
+/**
+ * Borra los datos de atribución de Meta (cookies, IP, navegador) de una orden.
+ * No lanza: no puede romper el webhook de pago.
+ */
+async function clearMetaAttribution(order: Pick<SanityOrder, '_id' | 'orderId' | 'metaAttribution'>): Promise<void> {
+  if (!order._id || !order.metaAttribution) return;
+  try {
+    await writeClient.patch(order._id).unset(['metaAttribution']).commit();
+  } catch (error) {
+    console.error(`[orders] No se pudo borrar metaAttribution de la orden ${order.orderId}:`, error);
+  }
+}
+
+/** Días que se conservan los datos de atribución de un pedido que nunca se paga */
+export const META_ATTRIBUTION_RETENTION_DAYS = 7;
+const PURGE_BATCH_SIZE = 200;
+
+/**
+ * Borra los datos de atribución de Meta de los pedidos que quedaron pendientes
+ * (el comprador abandonó Flow: no hay webhook ni cancelación). Los pagados,
+ * rechazados y anulados ya los limpian sus propios flujos. Devuelve cuántos limpió.
+ */
+export async function purgeStaleMetaAttribution(now: Date = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - META_ATTRIBUTION_RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const stale = await client.fetch<{ _id: string }[]>(
+    `*[_type == "order" && paymentStatus == 1 && defined(metaAttribution) && createdAt < $cutoff][0...${PURGE_BATCH_SIZE}]{ _id }`,
+    { cutoff }
+  );
+  if (stale.length === 0) return 0;
+
+  const transaction = writeClient.transaction();
+  for (const { _id } of stale) transaction.patch(_id, { unset: ['metaAttribution'] });
+  await transaction.commit();
+  return stale.length;
 }
 
 const MAX_CLAIM_ATTEMPTS = 3;
@@ -576,6 +620,10 @@ export async function processSuccessfulPayment(params: {
   if (claimed) {
     await grantCourseAccess(order as SanityOrder & { _id: string });
     await decreaseInventory(order);
+    // Una sola vez por pedido (aquí solo llega el ganador del claim). No lanza nunca.
+    await sendMetaPurchase(order);
+    // Esos datos solo sirven para este envío: se borran enseguida (ver /privacidad, sección 8)
+    await clearMetaAttribution(order);
   }
 
   // ponytail: dos entregas concurrentes pueden enviar el email de confirmación dos
