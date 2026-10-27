@@ -31,12 +31,15 @@ export function useAdsConsent(): AdsConsent {
   return useSyncExternalStore(subscribe, readAdsConsent, () => 'unset');
 }
 
-/** Guarda la elección. Al rechazar o retirar, además se borran las cookies de Meta y se revoca el Pixel. */
+/** Guarda la elección. Al rechazar o retirar, además se revoca el Pixel y se borran las cookies de Meta y se revoca el Pixel. */
 export function setAdsConsent(granted: boolean): void {
   document.cookie = consentCookieString(granted, window.location.protocol === 'https:');
 
+  // Conceder y revocar: tras rechazar, el Pixel queda en "revoke" y volver a aceptar en la misma sesión debe reactivarlo
+  // (la primera vez fbq aún no existe y lo carga MetaPixel)
+  window.fbq?.('consent', granted ? 'grant' : 'revoke');
+
   if (!granted) {
-    window.fbq?.('consent', 'revoke');
     for (const name of META_COOKIES) {
       document.cookie = `${name}=; Max-Age=0; Path=/`;
       // El Pixel también puede crearlas en el dominio raíz
