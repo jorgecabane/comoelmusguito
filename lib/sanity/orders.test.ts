@@ -38,6 +38,7 @@ vi.mock('@/lib/auth/sanity-adapter', () => ({ getUserByEmail: vi.fn() }));
 import {
   saveOrderToSanity,
   updateOrderPaymentStatus,
+  purgeStaleMetaAttribution,
   markOrderEmailSent,
   getOrderByOrderId,
   getOrdersByEmail,
@@ -133,6 +134,29 @@ describe('saveOrderToSanity', () => {
     expect(doc.isGift).toBe(false);
     expect(doc.requiresShipping).toBe(false);
     expect(doc.paymentProvider).toBe('paypal');
+  });
+});
+
+describe('purgeStaleMetaAttribution', () => {
+  it('busca pedidos pendientes con atribución de más de 7 días y la borra en una transacción', async () => {
+    m.fetch.mockResolvedValue([{ _id: 'o1' }, { _id: 'o2' }]);
+    const now = new Date('2026-11-10T12:00:00.000Z');
+    await expect(purgeStaleMetaAttribution(now)).resolves.toBe(2);
+
+    const [query, params] = m.fetch.mock.calls[0];
+    expect(query).toContain('paymentStatus == 1');
+    expect(query).toContain('defined(metaAttribution)');
+    expect(query).toContain('createdAt < $cutoff');
+    expect(params).toEqual({ cutoff: '2026-11-03T12:00:00.000Z' });
+    expect(m.txPatch).toHaveBeenCalledWith('o1', { unset: ['metaAttribution'] });
+    expect(m.txPatch).toHaveBeenCalledWith('o2', { unset: ['metaAttribution'] });
+    expect(m.txPatch).toHaveBeenCalledTimes(2);
+  });
+
+  it('no abre transacción si no hay pedidos que limpiar', async () => {
+    m.fetch.mockResolvedValue([]);
+    await expect(purgeStaleMetaAttribution()).resolves.toBe(0);
+    expect(m.txPatch).not.toHaveBeenCalled();
   });
 });
 

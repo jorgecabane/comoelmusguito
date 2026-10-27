@@ -188,8 +188,8 @@ export default function PrivacidadPage() {
                 <li><strong>Datos de marketing:</strong> Hasta que retire su consentimiento</li>
                 <li>
                   <strong>Datos de atribución publicitaria</strong> (cookies de Meta, dirección IP y navegador guardados
-                  al crear un pedido): se eliminan al informar la compra a Meta o, si el pago es rechazado o anulado,
-                  al registrarse ese estado
+                  al crear un pedido): se eliminan al informar la compra a Meta; si el pago es rechazado o anulado, al
+                  registrarse ese estado; y si el pago nunca se completa, a los 7 días
                 </li>
               </ul>
             </section>

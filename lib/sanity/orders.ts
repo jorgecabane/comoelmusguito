@@ -392,6 +392,29 @@ async function clearMetaAttribution(order: Pick<SanityOrder, '_id' | 'orderId' |
   }
 }
 
+/** Días que se conservan los datos de atribución de un pedido que nunca se paga */
+export const META_ATTRIBUTION_RETENTION_DAYS = 7;
+const PURGE_BATCH_SIZE = 200;
+
+/**
+ * Borra los datos de atribución de Meta de los pedidos que quedaron pendientes
+ * (el comprador abandonó Flow: no hay webhook ni cancelación). Los pagados,
+ * rechazados y anulados ya los limpian sus propios flujos. Devuelve cuántos limpió.
+ */
+export async function purgeStaleMetaAttribution(now: Date = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - META_ATTRIBUTION_RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const stale = await client.fetch<{ _id: string }[]>(
+    `*[_type == "order" && paymentStatus == 1 && defined(metaAttribution) && createdAt < $cutoff][0...${PURGE_BATCH_SIZE}]{ _id }`,
+    { cutoff }
+  );
+  if (stale.length === 0) return 0;
+
+  const transaction = writeClient.transaction();
+  for (const { _id } of stale) transaction.patch(_id, { unset: ['metaAttribution'] });
+  await transaction.commit();
+  return stale.length;
+}
+
 const MAX_CLAIM_ATTEMPTS = 3;
 
 /**
